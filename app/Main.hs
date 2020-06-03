@@ -1,7 +1,7 @@
 module Main (main) where
 
-import CalamityBot (someFunc)
+import CalamityBot (runBot)
 
 
 main :: IO ()
-main = someFunc
+main = runBot

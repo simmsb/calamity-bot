@@ -3,6 +3,7 @@
 -- | Prefix models
 module CalamityBot.Db.Prefixes
   ( addPrefix,
+    getPrefixes,
     removePrefix,
   )
 where
@@ -18,6 +19,15 @@ addPrefix (fromIntegral @_ @Int64 . fromSnowflake -> gid, pre) =
     insertInto_
       #prefixes
       (Values_ (Set (inline gid) `as` #guild_id :* Set (inline pre) `as` #pre))
+
+getPrefixes :: Snowflake Guild -> Statement DB () (Only L.Text)
+getPrefixes (fromIntegral @_ @Int64 . fromSnowflake -> gid) =
+  query $
+    select_
+      (#p ! #pre `as` #fromOnly)
+      ( from (table (#prefixes `as` #p))
+          & where_ (#p ! #guild_id .== inline gid)
+      )
 
 removePrefix :: (Snowflake Guild, L.Text) -> Statement DB () ()
 removePrefix (fromIntegral @_ @Int64 . fromSnowflake -> gid, pre) =

@@ -4,7 +4,7 @@ cabal-version: 1.18
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 420aee29eba046f80f787f6c375a29a7e7f197e5d0f7c6768659fa68300e6b87
+-- hash: 20fcf50f496a26676e5b1fb31712b436695e1e94a312efdd7b08ccf3e488c58b
 
 name:           calamity-bot
 version:        0.0.0
@@ -35,10 +35,14 @@ flag smuggler2
 library
   exposed-modules:
       CalamityBot
+      CalamityBot.Commands
+      CalamityBot.Commands.Prefix
       CalamityBot.Db
+      CalamityBot.Db.Eff
       CalamityBot.Db.Guilds
       CalamityBot.Db.Prefixes
       CalamityBot.Db.Schema
+      CalamityBot.PrefixHandler
       Prelude
   other-modules:
       Paths_calamity_bot
@@ -49,12 +53,12 @@ library
   build-depends:
       arbor-lru-cache >=0.1 && <0.2
     , base-noprelude >=4.12 && <5
+    , bytestring >=0.10 && <0.11
     , calamity >=0.1.11.1 && <0.2
     , generic-lens >=2 && <2.1
     , lens >=4.19 && <4.20
     , polysemy >=1.3 && <1.4
     , polysemy-plugin >=0.2 && <0.3
-    , product-profunctors >=0.10 && <0.11
     , relude >=0.7 && <0.8
     , squeal-postgresql >=0.6 && <0.7
     , text >=1.2 && <1.3
@@ -78,6 +82,7 @@ executable calamity-bot
   build-depends:
       arbor-lru-cache >=0.1 && <0.2
     , base-noprelude >=4.12 && <5
+    , bytestring >=0.10 && <0.11
     , calamity >=0.1.11.1 && <0.2
     , calamity-bot
     , generic-lens >=2 && <2.1
@@ -85,7 +90,6 @@ executable calamity-bot
     , optparse-applicative
     , polysemy >=1.3 && <1.4
     , polysemy-plugin >=0.2 && <0.3
-    , product-profunctors >=0.10 && <0.11
     , relude >=0.7 && <0.8
     , squeal-postgresql >=0.6 && <0.7
     , text >=1.2 && <1.3

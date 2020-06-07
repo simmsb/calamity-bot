@@ -15,4 +15,4 @@ data DBEff db m a where
 makeSem ''DBEff
 
 runDBEffPooled :: Member (Embed IO) r => Pool (K Connection db) -> Sem (DBEff db ': r) a -> Sem r a
-runDBEffPooled pool = interpret (\case UsingConn c -> embed @IO $ usingConnectionPool pool c)
+runDBEffPooled pool = interpret \case UsingConn c -> embed @IO $ usingConnectionPool pool c

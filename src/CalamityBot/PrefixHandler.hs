@@ -18,11 +18,9 @@ firstJusts [] = Nothing
 
 useDatabasePrefix :: Member (DBEff DB) r => L.Text -> Sem (ParsePrefix ': r) a -> Sem r a
 useDatabasePrefix def =
-  interpret
-    ( \case
-        ParsePrefix m -> do
-          prefixes <- case m ^. #guildID of
-            Just gid -> (def :) <$> usingConn (execute (getPrefixes gid) >>= (fmap fromOnly <$>) . getRows)
-            Nothing -> pure [def]
-          pure $ firstJusts (map (\p -> (p,) <$> L.stripPrefix p (m ^. #content)) prefixes)
-    )
+  interpret \case
+    ParsePrefix m -> do
+      prefixes <- case m ^. #guildID of
+        Just gid -> (def :) <$> usingConn (execute (getPrefixes gid) >>= (fmap fromOnly <$>) . getRows)
+        Nothing -> pure [def]
+      pure $ firstJusts (map (\p -> (p,) <$> L.stripPrefix p (m ^. #content)) prefixes)

@@ -63,6 +63,7 @@ executables:
       - -fhide-source-paths
       - -Wmissing-export-lists
       - -Wpartial-fields
+      - -fno-warn-unused-do-bind
     dependencies:
       - calamity-bot
       - optparse-applicative
@@ -83,6 +84,7 @@ library:
     - -fhide-source-paths
     - -Wmissing-export-lists
     - -Wpartial-fields
+    - -fno-warn-unused-do-bind
   source-dirs: src
 
 default-extensions:

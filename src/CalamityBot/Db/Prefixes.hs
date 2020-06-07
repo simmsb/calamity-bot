@@ -4,6 +4,7 @@
 module CalamityBot.Db.Prefixes
   ( addPrefix,
     getPrefixes,
+    countPrefixes,
     removePrefix,
   )
 where
@@ -19,6 +20,16 @@ addPrefix (fromIntegral @_ @Int64 . fromSnowflake -> gid, pre) =
     insertInto_
       #prefixes
       (Values_ (Set (inline gid) `as` #guild_id :* Set (inline pre) `as` #pre))
+
+countPrefixes :: Snowflake Guild -> Statement DB () (Only Int64)
+countPrefixes (fromIntegral @_ @Int64 . fromSnowflake -> gid) =
+  query $
+    select_
+      (countStar `as` #fromOnly)
+      ( from (table (#prefixes `as` #p))
+          & where_ (#p ! #guild_id .== inline gid)
+          & groupBy #guild_id
+      )
 
 getPrefixes :: Snowflake Guild -> Statement DB () (Only L.Text)
 getPrefixes (fromIntegral @_ @Int64 . fromSnowflake -> gid) =

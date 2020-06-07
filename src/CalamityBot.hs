@@ -21,7 +21,7 @@ runBot = do
   token <- L.pack <$> getEnv "BOT_TOKEN"
   db_path <- BS.pack <$> getEnv "DB_STRING"
   pool <- createConnectionPool db_path 3 0.5 10
-  void . runFinal . embedToFinal . runDBEffPooled pool . runCacheInMemoryNoMsg . runMetricsNoop . useDatabasePrefix "c!" . runBotIO (BotToken token) $ addCommands $ do
+  void . runFinal . embedToFinal . runDBEffPooled pool . runCacheInMemoryNoMsg . runMetricsNoop . useDatabasePrefix "c!" . runBotIO (BotToken token) $ addCommands do
     void helpCommand
     prefixGroup
     pure ()

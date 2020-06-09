@@ -61,7 +61,7 @@ extra-deps:
   - squeal-postgresql-0.6.0.2@sha256:2bd808a80c8c67da612049908152134b5d70650303239c6754ed0cf1dfab5305,5624
   - smuggler2-0.3.2.2@sha256:4483b015a09edd8e4f14d112c9ec4a4436910f09695c34c6f8774aa4504ed8ff,3425
   - ghc-exactprint-0.6.3@sha256:1c9f8884a3bdce00f3c2febd8276be294faf9732d24bc89efe023f3c5678ea52,9375
-  - calamity-0.1.13.0
+  - calamity-0.1.14.2
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

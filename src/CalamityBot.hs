@@ -49,12 +49,12 @@ runBot = do
             "The command: " <> codeline (L.fromStrict n)
               <> ", failed with reason: "
               <> codeblock' Nothing r
-    -- react @'ReadyEvt \_ -> do
-    --   sendPresence
-    --     StatusUpdateData
-    --       { since = Nothing,
-    --         game = Just [aesonQQ| {name: "prefix: c!", type: 0} |],
-    --         status = "online",
-    --         afk = False
-    --       }
+    react @'ReadyEvt \_ -> do
+      sendPresence
+        StatusUpdateData
+          { since = Nothing,
+            game = Just [aesonQQ| {name: "prefix: c!", type: 0} |],
+            status = "online",
+            afk = False
+          }
     pure ()

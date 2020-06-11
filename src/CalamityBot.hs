@@ -13,7 +13,6 @@ import Calamity.Metrics.Noop
 import CalamityBot.Commands
 import CalamityBot.Db
 import CalamityBot.PrefixHandler
-import Data.Aeson.QQ
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.Text.Lazy as L
 import DiPolysemy
@@ -53,7 +52,7 @@ runBot = do
       sendPresence
         StatusUpdateData
           { since = Nothing,
-            game = Just [aesonQQ| {name: "prefix: c!", type: 0} |],
+            game = Just $ activity "Prefix: c!" Game,
             status = "online",
             afk = False
           }

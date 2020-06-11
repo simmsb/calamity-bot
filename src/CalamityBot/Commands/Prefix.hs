@@ -36,8 +36,8 @@ maintainGuild gid = void $ usingConn (execute $ addGuild gid)
 prefixGroup :: (BotC r, P.Member (DBEff DB) r) => P.Sem (DSLState r) ()
 prefixGroup = void
   . help (const "Commands related to setting prefixes for the bot")
-  . group "prefix"
   . requiresPure [("guildOnly", guildOnly)]
+  . groupA "prefix" ["prefixes"]
   $ do
     react @'GuildCreateEvt \(g, _) ->
       maintainGuild (getID g)
@@ -57,7 +57,7 @@ prefixGroup = void
         void $ tell @L.Text ctx ("Removed prefix (if it existed): " <> p)
 
     help (const "List prefixes") $
-      command @'[] "list" \ctx -> do
+      commandA @'[] "list" ["show"] \ctx -> do
         let g = fromJust (ctx ^. #guild)
             gid = getID @Guild g
         prefixes <- usingConn (execute (getPrefixes gid) >>= (fmap fromOnly <$>) . getRows)

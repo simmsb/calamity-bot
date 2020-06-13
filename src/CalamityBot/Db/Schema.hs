@@ -2,6 +2,7 @@
 module CalamityBot.Db.Schema
   ( GuildsColumns,
     PrefixesColumns,
+    RemindersColumns,
     Schema,
     DB,
   )
@@ -26,9 +27,23 @@ type PrefixesConstraints =
      "prefixes_guild_id_fkey" ::: 'ForeignKey '["guild_id"] "guilds" '["id"]
    ]
 
+type RemindersColumns =
+  '[ "id" ::: 'Def :=> 'NotNull 'PGuuid,
+     "user_id" ::: 'NoDef :=> 'NotNull 'PGint8,
+     "channel_id" ::: 'NoDef :=> 'NotNull 'PGint8,
+     "message" ::: 'NoDef :=> 'NotNull 'PGtext,
+     "created" ::: 'NoDef :=> 'NotNull 'PGtimestamptz,
+     "target" ::: 'NoDef :=> 'NotNull 'PGtimestamptz
+   ]
+
+type RemindersConstraints =
+  '[ "reminders_pkey" ::: 'PrimaryKey '["id"]
+   ]
+
 type Schema =
   '[ "guilds" ::: 'Table (GuildsConstraints :=> GuildsColumns),
-     "prefixes" ::: 'Table (PrefixesConstraints :=> PrefixesColumns)
+     "prefixes" ::: 'Table (PrefixesConstraints :=> PrefixesColumns),
+     "reminders" ::: 'Table (RemindersConstraints :=> RemindersColumns)
    ]
 
 type DB = Public Schema

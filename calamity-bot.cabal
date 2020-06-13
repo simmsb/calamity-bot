@@ -4,7 +4,7 @@ cabal-version: 1.18
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0b71b9715ff8705028a76b8de7e3291438fb6ad331ac23b97ed95a1939a30168
+-- hash: f2086238d3480e13df90cbc3486d6b13552deec180212db0fd72f64180d47f9a
 
 name:           calamity-bot
 version:        0.0.0
@@ -41,7 +41,9 @@ library
       CalamityBot.Db.Eff
       CalamityBot.Db.Guilds
       CalamityBot.Db.Prefixes
+      CalamityBot.Db.Reminders
       CalamityBot.Db.Schema
+      CalamityBot.Db.Utils
       CalamityBot.PrefixHandler
       Prelude
   other-modules:
@@ -57,6 +59,7 @@ library
     , calamity >=0.1.11.1 && <0.2
     , di-polysemy >=0.1 && <0.2
     , generic-lens >=2 && <2.1
+    , generics-sop >=0.5 && <0.6
     , lens >=4.19 && <4.20
     , polysemy >=1.3 && <1.4
     , polysemy-plugin >=0.2 && <0.3
@@ -64,7 +67,9 @@ library
     , squeal-postgresql >=0.6 && <0.7
     , text >=1.2 && <1.3
     , text-show >=3.8 && <3.9
+    , time >=1.9 && <1.10
     , unordered-containers >=0.2.10 && <0.3
+    , uuid-types >=1.0 && <1.1
   if flag(smuggler2)
     build-depends:
         smuggler2 >=0.3 && <0.4
@@ -88,6 +93,7 @@ executable calamity-bot
     , calamity-bot
     , di-polysemy >=0.1 && <0.2
     , generic-lens >=2 && <2.1
+    , generics-sop >=0.5 && <0.6
     , lens >=4.19 && <4.20
     , optparse-applicative
     , polysemy >=1.3 && <1.4
@@ -96,7 +102,9 @@ executable calamity-bot
     , squeal-postgresql >=0.6 && <0.7
     , text >=1.2 && <1.3
     , text-show >=3.8 && <3.9
+    , time >=1.9 && <1.10
     , unordered-containers >=0.2.10 && <0.3
+    , uuid-types >=1.0 && <1.1
   if flag(smuggler2)
     build-depends:
         smuggler2 >=0.3 && <0.4

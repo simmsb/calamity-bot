@@ -9,6 +9,20 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+--
+-- Name: uuid-ossp; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION "uuid-ossp"; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UUIDs)';
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -30,6 +44,20 @@ CREATE TABLE public.guilds (
 CREATE TABLE public.prefixes (
     guild_id bigint NOT NULL,
     pre text NOT NULL
+);
+
+
+--
+-- Name: reminders; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.reminders (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    user_id bigint NOT NULL,
+    channel_id bigint NOT NULL,
+    message text NOT NULL,
+    created timestamp with time zone NOT NULL,
+    target timestamp with time zone NOT NULL
 );
 
 
@@ -59,11 +87,26 @@ ALTER TABLE ONLY public.prefixes
 
 
 --
+-- Name: reminders reminders_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reminders
+    ADD CONSTRAINT reminders_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+
+--
+-- Name: reminder_target_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX reminder_target_idx ON public.reminders USING btree (target);
 
 
 --
@@ -85,4 +128,5 @@ ALTER TABLE ONLY public.prefixes
 
 INSERT INTO public.schema_migrations (version) VALUES
     ('20200602214607'),
-    ('20200602214609');
+    ('20200602214609'),
+    ('20200612224716');

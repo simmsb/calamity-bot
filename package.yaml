@@ -35,6 +35,9 @@ dependencies:
   - squeal-postgresql ^>= 0.6
   - arbor-lru-cache ^>= 0.1
   - bytestring ^>= 0.10
+  - uuid-types ^>= 1.0
+  - generics-sop ^>= 0.5
+  - time ^>= 1.9
 
 when:
   condition: flag(smuggler2)

@@ -39,7 +39,7 @@ prefixGroup = void
   . requiresPure [("guildOnly", guildOnly)]
   . groupA "prefix" ["prefixes"]
   $ do
-    react @'GuildCreateEvt \(g, _) ->
+    react @'GuildCreateEvt \(g, _) -> -- TODO move this and maintainGuild
       maintainGuild (getID g)
 
     requires' "prefixLimit" (prefixLimit 6) $ help (const "Add a new prefix") $

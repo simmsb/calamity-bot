@@ -64,6 +64,8 @@ extra-deps:
   - calamity-0.1.14.4
   # - github: nitros12/calamity
   #   commit: 6de5f004182a822744fec2badab5521377a40304
+  - github: nitros12/fuzzy-dates
+    commit: 7317a33dae5f414e139ead1a0ec7412185a3ce7c
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

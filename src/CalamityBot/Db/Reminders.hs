@@ -67,9 +67,7 @@ removeReminderByIdx (uid, idx) =
   manipulation $
     deleteFrom_
       #reminders
-      ( subAny
-          #id
-          (.==)
+      ( exists
           ( select_
               (#s0 ! #id)
               ( from

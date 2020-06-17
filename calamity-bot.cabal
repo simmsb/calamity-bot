@@ -4,7 +4,7 @@ cabal-version: 1.18
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f2086238d3480e13df90cbc3486d6b13552deec180212db0fd72f64180d47f9a
+-- hash: c96b38167ba5b38d50d8bcf85c730d10ba380459d5ff6bea472ef8a1ec44dfea
 
 name:           calamity-bot
 version:        0.0.0
@@ -37,6 +37,7 @@ library
       CalamityBot
       CalamityBot.Commands
       CalamityBot.Commands.Prefix
+      CalamityBot.Commands.Reminders
       CalamityBot.Db
       CalamityBot.Db.Eff
       CalamityBot.Db.Guilds
@@ -45,6 +46,7 @@ library
       CalamityBot.Db.Schema
       CalamityBot.Db.Utils
       CalamityBot.PrefixHandler
+      CalamityBot.Utils
       Prelude
   other-modules:
       Paths_calamity_bot
@@ -58,12 +60,16 @@ library
     , bytestring >=0.10 && <0.11
     , calamity >=0.1.11.1 && <0.2
     , di-polysemy >=0.1 && <0.2
+    , fuzzy-dates-megaparsec >=0.1 && <0.2
     , generic-lens >=2 && <2.1
     , generics-sop >=0.5 && <0.6
+    , hourglass >=0.2 && <0.3
     , lens >=4.19 && <4.20
+    , megaparsec >=8.0 && <8.1
     , polysemy >=1.3 && <1.4
     , polysemy-plugin >=0.2 && <0.3
     , relude >=0.7 && <0.8
+    , replace-megaparsec >=1.4 && <1.5
     , squeal-postgresql >=0.6 && <0.7
     , text >=1.2 && <1.3
     , text-show >=3.8 && <3.9
@@ -92,13 +98,17 @@ executable calamity-bot
     , calamity >=0.1.11.1 && <0.2
     , calamity-bot
     , di-polysemy >=0.1 && <0.2
+    , fuzzy-dates-megaparsec >=0.1 && <0.2
     , generic-lens >=2 && <2.1
     , generics-sop >=0.5 && <0.6
+    , hourglass >=0.2 && <0.3
     , lens >=4.19 && <4.20
+    , megaparsec >=8.0 && <8.1
     , optparse-applicative
     , polysemy >=1.3 && <1.4
     , polysemy-plugin >=0.2 && <0.3
     , relude >=0.7 && <0.8
+    , replace-megaparsec >=1.4 && <1.5
     , squeal-postgresql >=0.6 && <0.7
     , text >=1.2 && <1.3
     , text-show >=3.8 && <3.9

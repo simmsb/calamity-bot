@@ -61,4 +61,4 @@ prefixGroup = void
         let g = fromJust (ctx ^. #guild)
             gid = getID @Guild g
         prefixes <- usingConn (execute (getPrefixes gid) >>= (fmap fromOnly <$>) . getRows)
-        void $ tell @L.Text ctx ("Prefixes: " <> L.unwords ["`" <> p <> "`" | p <- prefixes])
+        void $ tell @L.Text ctx ("Prefixes: " <> L.unwords (map codeline prefixes))

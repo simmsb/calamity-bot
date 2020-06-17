@@ -38,6 +38,10 @@ dependencies:
   - uuid-types ^>= 1.0
   - generics-sop ^>= 0.5
   - time ^>= 1.9
+  - hourglass ^>= 0.2
+  - megaparsec ^>= 8.0
+  - replace-megaparsec ^>= 1.4
+  - fuzzy-dates-megaparsec ^>= 0.1
 
 when:
   condition: flag(smuggler2)

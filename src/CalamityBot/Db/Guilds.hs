@@ -8,16 +8,15 @@ where
 
 import Calamity (Guild, Snowflake (..))
 import CalamityBot.Db.Schema
-import Squeal.PostgreSQL
+import CalamityBot.Db.Utils ()
+import Control.Lens
+import Database.Beam
+import qualified Database.Beam.Postgres.Full as Pg
+import qualified Database.Beam.Postgres as Pg
 
-addGuild :: Snowflake Guild -> Statement DB () ()
-addGuild (fromIntegral @_ @Int64 . fromSnowflake -> gid) =
-  manipulation $
-    insertInto
-      #guilds
-      (Values_ (Set (inline gid) `as` #id :* Set now `as` #last_seen))
-      ( OnConflict
-          (OnConstraint #guilds_pkey)
-          (DoUpdate (Set now `as` #last_seen) [])
-      )
-      (Returning_ Nil)
+addGuild :: Snowflake Guild -> SqlInsert Pg.Postgres DBGuildT
+addGuild g =
+  Pg.insert (db ^. #guilds) (insertExpressions [DBGuild (val_ g) default_]) $
+    Pg.onConflict
+      (Pg.conflictingFields primaryKey)
+      (Pg.onConflictUpdateInstead (^. #guildLastSeen))

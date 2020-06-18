@@ -4,6 +4,7 @@ module CalamityBot.Db.Reminders
     removeReminder,
     removeReminderByIdx,
     allRemindersFor,
+    allRemindersForPaginated,
     upcomingReminders,
   )
 where
@@ -11,107 +12,67 @@ where
 import Calamity (Channel, Snowflake (..), User)
 import CalamityBot.Db.Schema
 import CalamityBot.Db.Utils ()
+import Control.Lens hiding ((<.))
 import qualified Data.Text.Lazy as L
 import Data.Time.Clock
-import Data.UUID.Types
-import qualified GHC.Generics as GHC
-import qualified Generics.SOP as SOP
-import Squeal.PostgreSQL
+import Database.Beam
+import qualified Database.Beam.Postgres as Pg
 
-data Reminder = Reminder
-  { id :: UUID,
-    userID :: Snowflake User,
-    channelID :: Snowflake Channel,
-    message :: L.Text,
-    created :: UTCTime,
-    target :: UTCTime
-  }
-  deriving stock (Show, GHC.Generic)
-  deriving anyclass (SOP.Generic, SOP.HasDatatypeInfo)
+addReminder :: (Snowflake User, Snowflake Channel, L.Text, UTCTime, UTCTime) -> SqlInsert Pg.Postgres DBReminderT
+addReminder (uid, cid, msg, created, target) =
+  insert
+    (db ^. #reminders)
+    ( insertExpressions
+        [ DBReminder
+            default_
+            (val_ uid)
+            (val_ cid)
+            (val_ msg)
+            (val_ created)
+            (val_ target)
+        ]
+    )
 
-addReminder :: (Snowflake User, Snowflake Channel, L.Text, UTCTime) -> Statement DB () Reminder
-addReminder (uid, cid, msg, target) =
-  manipulation $
-    insertInto
-      #reminders
-      ( Values_
-          ( Default `as` #id
-              :* Set (inline uid) `as` #user_id
-              :* Set (inline cid) `as` #channel_id
-              :* Set (inline msg) `as` #message
-              :* Set now `as` #created
-              :* Set (inline target) `as` #target
-          )
-      )
-      OnConflictDoRaise
-      ( Returning_
-          ( #id
-              :* #user_id `as` #userID
-              :* #channel_id `as` #channelID
-              :* #message
-              :* #created
-              :* #target
-          )
-      )
+removeReminder :: DBReminder -> SqlDelete Pg.Postgres DBReminderT
+removeReminder DBReminder {reminderId = id_} =
+  delete (db ^. #reminders) (\r -> (r ^. #reminderId) ==. val_ id_)
 
-removeReminder :: Reminder -> Statement DB () ()
-removeReminder Reminder {id = id_} =
-  manipulation $
-    deleteFrom_
-      #reminders
-      (#id .== inline id_)
-
--- yuck
-removeReminderByIdx :: (Snowflake User, Int64) -> Statement DB () ()
+removeReminderByIdx :: (Snowflake User, Int) -> SqlDelete Pg.Postgres DBReminderT
 removeReminderByIdx (uid, idx) =
-  manipulation $
-    deleteFrom_
-      #reminders
-      ( exists
-          ( select_
-              (#s0 ! #id)
-              ( from
-                  ( subquery
-                      ( select
-                          ((#r ! #id) & Also (rowNumber `as` #row_num `Over` (partitionBy (#r ! #id) & orderBy [#r ! #target & Asc])))
-                          ( from (table (#reminders `as` #r))
-                              & where_ (#r ! #user_id .== inline uid)
-                          )
-                          `As` #s0
-                      )
-                  )
-                  & where_ (#s0 ! #row_num .== inline idx)
-              )
-          )
-      )
+  delete
+    (db ^. #reminders)
+    ( \_ ->
+        exists_
+          $ filter_ (\row -> row ==. val_ idx)
+          $ withWindow_
+            (\r -> frame_ noPartition_ (orderPartitionBy_ . asc_ . reminderTarget $ r) noBounds_)
+            (\_ w -> rowNumber_ `over_` w)
+            (filter_ (\r -> reminderUserId r ==. val_ uid) $ all_ (db ^. #reminders))
+    )
 
-allRemindersFor :: Snowflake User -> Statement DB () Reminder
+allRemindersFor :: Snowflake User -> Q Pg.Postgres BotDB s (DBReminderT (QGenExpr QValueContext Pg.Postgres s))
 allRemindersFor uid =
-  query $
-    select_
-      ( #id
-          :* #user_id `as` #userID
-          :* #channel_id `as` #channelID
-          :* #message
-          :* #created
-          :* #target
-      )
-      ( from (table #reminders)
-          & where_ (#user_id .== inline uid)
-          & orderBy [#target & Asc]
-      )
+  orderBy_ (\r -> asc_ $ reminderTarget r) $
+    filter_ (\r -> reminderUserId r ==. val_ uid) (all_ $ db ^. #reminders)
 
-upcomingReminders :: Statement DB () Reminder
+allRemindersForPaginated :: (Snowflake User, Integer, Integer) -> SqlSelect Pg.Postgres (DBReminder, Int)
+allRemindersForPaginated (uid, width, idx) =
+  select
+    $ offset_ (idx * width)
+    $ limit_ width
+    $ withWindow_ (\_ -> frame_ noPartition_ noOrder_ noBounds_)
+                  (\r w -> (r, countAll_ `over_` w))
+                  (allRemindersFor uid)
+
+inNMinutes :: QGenExpr e Pg.Postgres s Int -> QGenExpr e Pg.Postgres s UTCTime
+inNMinutes = customExpr_ innm
+  where innm :: (Monoid a, IsString a) => a -> a
+        innm offs = "(NOW() + INTERVAL '" <> offs <> " MINUTES')"
+
+upcomingReminders :: SqlSelect Pg.Postgres DBReminder
 upcomingReminders =
-  query $
-    select_
-      ( #id
-          :* #user_id `as` #userID
-          :* #channel_id `as` #channelID
-          :* #message
-          :* #created
-          :* #target
-      )
-      ( from (table #reminders)
-          & where_ (#target .< now !+ interval_ 1 Minutes)
-      )
+  select $
+    filter_
+      (\r -> reminderTarget r <. inNMinutes (val_ 1))
+      (all_ $ db ^. #reminders)
+

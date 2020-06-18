@@ -33,7 +33,7 @@ SET default_table_access_method = heap;
 
 CREATE TABLE public.guilds (
     id bigint NOT NULL,
-    last_seen timestamp with time zone
+    last_seen timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -42,7 +42,7 @@ CREATE TABLE public.guilds (
 --
 
 CREATE TABLE public.prefixes (
-    guild_id bigint NOT NULL,
+    guild__id bigint NOT NULL,
     pre text NOT NULL
 );
 
@@ -83,7 +83,7 @@ ALTER TABLE ONLY public.guilds
 --
 
 ALTER TABLE ONLY public.prefixes
-    ADD CONSTRAINT prefixes_pkey PRIMARY KEY (guild_id, pre);
+    ADD CONSTRAINT prefixes_pkey PRIMARY KEY (guild__id, pre);
 
 
 --
@@ -110,11 +110,11 @@ CREATE INDEX reminder_target_idx ON public.reminders USING btree (target);
 
 
 --
--- Name: prefixes prefixes_guild_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: prefixes prefixes_guild__id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.prefixes
-    ADD CONSTRAINT prefixes_guild_id_fkey FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;
+    ADD CONSTRAINT prefixes_guild__id_fkey FOREIGN KEY (guild__id) REFERENCES public.guilds(id) ON DELETE CASCADE;
 
 
 --

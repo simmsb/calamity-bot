@@ -7,12 +7,14 @@ module CalamityBot.Db.Eff
 where
 
 import Polysemy
-import Squeal.PostgreSQL
+import Data.Pool
+import Database.PostgreSQL.Simple
+import Database.Beam.Postgres (runBeamPostgres, Pg)
 
-data DBEff db m a where
-  UsingConn :: PQ db db IO a -> DBEff db m a
+data DBEff m a where
+  UsingConn :: Pg a -> DBEff m a
 
 makeSem ''DBEff
 
-runDBEffPooled :: Member (Embed IO) r => Pool (K Connection db) -> Sem (DBEff db ': r) a -> Sem r a
-runDBEffPooled pool = interpret \case UsingConn c -> embed @IO $ usingConnectionPool pool c
+runDBEffPooled :: forall r a. Member (Embed IO) r => Pool Connection -> Sem (DBEff ': r) a -> Sem r a
+runDBEffPooled pool = interpret \case UsingConn m -> embed $ withResource pool (flip runBeamPostgres m)

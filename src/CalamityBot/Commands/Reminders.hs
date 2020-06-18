@@ -10,13 +10,13 @@ import CalamityBot.Utils
 import Control.Lens hiding (Context)
 import qualified Data.Text.Lazy as L
 import qualified Polysemy as P
-import Squeal.PostgreSQL (MonadPQ (execute))
 import TextShow (TextShow (showtl))
 import Replace.Megaparsec
 import Data.Dates.Parsing
 import Time.System
 import Data.Hourglass
 import Data.Traversable
+import Database.Beam (runInsert)
 
 mergePreSuff :: L.Text -> L.Text -> L.Text
 mergePreSuff s p = L.strip (L.strip s <> " " <> L.strip p)
@@ -53,7 +53,7 @@ formatTimeDiff start end =
       put duration''
       pure (name, n)
 
-reminderGroup :: (BotC r, P.Member (DBEff DB) r) => P.Sem (DSLState r) ()
+reminderGroup :: (BotC r, P.Member DBEff r) => P.Sem (DSLState r) ()
 reminderGroup = void
   . help (const "Commands related to making reminders")
   . groupA "remind" ["reminder", "reminders"]
@@ -67,12 +67,13 @@ reminderGroup = void
             let msg' = mergePreSuff prefix suffix
             let user = ctx ^. #user
             let chan = ctx ^. #channel
+            let now' = hourglassToUTCTime now
             let when' = hourglassToUTCTime when_
             if when_ < now
               then void $ tell @L.Text ctx "That time is in the past!"
               else do
               let deltaMsg = formatTimeDiff now when_
-              void $ usingConn (execute (addReminder (getID user, getID chan, msg', when')))
+              void $ usingConn (runInsert (addReminder (getID user, getID chan, msg', now', when')))
               void $ tell @L.Text ctx ("Ok, I'll remind you about: " <> codeline msg' <> ", in: " <> deltaMsg)
           Nothing ->
             void $ tell @L.Text ctx "I couldn't parse the times from that"

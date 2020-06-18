@@ -2,43 +2,38 @@
 module CalamityBot.Db.Prefixes
   ( addPrefix,
     getPrefixes,
+    getPrefixes',
     countPrefixes,
     removePrefix,
   )
 where
 
 import Calamity (Guild, Snowflake (..))
-import qualified Data.Text.Lazy as L
 import CalamityBot.Db.Schema
 import CalamityBot.Db.Utils ()
-import Squeal.PostgreSQL
+import Control.Lens
+import qualified Data.Text.Lazy as L
+import Database.Beam
+import qualified Database.Beam.Postgres as Pg
 
-addPrefix :: (Snowflake Guild, L.Text) -> Statement DB () ()
-addPrefix (gid, pre) =
-  manipulation $
-    insertInto_
-      #prefixes
-      (Values_ (Set (inline gid) `as` #guild_id :* Set (inline pre) `as` #pre))
+addPrefix :: (Snowflake Guild, L.Text) -> SqlInsert Pg.Postgres DBPrefixT
+addPrefix (gid, pre_) =
+  insert (db ^. #prefixes) (insertValues [DBPrefix (DBGuildId gid) pre_])
 
-countPrefixes :: Snowflake Guild -> Statement DB () (Only Int64)
-countPrefixes gid =
-  query $
-    select_
-      (countStar `as` #fromOnly)
-      ( from (table #prefixes)
-          & where_ (#guild_id .== inline gid)
-          & groupBy #guild_id
-      )
+countPrefixes :: Snowflake Guild -> SqlSelect Pg.Postgres Int
+countPrefixes gid = select $
+  aggregate_
+    (const countAll_)
+    (filter_ (\p -> prefixGuild p ==. val_ (DBGuildId gid)) $ all_ (db ^. #prefixes))
 
-getPrefixes :: Snowflake Guild -> Statement DB () (Only L.Text)
-getPrefixes gid =
-  query $
-    select_
-      (#pre `as` #fromOnly)
-      ( from (table #prefixes)
-          & where_ (#guild_id .== inline gid)
-      )
+getPrefixes' :: Snowflake Guild -> SqlSelect Pg.Postgres L.Text
+getPrefixes' = select . getPrefixes
 
-removePrefix :: (Snowflake Guild, L.Text) -> Statement DB () ()
-removePrefix (gid, pre) =
-  manipulation $ deleteFrom_ #prefixes (#guild_id .== inline gid .&& #pre .== inline pre)
+getPrefixes :: Snowflake Guild -> (Q Pg.Postgres BotDB s (QGenExpr QValueContext Pg.Postgres s L.Text))
+getPrefixes gid = do
+  ps <- (filter_ (\p -> prefixGuild p ==. val_ (DBGuildId gid)) $ all_ (db ^. #prefixes))
+  pure $ ps ^. #prefixPre
+
+removePrefix :: (Snowflake Guild, L.Text) -> SqlDelete Pg.Postgres DBPrefixT
+removePrefix (gid, pre_) =
+  delete (db ^. #prefixes) (\p -> (prefixGuild p ==. val_ (DBGuildId gid)) &&. ((p ^. #prefixPre) ==. val_ pre_))

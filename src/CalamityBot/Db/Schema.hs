@@ -1,49 +1,70 @@
 -- | DB schema
 module CalamityBot.Db.Schema
-  ( GuildsColumns,
-    PrefixesColumns,
-    RemindersColumns,
-    Schema,
-    DB,
+  ( DBGuildT (..),
+    DBPrefixT (..),
+    DBReminderT (..),
+    DBGuild,
+    DBPrefix,
+    DBReminder,
+    BotDB,
+    PrimaryKey(DBGuildId, DBPrefixId, DBReminderId),
+    db,
   )
 where
 
-import Squeal.PostgreSQL
+-- https://haskell-beam.github.io/beam/user-guide/models/#the-beamable-type-class
 
-type GuildsColumns =
-  '[ "id" ::: 'NoDef :=> 'NotNull 'PGint8,
-     "last_seen" ::: 'NoDef :=> 'NotNull 'PGtimestamptz
-   ]
+import Calamity
+import Data.Time (UTCTime)
+import Data.UUID.Types
+import Database.Beam
 
-type GuildsConstraints = '["guilds_pkey" ::: 'PrimaryKey '["id"]]
+data DBGuildT f = DBGuild
+  { guildId       :: Columnar f (Snowflake Guild),
+    guildLastSeen :: Columnar f UTCTime
+  }
+  deriving (Generic, Beamable)
 
-type PrefixesColumns =
-  '[ "guild_id" ::: 'NoDef :=> 'NotNull 'PGint8,
-     "pre" ::: 'NoDef :=> 'NotNull 'PGtext
-   ]
+type DBGuild = DBGuildT Identity
 
-type PrefixesConstraints =
-  '[ "prefixes_pkey" ::: 'PrimaryKey '["guild_id", "pre"],
-     "prefixes_guild_id_fkey" ::: 'ForeignKey '["guild_id"] "guilds" '["id"]
-   ]
+instance Table DBGuildT where
+  data PrimaryKey DBGuildT f = DBGuildId (Columnar f (Snowflake Guild)) deriving (Generic, Beamable)
+  primaryKey = DBGuildId . guildId
 
-type RemindersColumns =
-  '[ "id" ::: 'Def :=> 'NotNull 'PGuuid,
-     "user_id" ::: 'NoDef :=> 'NotNull 'PGint8,
-     "channel_id" ::: 'NoDef :=> 'NotNull 'PGint8,
-     "message" ::: 'NoDef :=> 'NotNull 'PGtext,
-     "created" ::: 'NoDef :=> 'NotNull 'PGtimestamptz,
-     "target" ::: 'NoDef :=> 'NotNull 'PGtimestamptz
-   ]
+data DBPrefixT f = DBPrefix
+  { prefixGuild :: PrimaryKey DBGuildT f,
+    prefixPre   :: Columnar f LText
+  }
+  deriving (Generic, Beamable)
 
-type RemindersConstraints =
-  '[ "reminders_pkey" ::: 'PrimaryKey '["id"]
-   ]
+type DBPrefix = DBPrefixT Identity
 
-type Schema =
-  '[ "guilds" ::: 'Table (GuildsConstraints :=> GuildsColumns),
-     "prefixes" ::: 'Table (PrefixesConstraints :=> PrefixesColumns),
-     "reminders" ::: 'Table (RemindersConstraints :=> RemindersColumns)
-   ]
+instance Table DBPrefixT where
+  data PrimaryKey DBPrefixT f = DBPrefixId (PrimaryKey DBGuildT f) (Columnar f LText) deriving (Generic, Beamable)
+  primaryKey = DBPrefixId <$> prefixGuild <*> prefixPre
 
-type DB = Public Schema
+data DBReminderT f = DBReminder
+  { reminderId        :: Columnar f UUID,
+    reminderUserId    :: Columnar f (Snowflake User),
+    reminderChannelId :: Columnar f (Snowflake Channel),
+    reminderMessage   :: Columnar f LText,
+    reminderCreated   :: Columnar f UTCTime,
+    reminderTarget    :: Columnar f UTCTime
+  }
+  deriving (Generic, Beamable)
+
+type DBReminder = DBReminderT Identity
+
+instance Table DBReminderT where
+  data PrimaryKey DBReminderT f = DBReminderId (Columnar f UUID) deriving (Generic, Beamable)
+  primaryKey = DBReminderId . reminderId
+
+data BotDB f = BotDB
+  { guilds    :: f (TableEntity DBGuildT),
+    prefixes  :: f (TableEntity DBPrefixT),
+    reminders :: f (TableEntity DBReminderT)
+  }
+  deriving (Generic, Database be)
+
+db :: DatabaseSettings be BotDB
+db = defaultDbSettings

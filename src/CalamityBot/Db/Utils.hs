@@ -7,19 +7,32 @@ module CalamityBot.Db.Utils
 where
 
 import Calamity (Snowflake (..))
-import Squeal.PostgreSQL
+import Database.Beam.Backend (HasSqlValueSyntax(..))
+import Database.Beam.Backend.SQL.AST (Value)
+import Database.Beam.Postgres.Syntax (PgValueSyntax)
+import Database.Beam (HasSqlEqualityCheck(..))
+import Database.Beam.Postgres (Postgres)
 
 idAsInt :: Snowflake a -> Int64
 idAsInt = fromIntegral . fromSnowflake
 
-instance Inline (Snowflake a) where
-  inline = coerce . inline . idAsInt
+deriving via (Word64) instance HasSqlValueSyntax Value (Snowflake a)
+deriving via (Word64) instance HasSqlValueSyntax PgValueSyntax (Snowflake a)
 
-instance IsPG (Snowflake a) where
-  type PG (Snowflake a) = PG Int64
+instance HasSqlEqualityCheck Postgres (Snowflake a)
 
-instance ToPG db (Snowflake a) where
-  toPG = toPG . idAsInt
 
-instance FromPG (Snowflake a) where
-  fromPG = Snowflake . fromIntegral @Int64 @Word64 <$> fromPG
+-- instance HasSqlValueSyntax Value (Snowflake a) where
+--   sqlValueSyntax = sqlValueSyntax . fromSnowflake
+
+-- instance Inline (Snowflake a) where
+--   inline = coerce . inline . idAsInt
+
+-- instance IsPG (Snowflake a) where
+--   type PG (Snowflake a) = PG Int64
+
+-- instance ToPG db (Snowflake a) where
+--   toPG = toPG . idAsInt
+
+-- instance FromPG (Snowflake a) where
+--   fromPG = Snowflake . fromIntegral @Int64 @Word64 <$> fromPG

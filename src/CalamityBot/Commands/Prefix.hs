@@ -13,27 +13,27 @@ import Control.Lens hiding (Context)
 import qualified Data.Text.Lazy as L
 import qualified Polysemy as P
 import Relude.Unsafe (fromJust)
-import Squeal.PostgreSQL (MonadPQ (execute), firstRow, fromOnly, getRows)
 import TextShow (TextShow (showtl))
+import Database.Beam (runSelectReturningList, runDelete, runInsert, runSelectReturningOne)
 
 guildOnly :: Context -> Maybe L.Text
 guildOnly ctx = maybe (Just "Can only be used in guilds") (const Nothing) (ctx ^. #guild)
 
-prefixLimit :: P.Member (DBEff DB) r => Int -> Context -> P.Sem r (Maybe L.Text)
+prefixLimit :: P.Member DBEff r => Int -> Context -> P.Sem r (Maybe L.Text)
 prefixLimit limit ctx =
   case ctx ^. #guild of
     Just g -> do
-      np <- usingConn (execute (countPrefixes $ getID @Guild g) >>= (fromMaybe 0 . fmap fromOnly <$>) . firstRow)
+      np <- fromMaybe 0 <$> usingConn (runSelectReturningOne . countPrefixes $ getID @Guild g)
       pure
-        if np > fromIntegral limit
+        if np > limit
           then Just ("Prefix limit reached (" <> showtl limit <> ")")
           else Nothing
     Nothing -> pure Nothing
 
-maintainGuild :: P.Member (DBEff DB) r => Snowflake Guild -> P.Sem r ()
-maintainGuild gid = void $ usingConn (execute $ addGuild gid)
+maintainGuild :: P.Member DBEff r => Snowflake Guild -> P.Sem r ()
+maintainGuild gid = void $ usingConn (runInsert $ addGuild gid)
 
-prefixGroup :: (BotC r, P.Member (DBEff DB) r) => P.Sem (DSLState r) ()
+prefixGroup :: (BotC r, P.Member DBEff r) => P.Sem (DSLState r) ()
 prefixGroup = void
   . help (const "Commands related to setting prefixes for the bot")
   . requiresPure [("guildOnly", guildOnly)]
@@ -47,18 +47,18 @@ prefixGroup = void
         let g = fromJust (ctx ^. #guild)
             gid = getID @Guild g
         maintainGuild gid
-        usingConn (execute $ addPrefix (gid, p))
+        usingConn (runInsert $ addPrefix (gid, p))
         void $ tell @L.Text ctx ("Added prefix: " <> p)
 
     help (const "Remove a prefix") $
       command @'[Named "prefix" L.Text] "remove" \ctx p -> do
         let g = fromJust (ctx ^. #guild)
-        usingConn (execute $ removePrefix (getID @Guild g, p))
+        usingConn (runDelete $ removePrefix (getID @Guild g, p))
         void $ tell @L.Text ctx ("Removed prefix (if it existed): " <> p)
 
     help (const "List prefixes") $
       commandA @'[] "list" ["show"] \ctx -> do
         let g = fromJust (ctx ^. #guild)
             gid = getID @Guild g
-        prefixes <- usingConn (execute (getPrefixes gid) >>= (fmap fromOnly <$>) . getRows)
+        prefixes <- usingConn $ runSelectReturningList (getPrefixes' gid)
         void $ tell @L.Text ctx ("Prefixes: " <> L.unwords (map codeline prefixes))

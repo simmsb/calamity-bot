@@ -32,16 +32,19 @@ dependencies:
   - text ^>= 1.2
   - text-show ^>= 3.8
   - unordered-containers ^>= 0.2.10
-  - squeal-postgresql ^>= 0.6
+  - beam-core ^>= 0.9
+  - beam-postgres ^>= 0.5
   - arbor-lru-cache ^>= 0.1
   - bytestring ^>= 0.10
   - uuid-types ^>= 1.0
-  - generics-sop ^>= 0.5
   - time ^>= 1.9
   - hourglass ^>= 0.2
   - megaparsec ^>= 8.0
   - replace-megaparsec ^>= 1.4
   - fuzzy-dates-megaparsec ^>= 0.1
+  - table-layout ^>= 0.9
+  - postgresql-simple ^>= 0.6
+  - resource-pool ^>= 0.2
 
 when:
   condition: flag(smuggler2)

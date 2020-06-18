@@ -43,7 +43,7 @@ formatTimeDiff :: DateTime -- ^ Start
 formatTimeDiff start end =
   let diff = timeDiff end start
   in filter ((/= 0) . snd) (go diff)
-     & map (\(name, Seconds n) -> showtl n <> " " <> name <> memptyIfTrue (n == 0) "s")
+     & map (\(name, Seconds n) -> showtl n <> " " <> name <> memptyIfTrue (n == 1) "s")
      & humanListConcat
   where
     go :: Seconds -> [(L.Text, Seconds)]
@@ -52,9 +52,6 @@ formatTimeDiff start end =
       let (n, duration'') = divMod duration' period
       put duration''
       pure (name, n)
-
--- TODO: Delta times
--- TODO: improve fuzzy date
 
 reminderGroup :: (BotC r, P.Member (DBEff DB) r) => P.Sem (DSLState r) ()
 reminderGroup = void

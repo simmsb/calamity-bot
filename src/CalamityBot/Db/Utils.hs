@@ -12,15 +12,16 @@ import Database.Beam.Backend.SQL.AST (Value)
 import Database.Beam.Postgres.Syntax (PgValueSyntax)
 import Database.Beam (HasSqlEqualityCheck(..))
 import Database.Beam.Postgres (Postgres)
+import Database.Beam (FromBackendRow)
 
 idAsInt :: Snowflake a -> Int64
 idAsInt = fromIntegral . fromSnowflake
 
 deriving via (Word64) instance HasSqlValueSyntax Value (Snowflake a)
 deriving via (Word64) instance HasSqlValueSyntax PgValueSyntax (Snowflake a)
+deriving via (Word64) instance  FromBackendRow Postgres (Snowflake a)
 
 instance HasSqlEqualityCheck Postgres (Snowflake a)
-
 
 -- instance HasSqlValueSyntax Value (Snowflake a) where
 --   sqlValueSyntax = sqlValueSyntax . fromSnowflake

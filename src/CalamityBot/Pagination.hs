@@ -13,11 +13,11 @@ formatPagination _ _ [] _ = codeline "No content"
 formatPagination idx width xs@((_, total) : _) fmt =
   L.unlines
     [ codeblock' Nothing $ L.pack linefmt,
-      "Page " <> show idx <> " of " <> show totalPages
+      "Page " <> show (idx + 1) <> " of " <> show totalPages <> " (total " <> show total <> " rows)"
     ]
   where
     formattedLines = map (fmt . fst) xs
-    totalPages = (total + width - 1) `div` total
+    totalPages = (total + width - 1) `div` width
     linefmt =
       tableString
         [column def right def def, column (expandUntil 80) left def def]

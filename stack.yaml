@@ -67,7 +67,7 @@ extra-deps:
   - constraints-extras-0.3.0.2@sha256:bf6884be65958e9188ae3c9e5547abfd6d201df021bff8a4704c2c4fe1e1ae5b,1784
   - table-layout-0.9.0.0@sha256:66dc7b7b9d14fa4769f1192a58ab9721ef8efd1d5773acae34dc5e2dce3fec0a,7106
   - data-default-instances-base-0.1.0.1@sha256:985a13d7103e45a65f06f277b735ef025636014f0d29dd6de998bc7628e09be9,509
-  - calamity-0.1.14.4
+  - calamity-0.1.14.6
   # - github: nitros12/calamity
   #   commit: 6de5f004182a822744fec2badab5521377a40304
   - github: nitros12/fuzzy-dates

@@ -6,6 +6,7 @@ module CalamityBot.Commands.Reminders
 import Calamity.Commands
 import Calamity
 import CalamityBot.Db
+import CalamityBot.Pagination
 import CalamityBot.Utils
 import Control.Lens hiding (Context)
 import qualified Data.Text.Lazy as L
@@ -16,7 +17,7 @@ import Data.Dates.Parsing
 import Time.System
 import Data.Hourglass
 import Data.Traversable
-import Database.Beam (runInsert)
+import Database.Beam (runDelete, runInsert, runSelectReturningList)
 
 mergePreSuff :: L.Text -> L.Text -> L.Text
 mergePreSuff s p = L.strip (L.strip s <> " " <> L.strip p)
@@ -77,3 +78,17 @@ reminderGroup = void
               void $ tell @L.Text ctx ("Ok, I'll remind you about: " <> codeline msg' <> ", in: " <> deltaMsg)
           Nothing ->
             void $ tell @L.Text ctx "I couldn't parse the times from that"
+
+    help (const "List your reminders") $
+      command @'[Named "page" (Maybe Natural)] "list" \ctx (pred . fromIntegral . fromMaybe 1 -> page) -> do
+        let width = 10
+        let user = ctx ^. #user
+        reminders <- usingConn (runSelectReturningList $ allRemindersForPaginated (getID user, width, page))
+        let formatted = formatPagination page width reminders (^. #reminderMessage)
+        void $ tell ctx formatted
+
+    help (const "Remove a reminder") $
+      command @'[Named "index" Natural] "remove" \ctx (fromIntegral -> idx) -> do
+        let user = ctx ^. #user
+        usingConn (runDelete $ removeReminderByIdx (getID user, idx))
+        void $ tell @L.Text ctx "Removed that reminder if it existed"

@@ -41,13 +41,16 @@ removeReminderByIdx :: (Snowflake User, Int) -> SqlDelete Pg.Postgres DBReminder
 removeReminderByIdx (uid, idx) =
   delete
     (db ^. #reminders)
-    ( \_ ->
-        exists_
-          $ filter_ (\row -> row ==. val_ idx)
-          $ withWindow_
-            (\r -> frame_ noPartition_ (orderPartitionBy_ . asc_ . reminderTarget $ r) noBounds_)
-            (\_ w -> rowNumber_ `over_` w)
-            (filter_ (\r -> reminderUserId r ==. val_ uid) $ all_ (db ^. #reminders))
+    (\r -> unknownAs_ False
+           (reminderId r ==*. anyOf_
+            (fmap fst
+              $ filter_ (\(_, row) -> row ==. val_ idx)
+              $ withWindow_
+              (\_ -> frame_ noPartition_ noOrder_ noBounds_)
+              (\r' w -> (r' ^. #reminderId, rowNumber_ `over_` w))
+              (allRemindersFor uid)
+            )
+           )
     )
 
 allRemindersFor :: Snowflake User -> Q Pg.Postgres BotDB s (DBReminderT (QGenExpr QValueContext Pg.Postgres s))
@@ -55,11 +58,11 @@ allRemindersFor uid =
   orderBy_ (\r -> asc_ $ reminderTarget r) $
     filter_ (\r -> reminderUserId r ==. val_ uid) (all_ $ db ^. #reminders)
 
-allRemindersForPaginated :: (Snowflake User, Integer, Integer) -> SqlSelect Pg.Postgres (DBReminder, Int)
+allRemindersForPaginated :: (Snowflake User, Int, Int) -> SqlSelect Pg.Postgres (DBReminder, Int)
 allRemindersForPaginated (uid, width, idx) =
   select
-    $ offset_ (idx * width)
-    $ limit_ width
+    $ offset_ (fromIntegral $ idx * width)
+    $ limit_ (fromIntegral width)
     $ withWindow_ (\_ -> frame_ noPartition_ noOrder_ noBounds_)
                   (\r w -> (r, countAll_ `over_` w))
                   (allRemindersFor uid)

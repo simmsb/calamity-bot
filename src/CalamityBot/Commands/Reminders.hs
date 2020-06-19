@@ -17,7 +17,10 @@ import Data.Dates.Parsing
 import Time.System
 import Data.Hourglass
 import Data.Traversable
+import Polysemy.Immortal
+import Control.Concurrent (threadDelay)
 import Database.Beam (runDelete, runInsert, runSelectReturningList)
+import qualified Polysemy.Async as P
 
 mergePreSuff :: L.Text -> L.Text -> L.Text
 mergePreSuff s p = L.strip (L.strip s <> " " <> L.strip p)
@@ -54,11 +57,43 @@ formatTimeDiff start end =
       put duration''
       pure (name, n)
 
-reminderGroup :: (BotC r, P.Member DBEff r) => P.Sem (DSLState r) ()
+threadDelaySeconds :: Int -> IO ()
+threadDelaySeconds = threadDelay . (* 1000000)
+
+sleepUntil :: DateTime -> IO ()
+sleepUntil when_ = do
+  now <- dateCurrent
+  let diff = fromIntegral $ timeDiff when_ now
+  threadDelaySeconds diff
+
+fmtReminderMessage :: DBReminder -> L.Text
+fmtReminderMessage r = mention (r ^. #reminderUserId) <> ", " <> delta <> " ago, you asked me to remind you about: " <> (r ^. #reminderMessage)
+  where delta = formatTimeDiff (utcTimeToHourglass (r ^. #reminderCreated)) (utcTimeToHourglass (r ^. #reminderTarget))
+
+reminderTask :: (BotC r, P.Member DBEff r) => P.Sem r ()
+reminderTask = forever do
+  upcoming <- usingConn $ runSelectReturningList upcomingReminders
+  void $ P.sequenceConcurrently $ (P.embed (threadDelaySeconds 60) : map processReminder upcoming)
+
+  where processReminder :: (BotC r, P.Member DBEff r) => DBReminder -> P.Sem r ()
+        processReminder r = do
+          P.embed . sleepUntil $ utcTimeToHourglass (r ^. #reminderTarget)
+          let msg = fmtReminderMessage r
+          resp <- tell (r ^. #reminderChannelId) msg
+          case resp of
+            Left _ ->
+              void $ tell (r ^. #reminderUserId) msg
+            _ -> pure ()
+          usingConn (runDelete $ removeReminder r)
+
+
+reminderGroup :: (BotC r, P.Members '[DBEff, Immortal] r) => P.Sem (DSLState r) ()
 reminderGroup = void
   . help (const "Commands related to making reminders")
   . groupA "remind" ["reminder", "reminders"]
   $ do
+    void $ createImmortal (const reminderTask)
+
     help (const "Add a reminder") $
       command @'[KleenePlusConcat L.Text] "add" \ctx msg -> do
         now <- P.embed dateCurrent

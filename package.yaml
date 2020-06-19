@@ -45,6 +45,7 @@ dependencies:
   - table-layout ^>= 0.9
   - postgresql-simple ^>= 0.6
   - resource-pool ^>= 0.2
+  - immortal ^>= 0.3
 
 when:
   condition: flag(smuggler2)

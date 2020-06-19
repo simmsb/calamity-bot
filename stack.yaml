@@ -71,7 +71,7 @@ extra-deps:
   # - github: nitros12/calamity
   #   commit: 6de5f004182a822744fec2badab5521377a40304
   - github: nitros12/fuzzy-dates
-    commit: ac0d42c9ef4668a7b2d6d63e88499573da47f440
+    commit: 24fb3e73621a19f2cad0894412820b56cb67b4b9
   - git: https://github.com/haskell-beam/beam
     commit: d5da4c09d816edb6dc689756f67af5c69749b71f
     subdirs:

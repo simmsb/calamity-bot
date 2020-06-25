@@ -28,6 +28,17 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- Name: aliases; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.aliases (
+    user_id bigint NOT NULL,
+    name text NOT NULL,
+    value text NOT NULL
+);
+
+
+--
 -- Name: guilds; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -68,6 +79,14 @@ CREATE TABLE public.reminders (
 CREATE TABLE public.schema_migrations (
     version character varying(255) NOT NULL
 );
+
+
+--
+-- Name: aliases aliases_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.aliases
+    ADD CONSTRAINT aliases_pkey PRIMARY KEY (user_id, name);
 
 
 --
@@ -129,4 +148,5 @@ ALTER TABLE ONLY public.prefixes
 INSERT INTO public.schema_migrations (version) VALUES
     ('20200602214607'),
     ('20200602214609'),
-    ('20200612224716');
+    ('20200612224716'),
+    ('20200625014534');

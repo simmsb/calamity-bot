@@ -3,11 +3,13 @@ module CalamityBot.Db.Schema
   ( DBGuildT (..),
     DBPrefixT (..),
     DBReminderT (..),
+    DBAliasT (..),
     DBGuild,
     DBPrefix,
     DBReminder,
+    DBAlias,
     BotDB,
-    PrimaryKey(DBGuildId, DBPrefixId, DBReminderId),
+    PrimaryKey(DBGuildId, DBPrefixId, DBReminderId, DBAliasId),
     db,
   )
 where
@@ -59,10 +61,24 @@ instance Table DBReminderT where
   data PrimaryKey DBReminderT f = DBReminderId (Columnar f UUID) deriving (Generic, Beamable)
   primaryKey = DBReminderId . reminderId
 
+data DBAliasT f = DBAlias
+  { aliasUserId :: Columnar f (Snowflake User),
+    aliasName   :: Columnar f LText,
+    aliasValue  :: Columnar f LText
+  }
+  deriving (Generic, Beamable)
+
+type DBAlias = DBAliasT Identity
+
+instance Table DBAliasT where
+  data PrimaryKey DBAliasT f = DBAliasId (Columnar f (Snowflake User)) (Columnar f LText) deriving (Generic, Beamable)
+  primaryKey = DBAliasId <$> aliasUserId <*> aliasName
+
 data BotDB f = BotDB
   { guilds    :: f (TableEntity DBGuildT),
     prefixes  :: f (TableEntity DBPrefixT),
-    reminders :: f (TableEntity DBReminderT)
+    reminders :: f (TableEntity DBReminderT),
+    aliases   :: f (TableEntity DBAliasT)
   }
   deriving (Generic, Database be)
 

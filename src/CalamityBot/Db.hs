@@ -4,6 +4,7 @@ module CalamityBot.Db
     module CalamityBot.Db.Guilds,
     module CalamityBot.Db.Prefixes,
     module CalamityBot.Db.Reminders,
+    module CalamityBot.Db.Aliases,
     module CalamityBot.Db.Eff,
     module CalamityBot.Db.Utils,
   )
@@ -13,5 +14,6 @@ import CalamityBot.Db.Eff
 import CalamityBot.Db.Guilds
 import CalamityBot.Db.Prefixes
 import CalamityBot.Db.Reminders
+import CalamityBot.Db.Aliases
 import CalamityBot.Db.Schema
 import CalamityBot.Db.Utils

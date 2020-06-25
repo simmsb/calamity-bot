@@ -119,7 +119,7 @@ reminderGroup = void
         let width = 10
         let user = ctx ^. #user
         reminders <- usingConn (runSelectReturningList $ allRemindersForPaginated (getID user, width, page))
-        let formatted = formatPagination page width reminders (^. #reminderMessage)
+        let formatted = formatPagination page width reminders (\r -> r ^. #reminderMessage)
         void $ tell ctx formatted
 
     help (const "Remove a reminder") $

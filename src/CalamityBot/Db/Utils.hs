@@ -22,6 +22,7 @@ deriving via (Word64) instance HasSqlValueSyntax PgValueSyntax (Snowflake a)
 deriving via (Word64) instance  FromBackendRow Postgres (Snowflake a)
 
 instance HasSqlEqualityCheck Postgres (Snowflake a)
+-- instance SqlOrderable Postgres LText
 
 -- instance HasSqlValueSyntax Value (Snowflake a) where
 --   sqlValueSyntax = sqlValueSyntax . fromSnowflake

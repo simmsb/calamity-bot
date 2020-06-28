@@ -4,7 +4,7 @@ cabal-version: 1.18
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f5f5cbe426ab1284115becabed6590917d3ea39173e1dedbe98b9cf7a5de194d
+-- hash: dd41bd2439f0a35004637c9f84eb3ba4befd31d254b02bc5ea3efbefd41fcdfe
 
 name:           calamity-bot
 version:        0.0.0
@@ -38,6 +38,8 @@ library
       CalamityBot.Commands
       CalamityBot.Commands.Aliases
       CalamityBot.Commands.Prefix
+      CalamityBot.Commands.Reanimate
+      CalamityBot.Commands.Reanimate.RenderInMem
       CalamityBot.Commands.Reminders
       CalamityBot.Db
       CalamityBot.Db.Aliases
@@ -65,7 +67,9 @@ library
     , beam-postgres >=0.5 && <0.6
     , bytestring >=0.10 && <0.11
     , calamity >=0.1 && <0.2
+    , data-default-class >=0.1 && <0.2
     , di-polysemy >=0.1 && <0.2
+    , filepath >=1.4 && <1.5
     , fuzzy-dates-megaparsec >=0.1 && <0.2
     , generic-lens >=2 && <2.1
     , hourglass >=0.2 && <0.3
@@ -75,6 +79,9 @@ library
     , polysemy >=1.3 && <1.4
     , polysemy-plugin >=0.2 && <0.3
     , postgresql-simple >=0.6 && <0.7
+    , process >=1.6 && <1.7
+    , reanimate >=0.3 && <0.4
+    , reanimate-svg >=0.9 && <0.10
     , relude >=0.7 && <0.8
     , replace-megaparsec >=1.4 && <1.5
     , resource-pool >=0.2 && <0.3
@@ -107,7 +114,9 @@ executable calamity-bot
     , bytestring >=0.10 && <0.11
     , calamity >=0.1 && <0.2
     , calamity-bot
+    , data-default-class >=0.1 && <0.2
     , di-polysemy >=0.1 && <0.2
+    , filepath >=1.4 && <1.5
     , fuzzy-dates-megaparsec >=0.1 && <0.2
     , generic-lens >=2 && <2.1
     , hourglass >=0.2 && <0.3
@@ -118,6 +127,9 @@ executable calamity-bot
     , polysemy >=1.3 && <1.4
     , polysemy-plugin >=0.2 && <0.3
     , postgresql-simple >=0.6 && <0.7
+    , process >=1.6 && <1.7
+    , reanimate >=0.3 && <0.4
+    , reanimate-svg >=0.9 && <0.10
     , relude >=0.7 && <0.8
     , replace-megaparsec >=1.4 && <1.5
     , resource-pool >=0.2 && <0.3

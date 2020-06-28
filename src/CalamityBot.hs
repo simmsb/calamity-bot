@@ -42,6 +42,7 @@ runBot = do
         prefixGroup
         reminderGroup
         aliasGroup
+        reanimateGroup
       react @('CustomEvt "command-error" (Context, CommandError)) \(ctx, e) -> do
         info $ "Command failed with reason: " <> showtl e
         case e of

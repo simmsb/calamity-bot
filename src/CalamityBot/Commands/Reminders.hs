@@ -121,6 +121,7 @@ reminderGroup = void
         reminders <- usingConn (runSelectReturningList $ allRemindersForPaginated (getID user, width, page))
         let formatted = formatPagination page width reminders (\r -> r ^. #reminderMessage)
         void $ tell ctx formatted
+        paginate (const $ pure [1 :: Int, 2, 3]) (\(Pagination _n c) -> showtl c) ctx
 
     help (const "Remove a reminder") $
       command @'[Named "index" Natural] "remove" \ctx (fromIntegral -> idx) -> do

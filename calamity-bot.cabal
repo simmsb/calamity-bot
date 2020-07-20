@@ -4,7 +4,7 @@ cabal-version: 1.18
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dd41bd2439f0a35004637c9f84eb3ba4befd31d254b02bc5ea3efbefd41fcdfe
+-- hash: c9cea38335fb86c3733f7558062db049fde148294c2710ce9d771a975eb4ace0
 
 name:           calamity-bot
 version:        0.0.0
@@ -69,6 +69,7 @@ library
     , calamity >=0.1 && <0.2
     , data-default-class >=0.1 && <0.2
     , di-polysemy >=0.1 && <0.2
+    , emojis >=0.1 && <0.2
     , filepath >=1.4 && <1.5
     , fuzzy-dates-megaparsec >=0.1 && <0.2
     , generic-lens >=2 && <2.1
@@ -116,6 +117,7 @@ executable calamity-bot
     , calamity-bot
     , data-default-class >=0.1 && <0.2
     , di-polysemy >=0.1 && <0.2
+    , emojis >=0.1 && <0.2
     , filepath >=1.4 && <1.5
     , fuzzy-dates-megaparsec >=0.1 && <0.2
     , generic-lens >=2 && <2.1

@@ -51,6 +51,7 @@ dependencies:
   - process ^>= 1.6
   - filepath ^>= 1.4
   - data-default-class ^>= 0.1
+  - emojis ^>= 0.1
 
 when:
   condition: flag(smuggler2)

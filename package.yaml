@@ -36,7 +36,6 @@ dependencies:
   - beam-postgres ^>= 0.5
   - arbor-lru-cache ^>= 0.1
   - bytestring ^>= 0.10
-  - uuid-types ^>= 1.0
   - time ^>= 1.9
   - hourglass ^>= 0.2
   - megaparsec ^>= 8.0

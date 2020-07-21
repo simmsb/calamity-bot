@@ -18,7 +18,6 @@ where
 
 import Calamity
 import Data.Time (UTCTime)
-import Data.UUID.Types
 import Database.Beam
 
 data DBGuildT f = DBGuild
@@ -46,7 +45,7 @@ instance Table DBPrefixT where
   primaryKey = DBPrefixId <$> prefixGuild <*> prefixPre
 
 data DBReminderT f = DBReminder
-  { reminderId        :: Columnar f UUID,
+  { reminderId        :: Columnar f Text,
     reminderUserId    :: Columnar f (Snowflake User),
     reminderChannelId :: Columnar f (Snowflake Channel),
     reminderMessage   :: Columnar f LText,
@@ -58,7 +57,7 @@ data DBReminderT f = DBReminder
 type DBReminder = DBReminderT Identity
 
 instance Table DBReminderT where
-  data PrimaryKey DBReminderT f = DBReminderId (Columnar f UUID) deriving (Generic, Beamable)
+  data PrimaryKey DBReminderT f = DBReminderId (Columnar f Text) deriving (Generic, Beamable)
   primaryKey = DBReminderId . reminderId
 
 data DBAliasT f = DBAlias

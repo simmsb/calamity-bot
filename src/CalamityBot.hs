@@ -20,6 +20,7 @@ import Database.PostgreSQL.Simple (close, connectPostgreSQL)
 import DiPolysemy
 import Polysemy
 import Polysemy.Immortal
+import Polysemy.Timeout
 import System.Environment
 import TextShow
 
@@ -30,6 +31,7 @@ runBot = do
   pool <- createPool (connectPostgreSQL db_path) close 3 0.5 10
   void . runFinal
     . embedToFinal
+    . timeoutToIOFinal
     . immortalToIOFinal
     . runDBEffPooled pool
     . runCacheInMemoryNoMsg

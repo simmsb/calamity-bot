@@ -23,6 +23,20 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
 COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UUIDs)';
 
 
+--
+-- Name: random_text(integer); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.random_text(integer) RETURNS text
+    LANGUAGE sql
+    AS $_$
+SELECT array_to_string(array(
+  SELECT SUBSTRING('23456789abcdefghjkmnpqrstuvwxyz'
+    FROM floor(random()*31)::int+1 FOR 1)
+  FROM generate_series(1, $1)), '');
+$_$;
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -63,7 +77,7 @@ CREATE TABLE public.prefixes (
 --
 
 CREATE TABLE public.reminders (
-    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    id text DEFAULT public.random_text(16) NOT NULL,
     user_id bigint NOT NULL,
     channel_id bigint NOT NULL,
     message text NOT NULL,
@@ -106,14 +120,6 @@ ALTER TABLE ONLY public.prefixes
 
 
 --
--- Name: reminders reminders_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.reminders
-    ADD CONSTRAINT reminders_pkey PRIMARY KEY (id);
-
-
---
 -- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -126,6 +132,13 @@ ALTER TABLE ONLY public.schema_migrations
 --
 
 CREATE INDEX reminder_target_idx ON public.reminders USING btree (target);
+
+
+--
+-- Name: reminder_uid_id_pkey; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX reminder_uid_id_pkey ON public.reminders USING btree (id, user_id);
 
 
 --

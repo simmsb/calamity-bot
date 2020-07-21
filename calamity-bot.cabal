@@ -4,7 +4,7 @@ cabal-version: 1.18
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c9cea38335fb86c3733f7558062db049fde148294c2710ce9d771a975eb4ace0
+-- hash: 85b1793806a2f9b99cf53996d47f84df9e92e38cd2e88814dfc85fb2928013c6
 
 name:           calamity-bot
 version:        0.0.0
@@ -53,6 +53,7 @@ library
       CalamityBot.PrefixHandler
       CalamityBot.Utils
       Polysemy.Immortal
+      Polysemy.Timeout
       Prelude
   other-modules:
       Paths_calamity_bot
@@ -91,7 +92,6 @@ library
     , text-show >=3.8 && <3.9
     , time >=1.9 && <1.10
     , unordered-containers >=0.2.10 && <0.3
-    , uuid-types >=1.0 && <1.1
   if flag(smuggler2)
     build-depends:
         smuggler2 >=0.3 && <0.4
@@ -140,7 +140,6 @@ executable calamity-bot
     , text-show >=3.8 && <3.9
     , time >=1.9 && <1.10
     , unordered-containers >=0.2.10 && <0.3
-    , uuid-types >=1.0 && <1.1
   if flag(smuggler2)
     build-depends:
         smuggler2 >=0.3 && <0.4

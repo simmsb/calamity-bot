@@ -2,9 +2,10 @@
 module CalamityBot.Db.Reminders
   ( addReminder,
     removeReminder,
-    removeReminderByIdx,
     allRemindersFor,
-    allRemindersForPaginated,
+    remindersForPaginatedInitial,
+    remindersForPaginatedBefore,
+    remindersForPaginatedAfter,
     upcomingReminders,
   )
 where
@@ -17,6 +18,7 @@ import qualified Data.Text.Lazy as L
 import Data.Time.Clock
 import Database.Beam
 import qualified Database.Beam.Postgres as Pg
+import Database.Beam.Backend (BeamSqlBackend)
 
 addReminder :: (Snowflake User, Snowflake Channel, L.Text, UTCTime, UTCTime) -> SqlInsert Pg.Postgres DBReminderT
 addReminder (uid, cid, msg, created, target) =
@@ -33,39 +35,48 @@ addReminder (uid, cid, msg, created, target) =
         ]
     )
 
-removeReminder :: DBReminder -> SqlDelete Pg.Postgres DBReminderT
-removeReminder DBReminder {reminderId = id_} =
-  delete (db ^. #reminders) (\r -> (r ^. #reminderId) ==. val_ id_)
-
-removeReminderByIdx :: (Snowflake User, Int) -> SqlDelete Pg.Postgres DBReminderT
-removeReminderByIdx (uid, idx) =
+removeReminder :: (Snowflake User, Text) -> SqlDelete Pg.Postgres DBReminderT
+removeReminder (uid, rid) =
   delete
     (db ^. #reminders)
-    (\r -> unknownAs_ False
-           (reminderId r ==*. anyOf_
-            (fmap fst
-              $ filter_ (\(_, row) -> row ==. val_ idx)
-              $ withWindow_
-              (\_ -> frame_ noPartition_ noOrder_ noBounds_)
-              (\r' w -> (r' ^. #reminderId, rowNumber_ `over_` w))
-              (allRemindersFor uid)
-            )
-           )
-    )
+    (\r -> (reminderId r ==. val_ rid) &&. (reminderUserId r ==. val_ uid))
 
 allRemindersFor :: Snowflake User -> Q Pg.Postgres BotDB s (DBReminderT (QGenExpr QValueContext Pg.Postgres s))
 allRemindersFor uid =
-  orderBy_ (\r -> asc_ $ reminderTarget r) $
+  orderBy_ (\r -> (asc_ $ reminderTarget r, asc_ $ reminderId r)) $
     filter_ (\r -> reminderUserId r ==. val_ uid) (all_ $ db ^. #reminders)
 
-allRemindersForPaginated :: (Snowflake User, Int, Int) -> SqlSelect Pg.Postgres (DBReminder, Int)
-allRemindersForPaginated (uid, width, idx) =
+allRemindersForR :: Snowflake User -> Q Pg.Postgres BotDB s (DBReminderT (QGenExpr QValueContext Pg.Postgres s))
+allRemindersForR uid =
+  orderBy_ (\r -> (desc_ $ reminderTarget r, desc_ $ reminderId r)) $
+    filter_ (\r -> reminderUserId r ==. val_ uid) (all_ $ db ^. #reminders)
+
+remindersForPaginatedInitial :: (Snowflake User, Int) -> SqlSelect Pg.Postgres DBReminder
+remindersForPaginatedInitial (uid, width) =
   select
-    $ offset_ (fromIntegral $ idx * width)
     $ limit_ (fromIntegral width)
-    $ withWindow_ (\_ -> frame_ noPartition_ noOrder_ noBounds_)
-                  (\r w -> (r, countAll_ `over_` w))
-                  (allRemindersFor uid)
+    $ allRemindersFor uid
+
+tupleLT :: (BeamSqlBackend be, SqlOrd (QGenExpr context be s) a2, SqlEq (QGenExpr context be s) a1, SqlOrd (QGenExpr context be s) a1) => (a1, a2) -> (a1, a2) -> QGenExpr context be s Bool
+tupleLT (a, b) (x, y) = (a <. x) ||. (a ==. x &&. b <. y)
+
+
+tupleGT :: (BeamSqlBackend be, SqlOrd (QGenExpr context be s) a2, SqlEq (QGenExpr context be s) a1, SqlOrd (QGenExpr context be s) a1) => (a1, a2) -> (a1, a2) -> QGenExpr context be s Bool
+tupleGT (a, b) (x, y) = (a >. x) ||. (a ==. x &&. b >. y)
+
+remindersForPaginatedBefore :: (Snowflake User, Int, UTCTime, Text) -> SqlSelect Pg.Postgres DBReminder
+remindersForPaginatedBefore (uid, width, target, rid) =
+  select
+    $ limit_ (fromIntegral width)
+    $ filter_ (\r -> (reminderTarget r, reminderId r) `tupleLT` (val_ target, val_ rid))
+    $ allRemindersForR uid
+
+remindersForPaginatedAfter :: (Snowflake User, Int, UTCTime, Text) -> SqlSelect Pg.Postgres DBReminder
+remindersForPaginatedAfter (uid, width, target, rid) =
+  select
+    $ limit_ (fromIntegral width)
+    $ filter_ (\r -> (reminderTarget r, reminderId r) `tupleGT` (val_ target, val_ rid))
+    $ allRemindersFor uid
 
 inNMinutes :: QGenExpr e Pg.Postgres s Int -> QGenExpr e Pg.Postgres s UTCTime
 inNMinutes = customExpr_ innm

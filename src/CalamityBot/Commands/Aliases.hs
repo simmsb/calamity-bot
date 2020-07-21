@@ -36,13 +36,13 @@ aliasGroup = void
         void . usingConn . runInsert $ addAlias (getID user, name, cmd)
         void $ tell @L.Text ctx ("Added the alias: " <> codeline name <> ", with the value: " <> codeline cmd)
 
-    help (const "List your aliases") $
-      command @'[Named "page" (Maybe Natural)] "list" \ctx (pred . fromIntegral . fromMaybe 1 -> page) -> do
-        let width = 10
-        let user = ctx ^. #user
-        aliases <- usingConn (runSelectReturningList $ allAliasesForPaginated (getID user, width, page))
-        let formatted = formatPagination2 page width aliases (\a -> (a ^. #aliasName, a ^. #aliasValue))
-        void $ tell ctx formatted
+    -- help (const "List your aliases") $
+    --   command @'[Named "page" (Maybe Natural)] "list" \ctx (pred . fromIntegral . fromMaybe 1 -> page) -> do
+    --     let width = 10
+    --     let user = ctx ^. #user
+    --     aliases <- usingConn (runSelectReturningList $ allAliasesForPaginated (getID user, width, page))
+    --     let formatted = formatPagination2 page width aliases (\a -> (a ^. #aliasName, a ^. #aliasValue))
+    --     void $ tell ctx formatted
 
     help (const "Remove an alias") $
       command @'[Named "name" L.Text] "remove" \ctx name -> do

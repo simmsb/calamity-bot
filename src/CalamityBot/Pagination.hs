@@ -1,60 +1,41 @@
 -- | Pagination helper functions
 module CalamityBot.Pagination
-  ( formatPagination,
-    formatPagination2,
+  ( formatPagination2,
     Pagination (..),
+    PaginationDir (..),
     paginate,
+    renderPaginationEmbed,
   )
 where
 
-import Calamity (BotC, Channel, ChannelRequest (..), EventType (RawMessageReactionAddEvt), Message, RawEmoji (..), Tellable, ToMessage, getID, intoMsg, invoke, tell, waitUntil)
-import Calamity.Utils
+import Calamity
 import Control.Lens
-import qualified Data.Text.Lazy as L
+import Data.Hourglass (Duration (Duration))
 import Data.Maybe
+import qualified Data.Text.Lazy as L
 import Polysemy (Sem, raise)
+import qualified Polysemy as P
 import qualified Polysemy.Fail as P
-import Relude.Extra (bimapBoth)
 import qualified Polysemy.State as P
+import Polysemy.Timeout
+import Relude.Extra (bimapBoth)
 import Text.Emoji
 import Text.Layout.Table
+import TextShow (showtl)
 
-formatPagination :: Int -> Int -> [(t, Int)] -> (t -> LText) -> LText
-formatPagination _ _ [] _ = codeline "No content"
-formatPagination idx width xs@((_, total) : _) fmt =
-  L.unlines
-    [ codeblock' Nothing $ L.pack linefmt,
-      "Page " <> show (idx + 1) <> " of " <> show totalPages <> " (total " <> show total <> " rows)"
-    ]
+formatPagination2 :: [String] -> [t] -> (t -> (LText, LText)) -> LText
+formatPagination2 _ [] _ = codeline "No content"
+formatPagination2 titles xs fmt =
+  codeblock' Nothing $ L.pack linefmt
   where
-    formattedLines = map (fmt . fst) xs
-    totalPages = (total + width - 1) `div` width
+    formattedLines = map fmt xs
     linefmt =
       tableString
-        [column def right def def, column (expandUntil 80) left def def]
+        [column (expandUntil 20) right def def, column (expandUntil 80) left def def]
         unicodeRoundS
-        def
-        (map (rowG . biList) $ zip (map show [(width * idx) ..]) (map L.unpack formattedLines))
-
-formatPagination2 :: Int -> Int -> [(t, Int)] -> (t -> (LText, L.Text)) -> LText
-formatPagination2 _ _ [] _ = codeline "No content"
-formatPagination2 idx width xs@((_, total) : _) fmt =
-  L.unlines
-    [ codeblock' Nothing $ L.pack linefmt,
-      "Page " <> show (idx + 1) <> " of " <> show totalPages <> " (total " <> show total <> " rows)"
-    ]
-  where
-    formattedLines = map (fmt . fst) xs
-    totalPages = (total + width - 1) `div` width
-    linefmt =
-      tableString
-        [column def right def def, column (expandUntil 20) right def def, column (expandUntil 80) left def def]
-        unicodeRoundS
-        def
-        ( map (rowG . (\(a, (b, c)) -> [a, b, c])) $
-            zip
-              (map show [(width * idx) ..])
-              (map (bimapBoth L.unpack) formattedLines)
+        (titlesH titles)
+        ( map (rowG . (\(a, b) -> [a, b])) $
+            (map (bimapBoth L.unpack) formattedLines)
         )
 
 data Pagination a = Pagination
@@ -78,30 +59,38 @@ pattern ArrowRight <-
   where
     ArrowRight = namedEmoji "arrow_right"
 
-data PaginationDir a = MoveLeft a | MoveRight a
+data PaginationDir a = MoveLeft a | MoveRight a | Initial
+
+embedFooter :: LText -> Embed
+embedFooter t = def & #footer ?~ EmbedFooter t Nothing Nothing
+
+renderPaginationEmbed :: ([a] -> Embed) -> (Pagination a -> Embed)
+renderPaginationEmbed f (Pagination page content) =
+  let e = f $ toList content
+   in e <> embedFooter ("Page " <> showtl page)
 
 paginate ::
-  (BotC r, Tellable t, ToMessage m, Typeable a) =>
+  (BotC r, P.Member Timeout r, Tellable t, ToMessage m, Typeable a) =>
   -- | Getter function, Nothing = fetch initial page
-  (Maybe (PaginationDir a) -> Sem r [a]) ->
+  (PaginationDir a -> Sem r [a]) ->
   -- | Render function
   (Pagination a -> m) ->
   -- | Channel to send to
   t ->
   Sem r ()
 paginate get render dest = (void . P.runFail) do
-  Just content <- nonEmpty <$> raise (get Nothing)
+  Just content <- nonEmpty <$> raise (get Initial)
   let initP = Pagination 1 content
   Right msg <- tell dest . render $ initP
   invoke $ CreateReaction msg msg ArrowLeft
   invoke $ CreateReaction msg msg ArrowRight
 
-  -- TODO: timeout
-  (P.evalState initP . forever) do
+  (timeoutDuration (Duration 1 0 0 0) . P.evalState initP . forever) do
     r <-
       waitUntil @'RawMessageReactionAddEvt
         ( \r ->
             (getID @Message r == getID msg)
+              && (getID @User r /= getID msg)
               && ((r ^. #emoji) `elem` [ArrowLeft, ArrowRight])
         )
 
@@ -112,7 +101,7 @@ paginate get render dest = (void . P.runFail) do
       ArrowRight -> pure (p + 1, MoveRight $ last c)
       _ -> fail "not possible"
 
-    c' <- nonEmpty <$> (raise . raise) (get $ Just action)
+    c' <- nonEmpty <$> (raise . raise) (get action)
     case c' of
       Just c' -> do
         let s' = Pagination nextPage c'
@@ -120,6 +109,5 @@ paginate get render dest = (void . P.runFail) do
         invoke $ EditMessage (getID @Channel msg) (getID @Message msg) (renderedMsg ^. #content) (renderedMsg ^. #embed)
         P.put s'
       Nothing ->
-        -- TODO: stuff for showing lack of new pages, etc
         pure ()
     pure ()

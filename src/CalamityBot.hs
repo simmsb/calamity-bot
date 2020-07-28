@@ -71,4 +71,6 @@ runBot = do
               status = "online",
               afk = False
             }
+      react @'GuildCreateEvt \(g, s) -> do
+        putStrLn $ "Joined guild: " <> show g <> ", status: " <> show s
       pure ()

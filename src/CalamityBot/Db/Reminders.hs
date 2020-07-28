@@ -12,13 +12,12 @@ where
 
 import Calamity (Channel, Snowflake (..), User)
 import CalamityBot.Db.Schema
-import CalamityBot.Db.Utils ()
+import CalamityBot.Db.Utils
 import Control.Lens hiding ((<.))
 import qualified Data.Text.Lazy as L
 import Data.Time.Clock
 import Database.Beam
 import qualified Database.Beam.Postgres as Pg
-import Database.Beam.Backend (BeamSqlBackend)
 
 addReminder :: (Snowflake User, Snowflake Channel, L.Text, UTCTime, UTCTime) -> SqlInsert Pg.Postgres DBReminderT
 addReminder (uid, cid, msg, created, target) =
@@ -56,13 +55,6 @@ remindersForPaginatedInitial (uid, width) =
   select
     $ limit_ (fromIntegral width)
     $ allRemindersFor uid
-
-tupleLT :: (BeamSqlBackend be, SqlOrd (QGenExpr context be s) a2, SqlEq (QGenExpr context be s) a1, SqlOrd (QGenExpr context be s) a1) => (a1, a2) -> (a1, a2) -> QGenExpr context be s Bool
-tupleLT (a, b) (x, y) = (a <. x) ||. (a ==. x &&. b <. y)
-
-
-tupleGT :: (BeamSqlBackend be, SqlOrd (QGenExpr context be s) a2, SqlEq (QGenExpr context be s) a1, SqlOrd (QGenExpr context be s) a1) => (a1, a2) -> (a1, a2) -> QGenExpr context be s Bool
-tupleGT (a, b) (x, y) = (a >. x) ||. (a ==. x &&. b >. y)
 
 remindersForPaginatedBefore :: (Snowflake User, Int, UTCTime, Text) -> SqlSelect Pg.Postgres DBReminder
 remindersForPaginatedBefore (uid, width, target, rid) =

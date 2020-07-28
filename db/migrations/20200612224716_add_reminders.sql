@@ -14,11 +14,11 @@ CREATE TABLE reminders (
        channel_id      BIGINT NOT NULL,
        message         TEXT NOT NULL,
        created         TIMESTAMPTZ NOT NULL,
-       target          TIMESTAMPTZ NOT NULL
+       target          TIMESTAMPTZ NOT NULL,
+       PRIMARY KEY(id, user_id)
 );
 
 CREATE INDEX "reminder_target_idx" ON reminders (target ASC);
-CREATE INDEX "reminder_uid_id_pkey" ON reminders (id, user_id);
 CREATE INDEX "reminder_uid_target_id_idx" ON reminders (user_id, target, id);
 CREATE INDEX "reminder_uid_target_id_desc_idx" ON reminders (user_id, target desc, id desc);
 

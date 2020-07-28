@@ -120,11 +120,26 @@ ALTER TABLE ONLY public.prefixes
 
 
 --
+-- Name: reminders reminders_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reminders
+    ADD CONSTRAINT reminders_pkey PRIMARY KEY (id, user_id);
+
+
+--
 -- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+
+--
+-- Name: aliases_uid_name_desc_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX aliases_uid_name_desc_idx ON public.aliases USING btree (user_id, name DESC);
 
 
 --
@@ -135,10 +150,17 @@ CREATE INDEX reminder_target_idx ON public.reminders USING btree (target);
 
 
 --
--- Name: reminder_uid_id_pkey; Type: INDEX; Schema: public; Owner: -
+-- Name: reminder_uid_target_id_desc_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX reminder_uid_id_pkey ON public.reminders USING btree (id, user_id);
+CREATE INDEX reminder_uid_target_id_desc_idx ON public.reminders USING btree (user_id, target DESC, id DESC);
+
+
+--
+-- Name: reminder_uid_target_id_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX reminder_uid_target_id_idx ON public.reminders USING btree (user_id, target, id);
 
 
 --

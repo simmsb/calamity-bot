@@ -4,7 +4,9 @@ module CalamityBot.Db.Aliases
     getAlias,
     removeAliasByName,
     allAliasesFor,
-    allAliasesForPaginated,
+    aliasesForPaginatedInitial,
+    aliasesForPaginatedBefore,
+    aliasesForPaginatedAfter,
   )
 where
 
@@ -40,12 +42,29 @@ allAliasesFor uid =
       (\r -> aliasUserId r ==. val_ uid)
       (all_ $ db ^. #aliases)
 
-allAliasesForPaginated :: (Snowflake User, Int, Int) -> SqlSelect Pg.Postgres (DBAlias, Int)
-allAliasesForPaginated (uid, width, idx) =
+allAliasesForR :: Snowflake User -> Q Pg.Postgres BotDB s (DBAliasT (QGenExpr QValueContext Pg.Postgres s))
+allAliasesForR uid =
+  orderBy_ (\r -> desc_ $ r ^. #aliasName) $
+    filter_
+      (\r -> aliasUserId r ==. val_ uid)
+      (all_ $ db ^. #aliases)
+
+aliasesForPaginatedInitial :: (Snowflake User, Int) -> SqlSelect Pg.Postgres DBAlias
+aliasesForPaginatedInitial (uid, width) =
   select
-    $ offset_ (fromIntegral $ idx * width)
     $ limit_ (fromIntegral width)
-    $ withWindow_
-      (\_ -> frame_ noPartition_ noOrder_ noBounds_)
-      (\r w -> (r, countAll_ `over_` w))
-      (allAliasesFor uid)
+    $ allAliasesFor uid
+
+aliasesForPaginatedBefore :: (Snowflake User, Int, L.Text) -> SqlSelect Pg.Postgres DBAlias
+aliasesForPaginatedBefore (uid, width, name) =
+  select
+    $ limit_ (fromIntegral width)
+    $ filter_ (\r -> aliasName r <. val_ name)
+    $ allAliasesForR uid
+
+aliasesForPaginatedAfter :: (Snowflake User, Int, L.Text) -> SqlSelect Pg.Postgres DBAlias
+aliasesForPaginatedAfter (uid, width, name) =
+  select
+    $ limit_ (fromIntegral width)
+    $ filter_ (\r -> aliasName r >. val_ name)
+    $ allAliasesFor uid

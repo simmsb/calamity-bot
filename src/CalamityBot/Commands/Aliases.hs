@@ -8,13 +8,15 @@ import Calamity
 import Calamity.Commands
 import CalamityBot.Db
 import CalamityBot.Pagination
+import Data.Default.Class
 import Control.Lens hiding (Context)
 import qualified Data.Text.Lazy as L
 import Database.Beam (runDelete, runInsert, runSelectReturningList, runSelectReturningOne)
 import qualified Polysemy as P
 import Polysemy.Immortal
+import Polysemy.Timeout
 
-aliasGroup :: (BotC r, P.Members '[DBEff, Immortal, ParsePrefix] r) => P.Sem (DSLState r) ()
+aliasGroup :: (BotC r, P.Members '[DBEff, Immortal, Timeout, ParsePrefix] r) => P.Sem (DSLState r) ()
 aliasGroup = void
   . help (const "Commands related to making aliases")
   . groupA "alias" ["aliases"]
@@ -36,13 +38,19 @@ aliasGroup = void
         void . usingConn . runInsert $ addAlias (getID user, name, cmd)
         void $ tell @L.Text ctx ("Added the alias: " <> codeline name <> ", with the value: " <> codeline cmd)
 
-    -- help (const "List your aliases") $
-    --   command @'[Named "page" (Maybe Natural)] "list" \ctx (pred . fromIntegral . fromMaybe 1 -> page) -> do
-    --     let width = 10
-    --     let user = ctx ^. #user
-    --     aliases <- usingConn (runSelectReturningList $ allAliasesForPaginated (getID user, width, page))
-    --     let formatted = formatPagination2 page width aliases (\a -> (a ^. #aliasName, a ^. #aliasValue))
-    --     void $ tell ctx formatted
+    help (const "List your aliases") $
+      command @'[] "list" \ctx ->
+        let get Initial = usingConn (runSelectReturningList $ aliasesForPaginatedInitial (getID user, width))
+            get (MoveLeft f) = reverse <$> usingConn (runSelectReturningList $ aliasesForPaginatedBefore (getID user, width, f ^. #aliasName))
+            get (MoveRight l) = usingConn (runSelectReturningList $ aliasesForPaginatedAfter (getID user, width, l ^. #aliasName))
+            render aliases =
+              def & #title ?~ ("Aliases for: " <> displayUser user)
+                & #description ?~ renderDesc aliases
+            renderDesc :: [DBAlias] -> LText
+            renderDesc aliases = formatPagination2 ["name", "alias"] aliases (\r -> (r ^. #aliasName, r ^. #aliasValue))
+            width = 10
+            user = ctx ^. #user
+         in paginate get (renderPaginationEmbed render) ctx
 
     help (const "Remove an alias") $
       command @'[Named "name" L.Text] "remove" \ctx name -> do

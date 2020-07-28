@@ -45,6 +45,12 @@ runBot = do
         reminderGroup
         aliasGroup
         reanimateGroup
+        hide do
+          group "cantseethis" do
+            command @'[] "nope" \ctx ->
+              void $ tell @L.Text ctx "You found me"
+          command @'[] "cantseeme" \ctx ->
+            void $ tell @L.Text ctx "You found me"
       react @('CustomEvt "command-error" (Context, CommandError)) \(ctx, e) -> do
         info $ "Command failed with reason: " <> showtl e
         case e of

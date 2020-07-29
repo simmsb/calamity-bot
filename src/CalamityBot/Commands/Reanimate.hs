@@ -33,7 +33,7 @@ protectChar x = [x]
 
 renderText :: L.Text -> Animation
 renderText text =
-  let rt = xelatex . L.toStrict . protectText $ text
+  let rt = latex . L.toStrict . protectText $ text
       rtRotated = mkAnimation 5 (\t -> rotateAroundCenter (t * 360) rt)
   in addStatic (mkBackground "white") rtRotated
 

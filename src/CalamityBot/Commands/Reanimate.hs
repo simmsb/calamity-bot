@@ -8,7 +8,7 @@ import Calamity
 import CalamityBot.Commands.Reanimate.RenderInMem
 import qualified Data.Text.Lazy as L
 import qualified Polysemy as P
-import Reanimate (Animation)
+import Reanimate
 import Reanimate.LaTeX (latex)
 import Reanimate.Render (Raster(RasterAuto), Format(RenderGif))
 import Reanimate.Animation (animate)
@@ -32,7 +32,10 @@ protectChar x = [x]
 
 
 renderText :: L.Text -> Animation
-renderText = animate . const . latex . L.toStrict . protectText
+renderText text =
+  let rt = latex . L.toStrict . protectText $ text
+      rtRotated = mkAnimation 5 (\t -> rotateAroundCenter (t * 360) rt)
+  in addStatic (mkBackground "white") rtRotated
 
 reanimateGroup :: BotC r => P.Sem (DSLState r) ()
 reanimateGroup = void
@@ -45,6 +48,6 @@ reanimateGroup = void
         s <- P.embed $ renderToMemory anim RasterAuto RenderGif 400 400 30
         case s of
           Right s' -> do
-            void $ tell ctx (TFile "lol.gif" s')
+            void $ tell ctx (TFile "lol.gif" $ fromStrict s')
           Left r ->
             print $ "Failed with reason: " <> r

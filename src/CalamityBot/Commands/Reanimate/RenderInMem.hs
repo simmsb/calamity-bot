@@ -6,7 +6,8 @@ module CalamityBot.Commands.Reanimate.RenderInMem
 import Control.Concurrent (forkIO, getNumCapabilities, newQSemN, signalQSemN, waitQSemN)
 import Control.Exception (catch, evaluate, finally, throwIO)
 import Control.Concurrent.MVar (isEmptyMVar, modifyMVar_)
-import qualified Data.ByteString.Lazy as B
+import qualified Data.ByteString.Lazy as LB
+import qualified Data.ByteString as B
 import Data.Time (diffUTCTime, getCurrentTime)
 import Graphics.SvgTree (Number (..))
 import Reanimate (Animation, duration)
@@ -18,7 +19,7 @@ import Reanimate.Parameters (setRootDirectory)
 import Reanimate.Render
 import System.Exit
 import System.FilePath ((</>))
-import System.IO (hGetContents, hIsEOF, hClose)
+import System.IO (hSetBinaryMode, hGetContents, hIsEOF, hClose)
 import System.Process (showCommandForUser, readProcessWithExitCode, runInteractiveProcess, terminateProcess, waitForProcess)
 import Text.Printf (printf)
 
@@ -50,6 +51,7 @@ renderToMemory ani raster' format width height fps = do
                         ":flags=lanczos,palettegen"
                       ,"-t", showFFloat Nothing (duration ani) ""
                       , palette ]
+
         runCmdLazy ffmpeg ["-framerate", show fps,"-i", template, "-y"
                       ,"-i", palette
                       ,"-filter_complex"
@@ -142,6 +144,7 @@ runCmd_ exec args = do
 runCmdLazy :: FilePath -> [String] -> (IO (Either String B.ByteString) -> IO a) -> IO a
 runCmdLazy exec args handler = do
   (inp, out, err, pid) <- runInteractiveProcess exec args Nothing Nothing
+  hSetBinaryMode out True
   hClose inp
   let fetch = do
         eof <- hIsEOF out

@@ -28,7 +28,7 @@ runBot :: IO ()
 runBot = do
   token <- L.pack <$> getEnv "BOT_TOKEN"
   db_path <- BS.pack <$> getEnv "DB_STRING"
-  pool <- createPool (connectPostgreSQL db_path) close 3 0.5 10
+  pool <- createPool (connectPostgreSQL db_path) close 3 0.5 30
   void . runFinal
     . embedToFinal
     . timeoutToIOFinal
@@ -77,6 +77,4 @@ runBot = do
               status = "online",
               afk = False
             }
-      react @'GuildCreateEvt \(g, s) -> do
-        putStrLn $ "Joined guild: " <> show g <> ", status: " <> show s
       pure ()

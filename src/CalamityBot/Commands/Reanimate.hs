@@ -73,13 +73,18 @@ reanimateGroup = void
                 # reverseA
                 # signalA (powerS 2)                       -- Start slow, end fast
                 # pauseAtEnd 2
-        s <- P.embed $ renderToMemory anim RasterAuto RenderGif 400 400 15
+        s <- P.embed $ renderToMemory anim RasterAuto RenderGif 480 360 15
         case s of
           Right s' -> do
             void $ tell ctx (TFile "lol.gif" $ fromStrict s')
           Left r ->
             print $ "Failed with reason: " <> r
 
+scaleToFit :: Double -> Double -> Tree -> Tree
+scaleToFit w h t =
+  let oh = svgHeight t
+      ow = svgWidth t
+  in scale (min (w / ow) (h / oh)) t
 
 -- layer 2
 fourierA :: Fourier -> (Double -> Double) -> Animation
@@ -124,8 +129,7 @@ newtype Fourier = Fourier {fourierCoefficients :: [Complex Double]}
 
 mkFourierLatex :: L.Text -> Fourier
 mkFourierLatex t = mkFourier $ lineToPoints 500 $
-  toLineCommands $ extractPath $ scale 15 $
-  center $ latexAlign (toStrict t)
+  toLineCommands $ extractPath $ center $ scaleToFit 9.6 7.2 $ latex (toStrict t)
 
 fourierLen :: Fourier -> Double
 fourierLen f = sum $ map magnitude $ drop 1 $ take 500 $ fourierCoefficients f

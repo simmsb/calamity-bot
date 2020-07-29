@@ -10,7 +10,7 @@ import qualified Data.Text.Lazy as L
 import qualified Polysemy as P
 import Reanimate
 import Reanimate.LaTeX (latex)
-import Reanimate.Render (Raster(RasterAuto), Format(RenderGif))
+import Reanimate.Render (Format(RenderWebm), Raster(RasterAuto))
 import Reanimate.Animation (animate)
 import Data.Default.Class (def)
 
@@ -52,20 +52,20 @@ reanimateGroup = void
     help (const "Render a message") $
       command @'[KleenePlusConcat L.Text] "render" \ctx msg -> do
         let anim = renderText msg
-        s <- P.embed $ renderToMemory anim RasterAuto RenderGif 400 400 30
+        s <- P.embed $ renderToMemory anim RasterAuto RenderWebm 400 400 30
         case s of
           Right s' -> do
-            void $ tell ctx (TFile "lol.gif" $ fromStrict s')
+            void $ tell ctx (TFile "lol.webm" $ fromStrict s')
           Left r ->
             print $ "Failed with reason: " <> r
 
     help (const "Render a fourier thing") $
       command @'[KleenePlusConcat L.Text] "renderf" \ctx msg -> do
         let f = mkFourierLatex msg
-        let anim = setDuration 30 $ sceneAnimation $ do
+        let anim = setDuration 15 $ sceneAnimation $ do
               _ <- newSpriteSVG $ mkBackgroundPixel (PixelRGBA8 252 252 252 0xFF)
               play $ fourierA f (fromToS 0 5)      -- Rotate 15 times
-                # setDuration 50
+                # setDuration 30
                 # signalA (reverseS . powerS 2 . reverseS) -- Start fast, end slow
                 # pauseAtEnd 2
               play $ fourierA f (constantS 0)       -- Don't rotate at all
@@ -73,10 +73,10 @@ reanimateGroup = void
                 # reverseA
                 # signalA (powerS 2)                       -- Start slow, end fast
                 # pauseAtEnd 2
-        s <- P.embed $ renderToMemory anim RasterAuto RenderGif 400 400 30
+        s <- P.embed $ renderToMemory anim RasterAuto RenderWebm 400 400 20
         case s of
           Right s' -> do
-            void $ tell ctx (TFile "lol.gif" $ fromStrict s')
+            void $ tell ctx (TFile "lol.webm" $ fromStrict s')
           Left r ->
             print $ "Failed with reason: " <> r
 

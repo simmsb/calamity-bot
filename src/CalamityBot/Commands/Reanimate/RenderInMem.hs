@@ -36,9 +36,17 @@ renderStickbug (initial, ext) delay = do
     runCmdLazy ffmpeg ["-i", initialFile
                       , "-i", "stickbug.mp4" -- TODO: unbad
                       ,"-threads", "0"
-                      , "-filter_complex", "[1:v][0:v]scale2ref[v1][v0]; [v0]trim=end=" <> df <> "[v00]; [0:a]atrim=end=" <> df <> "[a0]; [v00][a0][v1][1:a]concat=n=2:v=1:a=1[v][a]"
+                      , "-filter_complex", "[1:v][0:v]scale2ref[v1][v0];"
+                                           <> "[v0]trim=end=" <> df <> "[v00];"
+                                           <> "[0:a]atrim=end=" <> df <> "[a0];"
+                                           <> "[1:a]volume=3[a1]; [v00][a0][v1][a1]concat=n=2:v=1:a=1[v][a]"
                       , "-map", "[v]", "-map", "[a]"
-                      , "-f", "webm"
+                      , "-c:v", "libx264"
+                      , "-r", "30"
+                      , "-crf", "18"
+                      , "-movflags", "+faststart"
+                      , "-pix_fmt", "yuv420p"
+                      , "-f", "ismv"
                       , "-"] Prelude.id
 
 renderToMemory :: Animation

@@ -1,6 +1,7 @@
 -- | Reanimate fuckery
 module CalamityBot.Commands.Reanimate.RenderInMem
     ( renderToMemory
+    , renderStickbug
      ) where
 
 import Control.Concurrent (forkIO, getNumCapabilities, newQSemN, signalQSemN, waitQSemN)
@@ -22,6 +23,23 @@ import System.FilePath ((</>))
 import System.IO (hSetBinaryMode, hGetContents, hIsEOF, hClose)
 import System.Process (showCommandForUser, readProcessWithExitCode, runInteractiveProcess, terminateProcess, waitForProcess)
 import Text.Printf (printf)
+import qualified Data.Text as S
+
+renderStickbug :: (LB.ByteString, Text)
+               -> Float
+               -> IO (Either String B.ByteString)
+renderStickbug (initial, ext) delay = do
+  ffmpeg <- requireExecutable "ffmpeg"
+  withTempFile (S.unpack ext) $ \initialFile -> do
+    writeFileLBS initialFile initial
+    let df = showFFloat Nothing delay ""
+    runCmdLazy ffmpeg ["-i", initialFile
+                      , "-i", "stickbug.mp4" -- TODO: unbad
+                      ,"-threads", "0"
+                      , "-filter_complex", "[1:v][0:v]scale2ref[v1][v0]; [v0]trim=end=" <> df <> "[v00]; [0:a]atrim=end=" <> df <> "[a0]; [v00][a0][v1][1:a]concat=n=2:v=1:a=1[v][a]"
+                      , "-map", "[v]", "-map", "[a]"
+                      , "-f", "webm"
+                      , "-"] Prelude.id
 
 renderToMemory :: Animation
        -> Raster

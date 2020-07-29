@@ -53,6 +53,8 @@ dependencies:
   - emojis ^>= 0.1
   - JuicyPixels ^>= 3.3
   - linear ^>= 1.21
+  - mime-types ^>= 0.1
+  - wreq ^>= 0.5
 
 when:
   condition: flag(smuggler2)

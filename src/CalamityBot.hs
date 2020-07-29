@@ -45,6 +45,7 @@ runBot = do
         reminderGroup
         aliasGroup
         reanimateGroup
+        crapGroup
         hide do
           group "cantseethis" do
             command @'[] "nope" \ctx ->

@@ -54,6 +54,7 @@ renderToMemory ani raster' format width height fps = do
 
         runCmdLazy ffmpeg ["-framerate", show fps,"-i", template, "-y"
                       ,"-i", palette
+                      ,"-threads", "0"
                       ,"-filter_complex"
                       ,"fps="++show fps++
                         ",scale="++show width++":"++show height ++
@@ -64,6 +65,7 @@ renderToMemory ani raster' format width height fps = do
       RenderWebm ->
         runCmdLazy ffmpeg ["-r", show fps, "-i", template, "-y"
                       , "-c:v", "libvpx-vp9", "-vf", "fps="++show fps
+                      , "-threads", "0"
                       , "-f", "webm"
                       , "-"] Prelude.id
 

@@ -33,15 +33,17 @@ renderStickbug (initial, ext) delay = do
   withTempFile (S.unpack ext) $ \initialFile -> do
     writeFileLBS initialFile initial
     let df = showFFloat Nothing delay ""
-    runCmdLazy ffmpeg ["-i", initialFile
+    runCmdLazy ffmpeg [ "-i", initialFile
                       , "-i", "stickbug.mp4" -- TODO: unbad
                       ,"-threads", "0"
                       , "-filter_complex", "[1:v][0:v]scale2ref[v1][v0];"
-                                           <> "[v0]trim=end=" <> df <> "[v00];"
-                                           <> "[0:a]atrim=end=" <> df <> "[a0];"
-                                           <> "[1:a]volume=3[a1]; [v00][a0][v1][a1]concat=n=2:v=1:a=1[v][a]"
+                                           <> "[v0]trim=end=" <> df <> ", setpts=PTS-STARTPTS[v00];"
+                                           <> "[0:a]atrim=end=" <> df <> ", asetpts=PTS-STARTPTS[a0];"
+                                           <> "[1:a]dynaudnorm, volume=3, asetpts=PTS-STARTPTS[a1]; "
+                                           <> "[v00][a0][v1][a1]concat=n=2:v=1:a=1[v][a]"
                       , "-map", "[v]", "-map", "[a]"
                       , "-c:v", "libx264"
+                      , "-c:a", "aac"
                       , "-r", "30"
                       , "-crf", "18"
                       , "-movflags", "+faststart"

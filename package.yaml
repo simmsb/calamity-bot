@@ -51,6 +51,8 @@ dependencies:
   - filepath ^>= 1.4
   - data-default-class ^>= 0.1
   - emojis ^>= 0.1
+  - JuicyPixels ^>= 3.3
+  - linear ^>= 1.21
 
 when:
   condition: flag(smuggler2)

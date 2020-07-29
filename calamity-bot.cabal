@@ -4,7 +4,7 @@ cabal-version: 1.18
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 85b1793806a2f9b99cf53996d47f84df9e92e38cd2e88814dfc85fb2928013c6
+-- hash: b269726762536ceee32a62ac32784e98911544b63dda3fafd63224340d907418
 
 name:           calamity-bot
 version:        0.0.0
@@ -62,7 +62,8 @@ library
   default-extensions: StrictData IncoherentInstances TemplateHaskell RecursiveDo AllowAmbiguousTypes BlockArguments NoMonomorphismRestriction BangPatterns BinaryLiterals UndecidableInstances ConstraintKinds DataKinds DefaultSignatures DeriveDataTypeable DeriveFoldable DeriveFunctor DeriveGeneric DeriveTraversable DoAndIfThenElse EmptyDataDecls ExistentialQuantification FlexibleContexts FlexibleInstances FunctionalDependencies GADTs DerivingVia DerivingStrategies GeneralizedNewtypeDeriving StandaloneDeriving DeriveAnyClass InstanceSigs KindSignatures LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings OverloadedLabels PartialTypeSignatures PatternGuards PolyKinds RankNTypes RecordWildCards ScopedTypeVariables TupleSections TypeFamilies TypeSynonymInstances ViewPatterns DuplicateRecordFields TypeOperators TypeApplications RoleAnnotations PatternSynonyms
   ghc-options: -fplugin=Polysemy.Plugin -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -Wmissing-export-lists -Wpartial-fields -fno-warn-unused-do-bind
   build-depends:
-      arbor-lru-cache >=0.1 && <0.2
+      JuicyPixels >=3.3 && <3.4
+    , arbor-lru-cache >=0.1 && <0.2
     , base-noprelude >=4.12 && <5
     , beam-core >=0.9 && <0.10
     , beam-postgres >=0.5 && <0.6
@@ -77,6 +78,7 @@ library
     , hourglass >=0.2 && <0.3
     , immortal >=0.3 && <0.4
     , lens >=4.19 && <4.20
+    , linear >=1.21 && <1.22
     , megaparsec >=8.0 && <8.1
     , polysemy >=1.3 && <1.4
     , polysemy-plugin >=0.2 && <0.3
@@ -108,7 +110,8 @@ executable calamity-bot
   default-extensions: StrictData IncoherentInstances TemplateHaskell RecursiveDo AllowAmbiguousTypes BlockArguments NoMonomorphismRestriction BangPatterns BinaryLiterals UndecidableInstances ConstraintKinds DataKinds DefaultSignatures DeriveDataTypeable DeriveFoldable DeriveFunctor DeriveGeneric DeriveTraversable DoAndIfThenElse EmptyDataDecls ExistentialQuantification FlexibleContexts FlexibleInstances FunctionalDependencies GADTs DerivingVia DerivingStrategies GeneralizedNewtypeDeriving StandaloneDeriving DeriveAnyClass InstanceSigs KindSignatures LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings OverloadedLabels PartialTypeSignatures PatternGuards PolyKinds RankNTypes RecordWildCards ScopedTypeVariables TupleSections TypeFamilies TypeSynonymInstances ViewPatterns DuplicateRecordFields TypeOperators TypeApplications RoleAnnotations PatternSynonyms
   ghc-options: -fplugin=Polysemy.Plugin -Wall -threaded -rtsopts -with-rtsopts=-N -Wincomplete-uni-patterns -Wincomplete-record-updates -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -Wmissing-export-lists -Wpartial-fields -fno-warn-unused-do-bind
   build-depends:
-      arbor-lru-cache >=0.1 && <0.2
+      JuicyPixels >=3.3 && <3.4
+    , arbor-lru-cache >=0.1 && <0.2
     , base-noprelude >=4.12 && <5
     , beam-core >=0.9 && <0.10
     , beam-postgres >=0.5 && <0.6
@@ -124,6 +127,7 @@ executable calamity-bot
     , hourglass >=0.2 && <0.3
     , immortal >=0.3 && <0.4
     , lens >=4.19 && <4.20
+    , linear >=1.21 && <1.22
     , megaparsec >=8.0 && <8.1
     , optparse-applicative
     , polysemy >=1.3 && <1.4

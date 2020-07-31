@@ -7,7 +7,7 @@ where
 import Calamity
 import Calamity.Commands
 import CalamityBot.Db
-import CalamityBot.Pagination
+import CalamityBot.Utils.Pagination
 import Data.Default.Class
 import Control.Lens hiding (Context)
 import qualified Data.Text.Lazy as L

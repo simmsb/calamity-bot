@@ -13,6 +13,7 @@ import Calamity.Metrics.Noop
 import CalamityBot.Commands
 import CalamityBot.Db
 import CalamityBot.PrefixHandler
+import CalamityBot.Utils.Config
 import Data.Pool (createPool)
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.Text.Lazy as L
@@ -24,6 +25,12 @@ import Polysemy.Timeout
 import System.Environment
 import TextShow
 
+cfg :: HashMap Text Text
+cfg =
+  fromList
+    [ ("stickbug_path", "assets/stickbug.mp4")
+    ]
+
 runBot :: IO ()
 runBot = do
   token <- L.pack <$> getEnv "BOT_TOKEN"
@@ -31,6 +38,7 @@ runBot = do
   pool <- createPool (connectPostgreSQL db_path) close 3 0.5 30
   void . runFinal
     . embedToFinal
+    . configAsConst cfg
     . timeoutToIOFinal
     . immortalToIOFinal
     . runDBEffPooled pool

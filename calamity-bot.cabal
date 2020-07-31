@@ -4,7 +4,7 @@ cabal-version: 1.18
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e55ef5593c407f16de37ba80c3d11d487066fdee12f313563d216c0ffc7d71d3
+-- hash: 53376f85b2d45f6d155738af5a1c0e02357d948537cb712c7bed04013aefcaca
 
 name:           calamity-bot
 version:        0.0.0
@@ -40,7 +40,6 @@ library
       CalamityBot.Commands.Crap
       CalamityBot.Commands.Prefix
       CalamityBot.Commands.Reanimate
-      CalamityBot.Commands.Reanimate.RenderInMem
       CalamityBot.Commands.Reminders
       CalamityBot.Db
       CalamityBot.Db.Aliases
@@ -50,9 +49,12 @@ library
       CalamityBot.Db.Reminders
       CalamityBot.Db.Schema
       CalamityBot.Db.Utils
-      CalamityBot.Pagination
       CalamityBot.PrefixHandler
-      CalamityBot.Utils
+      CalamityBot.Utils.Config
+      CalamityBot.Utils.Pagination
+      CalamityBot.Utils.Process
+      CalamityBot.Utils.Reanimate
+      CalamityBot.Utils.Utils
       Polysemy.Immortal
       Polysemy.Timeout
       Prelude

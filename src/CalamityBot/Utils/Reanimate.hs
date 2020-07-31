@@ -1,55 +1,25 @@
 -- | Reanimate fuckery
-module CalamityBot.Commands.Reanimate.RenderInMem
-    ( renderToMemory
-    , renderStickbug
-     ) where
+module CalamityBot.Utils.Reanimate
+  ( renderToMemory,
+  )
+where
 
+import CalamityBot.Utils.Process
 import Control.Concurrent (forkIO, getNumCapabilities, newQSemN, signalQSemN, waitQSemN)
-import Control.Exception (catch, evaluate, finally, throwIO)
 import Control.Concurrent.MVar (isEmptyMVar, modifyMVar_)
-import qualified Data.ByteString.Lazy as LB
+import Control.Exception (catch, evaluate, finally, throwIO)
 import qualified Data.ByteString as B
-import Data.Time (diffUTCTime, getCurrentTime)
 import Graphics.SvgTree (Number (..))
-import Reanimate (Animation, duration)
-import Reanimate (frameAt)
+import Numeric
+import Reanimate (Animation, duration, frameAt)
 import Reanimate.Animation (renderSvg)
 import Reanimate.Misc (requireExecutable, withTempDir, withTempFile)
-import Numeric
 import Reanimate.Parameters (setRootDirectory)
 import Reanimate.Render
 import System.Exit
 import System.FilePath ((</>))
-import System.IO (hSetBinaryMode, hGetContents, hIsEOF, hClose)
-import System.Process (showCommandForUser, readProcessWithExitCode, runInteractiveProcess, terminateProcess, waitForProcess)
+import System.Process (readProcessWithExitCode, showCommandForUser)
 import Text.Printf (printf)
-import qualified Data.Text as S
-
-renderStickbug :: (LB.ByteString, Text)
-               -> Float
-               -> IO (Either String B.ByteString)
-renderStickbug (initial, ext) delay = do
-  ffmpeg <- requireExecutable "ffmpeg"
-  withTempFile (S.unpack ext) $ \initialFile -> do
-    writeFileLBS initialFile initial
-    let df = showFFloat Nothing delay ""
-    runCmdLazy ffmpeg [ "-i", initialFile
-                      , "-i", "stickbug.mp4" -- TODO: unbad
-                      ,"-threads", "0"
-                      , "-filter_complex", "[1:v][0:v]scale2ref[v1][v0];"
-                                           <> "[v0]trim=end=" <> df <> ", setpts=PTS-STARTPTS[v00];"
-                                           <> "[0:a]atrim=end=" <> df <> ", asetpts=PTS-STARTPTS[a0];"
-                                           <> "[1:a]dynaudnorm, volume=3, asetpts=PTS-STARTPTS[a1]; "
-                                           <> "[v00][a0][v1][a1]concat=n=2:v=1:a=1[v][a]"
-                      , "-map", "[v]", "-map", "[a]"
-                      , "-c:v", "libx264"
-                      , "-c:a", "aac"
-                      , "-r", "30"
-                      , "-crf", "18"
-                      , "-movflags", "+faststart"
-                      , "-pix_fmt", "yuv420p"
-                      , "-f", "ismv"
-                      , "-"] Prelude.id
 
 renderToMemory :: Animation
        -> Raster
@@ -120,13 +90,10 @@ generateFrames raster ani width_ height_ rate action = withTempDir $ \tmp -> do
     setRootDirectory tmp
     done <- newMVar (0::Int)
     let frameName nth = tmp </> printf nameTemplate nth
-    start <- getCurrentTime
     concurrentForM_ frames $ \n -> do
       writeFile (frameName n) $ renderSvg width height $ nthFrame n
       applyRaster raster (frameName n)
       modifyMVar_ done $ \nDone -> return (nDone+1)
-    now <- getCurrentTime
-    let spent = diffUTCTime now start
     action (tmp </> rasterTemplate raster)
   where
     width = Just $ Px $ fromIntegral width_
@@ -157,38 +124,16 @@ concurrentForM_ lst action = do
 
 runCmd_ :: FilePath -> [String] -> IO (Either String String)
 runCmd_ exec args = do
-  (ret, stdout, stderr) <- readProcessWithExitCode exec args ""
-  _ <- evaluate (length stdout + length stderr)
+  (ret, out, err) <- readProcessWithExitCode exec args ""
+  _ <- evaluate (length out + length err)
   case ret of
-    ExitSuccess -> return (Right stdout)
-    ExitFailure err | False ->
+    ExitSuccess -> return (Right out)
+    ExitFailure err' | False ->
       return $ Left $
         "Failed to run: " ++ showCommandForUser exec args ++ "\n" ++
-        "Error code: " ++ show err ++ "\n" ++
-        "stderr: " ++ stderr
-    ExitFailure{} | null stderr -> -- LaTeX prints errors to stdout. :(
-      return $ Left stdout
+        "Error code: " ++ show err' ++ "\n" ++
+        "stderr: " ++ err
+    ExitFailure{} | null err -> -- LaTeX prints errors to stdout. :(
+      return $ Left out
     ExitFailure{} ->
-      return $ Left stderr
-
-runCmdLazy :: FilePath -> [String] -> (IO (Either String B.ByteString) -> IO a) -> IO a
-runCmdLazy exec args handler = do
-  (inp, out, err, pid) <- runInteractiveProcess exec args Nothing Nothing
-  hSetBinaryMode out True
-  hClose inp
-  let fetch = do
-        eof <- hIsEOF out
-        if eof
-          then do
-            stderr <- hGetContents err
-            _ <- evaluate (length stderr)
-            ret <- waitForProcess pid
-            case ret of
-              ExitSuccess   -> return (Left "")
-              ExitFailure{} -> return (Left stderr)
-          else do
-            Right <$> B.hGetContents out
-  handler fetch `finally` do
-    terminateProcess pid
-    _ <- waitForProcess pid
-    return ()
+      return $ Left err

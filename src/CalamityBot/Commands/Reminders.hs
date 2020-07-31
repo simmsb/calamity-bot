@@ -7,9 +7,9 @@ where
 import Calamity.Commands
 import Calamity
 import CalamityBot.Db
-import CalamityBot.Pagination
+import CalamityBot.Utils.Pagination
 import Control.Concurrent (threadDelay)
-import CalamityBot.Utils
+import CalamityBot.Utils.Utils
 import Control.Lens hiding (Context)
 import Data.Dates.Parsing
 import Data.Default.Class

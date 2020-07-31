@@ -1,5 +1,5 @@
 -- | utilities
-module CalamityBot.Utils
+module CalamityBot.Utils.Utils
   ( utcTimeToHourglass,
     hourglassToUTCTime,
   )

@@ -1,5 +1,5 @@
 -- | Pagination helper functions
-module CalamityBot.Pagination
+module CalamityBot.Utils.Pagination
   ( formatPagination2,
     Pagination (..),
     PaginationDir (..),

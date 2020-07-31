@@ -5,7 +5,7 @@ module CalamityBot.Commands.Reanimate
 
 import Calamity.Commands
 import Calamity
-import CalamityBot.Commands.Reanimate.RenderInMem
+import CalamityBot.Utils.Reanimate
 import qualified Data.Text.Lazy as L
 import qualified Polysemy as P
 import Reanimate

@@ -30,7 +30,7 @@ crapGroup = void
   . groupA "crap" ["c"]
   $ do
     help (const "Haha get stickbugged lol") $
-      commandA @'[Named "delay (seconds)" (Maybe Float), Named "filename" (Maybe Text)]
+      commandA @'[Named "delay in seconds" (Maybe Float), Named "filename" (Maybe Text)]
         "stickbug"
         ["sb"]
         \ctx (fromMaybe 0.5 -> delay) (fromMaybe "get_stickbugged" -> fn) -> do

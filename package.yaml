@@ -55,6 +55,7 @@ dependencies:
   - linear ^>= 1.21
   - mime-types ^>= 0.1
   - wreq ^>= 0.5
+  - process-extras ^>= 0.7
 
 when:
   condition: flag(smuggler2)

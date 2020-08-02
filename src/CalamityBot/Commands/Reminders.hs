@@ -24,7 +24,6 @@ import Polysemy.Timeout
 import Replace.Megaparsec
 import TextShow (TextShow (showtl))
 import Time.System
-
 mergePreSuff :: L.Text -> L.Text -> L.Text
 mergePreSuff s p = L.strip (L.strip s <> " " <> L.strip p)
 

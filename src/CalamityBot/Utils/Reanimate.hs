@@ -8,7 +8,7 @@ import CalamityBot.Utils.Process
 import Control.Concurrent (forkIO, getNumCapabilities, newQSemN, signalQSemN, waitQSemN)
 import Control.Concurrent.MVar (isEmptyMVar, modifyMVar_)
 import Control.Exception (catch, evaluate, finally, throwIO)
-import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy as LB
 import Graphics.SvgTree (Number (..))
 import Numeric
 import Reanimate (Animation, duration, frameAt)
@@ -27,7 +27,7 @@ renderToMemory :: Animation
        -> Width
        -> Height
        -> FPS
-       -> IO (Either String B.ByteString)
+       -> IO (Either LB.ByteString LB.ByteString)
 renderToMemory ani raster' format width height fps = do
   ffmpeg <- requireExecutable "ffmpeg"
   raster <- selectRaster raster'
@@ -41,7 +41,7 @@ renderToMemory ani raster' format width height fps = do
                       , "-movflags", "+faststart"
                       , "-pix_fmt", "yuv420p"
                       , "-f", "ismv"
-                      ,  "-"] Prelude.id
+                      ,  "-"]
       RenderGif -> withTempFile "png" $ \palette -> do
         runCmd_ ffmpeg ["-i", template, "-y"
                       ,"-vf", "fps="++show fps++
@@ -59,13 +59,13 @@ renderToMemory ani raster' format width height fps = do
                         ":flags=lanczos[x];[x][1:v]paletteuse"
                       ,"-t", showFFloat Nothing (duration ani) ""
                       , "-f", "gif"
-                      , "-"] Prelude.id
+                      , "-"]
       RenderWebm ->
         runCmdLazy ffmpeg ["-r", show fps, "-i", template, "-y"
                       , "-c:v", "libvpx-vp9", "-vf", "fps="++show fps
                       , "-threads", "0"
                       , "-f", "webm"
-                      , "-"] Prelude.id
+                      , "-"]
 
 rasterTemplate :: Raster -> String
 rasterTemplate RasterNone = "render-%05d.svg"
@@ -85,7 +85,7 @@ filterFrameList seen nthFrame nFrames =
   where
     isSeen x = any (\y -> x `mod` y == 0) seen
 
-generateFrames :: Raster -> Animation -> Width -> Height -> FPS -> (String -> IO (Either String B.ByteString)) -> IO (Either String B.ByteString)
+generateFrames :: Raster -> Animation -> Width -> Height -> FPS -> (String -> IO (Either LB.ByteString LB.ByteString)) -> IO (Either LB.ByteString LB.ByteString)
 generateFrames raster ani width_ height_ rate action = withTempDir $ \tmp -> do
     setRootDirectory tmp
     done <- newMVar (0::Int)

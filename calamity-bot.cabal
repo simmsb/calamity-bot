@@ -4,7 +4,7 @@ cabal-version: 1.18
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 53376f85b2d45f6d155738af5a1c0e02357d948537cb712c7bed04013aefcaca
+-- hash: 2efca4da046d8b4a2a8e2f58f27f7a465b8bc574f95c67d760e298dedb335802
 
 name:           calamity-bot
 version:        0.0.0
@@ -88,6 +88,7 @@ library
     , polysemy-plugin >=0.2 && <0.3
     , postgresql-simple >=0.6 && <0.7
     , process >=1.6 && <1.7
+    , process-extras >=0.7 && <0.8
     , reanimate >=0.3 && <0.4
     , reanimate-svg >=0.9 && <0.10
     , relude >=0.7 && <0.8
@@ -140,6 +141,7 @@ executable calamity-bot
     , polysemy-plugin >=0.2 && <0.3
     , postgresql-simple >=0.6 && <0.7
     , process >=1.6 && <1.7
+    , process-extras >=0.7 && <0.8
     , reanimate >=0.3 && <0.4
     , reanimate-svg >=0.9 && <0.10
     , relude >=0.7 && <0.8

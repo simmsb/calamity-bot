@@ -43,15 +43,15 @@ crapGroup = void
               out <- P.embed $ renderStickbug (file, ext) sbfile delay
               case out of
                 Right res ->
-                  void $ tell ctx (TFile (fn <> ".mp4") (fromStrict res))
-                Left e -> print e
+                  void $ tell ctx (TFile (fn <> ".mp4") res)
+                Left e -> putLBSLn e
             Nothing ->
               void $ tell @L.Text ctx "Couldn't find a video"
 
 renderStickbug :: (LB.ByteString, Text)
                -> Text
                -> Float
-               -> IO (Either String B.ByteString)
+               -> IO (Either LB.ByteString LB.ByteString)
 renderStickbug (initial, ext) sbfile delay = do
   ffmpeg <- requireExecutable "ffmpeg"
   withTempFile (S.unpack ext) $ \initialFile -> do
@@ -74,4 +74,4 @@ renderStickbug (initial, ext) sbfile delay = do
                       , "-movflags", "+faststart"
                       , "-pix_fmt", "yuv420p"
                       , "-f", "ismv"
-                      , "-"] Prelude.id
+                      , "-"]

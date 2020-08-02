@@ -52,12 +52,12 @@ reanimateGroup = void
     help (const "Render a message") $
       command @'[KleenePlusConcat L.Text] "render" \ctx msg -> do
         let anim = renderText msg
-        s <- P.embed $ renderToMemory anim RasterAuto RenderWebm 400 400 30
-        case s of
-          Right s' -> do
-            void $ tell ctx (TFile "lol.webm" $ fromStrict s')
-          Left r ->
-            print $ "Failed with reason: " <> r
+        r <- P.embed $ renderToMemory anim RasterAuto RenderWebm 400 400 30
+        case r of
+          Right s -> do
+            void $ tell ctx (TFile "lol.webm" s)
+          Left e ->
+            putLBSLn $ "Failed with reason: " <> e
 
     help (const "Render a fourier thing") $
       command @'[KleenePlusConcat L.Text] "renderf" \ctx msg -> do
@@ -73,12 +73,12 @@ reanimateGroup = void
                 # reverseA
                 # signalA (powerS 2)                       -- Start slow, end fast
                 # pauseAtEnd 2
-        s <- P.embed $ renderToMemory anim RasterAuto RenderGif 480 360 15
-        case s of
-          Right s' -> do
-            void $ tell ctx (TFile "lol.gif" $ fromStrict s')
-          Left r ->
-            print $ "Failed with reason: " <> r
+        r <- P.embed $ renderToMemory anim RasterAuto RenderGif 480 360 15
+        case r of
+          Right s -> do
+            void $ tell ctx (TFile "lol.gif" s)
+          Left e ->
+            putLBSLn $ "Failed with reason: " <> e
 
 scaleToFit :: Double -> Double -> Tree -> Tree
 scaleToFit w h t =

@@ -1,0 +1,8 @@
+/dist-newstyle
+.git
+.stack-work
+.envrc
+.env
+docker-compose.yml
+Dockerfile
+.dockerignore

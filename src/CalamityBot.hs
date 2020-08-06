@@ -29,6 +29,7 @@ cfg :: HashMap Text Text
 cfg =
   fromList
     [ ("stickbug_path", "assets/stickbug.mp4")
+    , ("bunny_path", "assets/bunny.mp4")
     ]
 
 runBot :: IO ()

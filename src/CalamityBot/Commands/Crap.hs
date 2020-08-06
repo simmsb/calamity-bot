@@ -48,6 +48,26 @@ crapGroup = void
             Nothing ->
               void $ tell @L.Text ctx "Couldn't find a video"
 
+    -- shameless
+    help (const "Haha get bunnyd lol") $
+      commandA @'[Named "delay in seconds" (Maybe Float), Named "filename" (Maybe Text)]
+        "bunny"
+        ["bn"]
+        \ctx (fromMaybe 0.5 -> delay) (fromMaybe "get_bunnyd" -> fn) -> do
+          sbfile <- getCfg "bunny_path"
+          case findVideo (ctx ^. #message . #attachments) of
+            Just video -> do
+              r <- P.embed $ Network.Wreq.get (L.unpack $ video ^. #url)
+              let file = r ^. responseBody
+              Just ext <- pure ((last <$>) . nonEmpty . fileNameExtensions . toStrict $ video ^. #filename)
+              out <- P.embed $ renderStickbug (file, ext) sbfile delay
+              case out of
+                Right res ->
+                  void $ tell ctx (TFile (fn <> ".mp4") res)
+                Left e -> putLBSLn e
+            Nothing ->
+              void $ tell @L.Text ctx "Couldn't find a video"
+
 renderStickbug :: (LB.ByteString, Text)
                -> Text
                -> Float

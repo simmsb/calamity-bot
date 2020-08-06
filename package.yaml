@@ -72,6 +72,9 @@ executables:
     main: Main.hs
     source-dirs: app
     ghc-options:
+      - -O2
+      - -fspecialise-aggressively
+      - -flate-specialise
       - -fplugin=Polysemy.Plugin
       - -Wall
       - -threaded

@@ -68,7 +68,7 @@ extra-deps:
   - data-default-instances-base-0.1.0.1@sha256:985a13d7103e45a65f06f277b735ef025636014f0d29dd6de998bc7628e09be9,509
   # - calamity-0.1.19.0
   - github: nitros12/calamity
-    commit: 0c4559d51c49bdc22425fb8a55c7c7e09d937179
+    commit: 141ad1e269486eeea680e8f7ca457cfa5ece35fd
   - github: nitros12/fuzzy-dates
     commit: 24fb3e73621a19f2cad0894412820b56cb67b4b9
   - git: https://github.com/haskell-beam/beam

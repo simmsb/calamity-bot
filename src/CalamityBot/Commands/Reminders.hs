@@ -6,6 +6,7 @@ where
 
 import Calamity.Commands
 import Calamity
+import Calamity.Internal.Utils
 import CalamityBot.Db
 import CalamityBot.Utils.Pagination
 import Control.Concurrent (threadDelay)
@@ -24,6 +25,7 @@ import Polysemy.Timeout
 import Replace.Megaparsec
 import TextShow (TextShow (showtl))
 import Time.System
+
 mergePreSuff :: L.Text -> L.Text -> L.Text
 mergePreSuff s p = L.strip (L.strip s <> " " <> L.strip p)
 
@@ -79,9 +81,10 @@ fmtReminderMessage r = mention (r ^. #reminderUserId) <> ", " <> delta <> " ago,
     delta = formatTimeDiff (utcTimeToHourglass (r ^. #reminderCreated)) (utcTimeToHourglass (r ^. #reminderTarget))
 
 reminderTask :: (BotC r, P.Member DBEff r) => P.Sem r ()
-reminderTask = forever do
+reminderTask = untilJustFinalIO do
   upcoming <- usingConn $ runSelectReturningList upcomingReminders
   void $ P.sequenceConcurrently $ (P.embed (threadDelaySeconds 60) : map processReminder upcoming)
+  pure Nothing
   where
     processReminder :: (BotC r, P.Member DBEff r) => DBReminder -> P.Sem r ()
     processReminder r = do

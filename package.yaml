@@ -29,33 +29,6 @@ dependencies:
   - polysemy-plugin ^>= 0.2
   - lens ^>= 4.19
   - generic-lens ^>= 2
-  - text ^>= 1.2
-  - text-show ^>= 3.8
-  - unordered-containers ^>= 0.2.10
-  - beam-core ^>= 0.9
-  - beam-postgres ^>= 0.5
-  - arbor-lru-cache ^>= 0.1
-  - bytestring ^>= 0.10
-  - time ^>= 1.9
-  - hourglass ^>= 0.2
-  - megaparsec ^>= 8.0
-  - replace-megaparsec ^>= 1.4
-  - fuzzy-dates-megaparsec ^>= 0.1
-  - table-layout ^>= 0.9
-  - postgresql-simple ^>= 0.6
-  - resource-pool ^>= 0.2
-  - immortal ^>= 0.3
-  - reanimate ^>= 0.3
-  - reanimate-svg ^>= 0.9
-  - process ^>= 1.6
-  - filepath ^>= 1.4
-  - data-default-class ^>= 0.1
-  - emojis ^>= 0.1
-  - JuicyPixels ^>= 3.3
-  - linear ^>= 1.21
-  - mime-types ^>= 0.1
-  - wreq ^>= 0.5
-  - process-extras ^>= 0.7
 
 when:
   condition: flag(smuggler2)

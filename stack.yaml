@@ -57,26 +57,9 @@ extra-deps:
   - stm-hamt-1.2.0.4@sha256:7957497c022554b7599e790696d1a3e56359ad99e5da36a251894c626ca1f60a,3970
   - primitive-extras-0.8@sha256:fca0310150496867f5b9421fe1541ecda87fae17eae44885a29f9c52dd00c8ff,2963
   - primitive-unlifted-0.1.3.0@sha256:a98f827740f5dcf097d885b3a47c32f4462204449620abc9d51b8c4f8619f9e6,1427
-  - smuggler2-0.3.2.2@sha256:4483b015a09edd8e4f14d112c9ec4a4436910f09695c34c6f8774aa4504ed8ff,3425
-  - ghc-exactprint-0.6.3@sha256:1c9f8884a3bdce00f3c2febd8276be294faf9732d24bc89efe023f3c5678ea52,9375
-  - dependent-map-0.4.0.0@sha256:ca2b131046f4340a1c35d138c5a003fe4a5be96b14efc26291ed35fd08c62221,1657
-  - dependent-sum-0.7.1.0@sha256:5599aa89637db434431b1dd3fa7c34bc3d565ee44f0519bfbc877be1927c2531,2068
-  - haskell-src-exts-1.21.1@sha256:11d18ec3f463185f81b7819376b532e3087f8192cffc629aac5c9eec88897b35,4541
-  - constraints-0.11.2@sha256:d028005d93f891b48b61ff0c82c6f868859eb728010dea3e355b0c55d0f57cf9,2219
-  - constraints-extras-0.3.0.2@sha256:bf6884be65958e9188ae3c9e5547abfd6d201df021bff8a4704c2c4fe1e1ae5b,1784
-  - table-layout-0.9.0.0@sha256:66dc7b7b9d14fa4769f1192a58ab9721ef8efd1d5773acae34dc5e2dce3fec0a,7106
-  - data-default-instances-base-0.1.0.1@sha256:985a13d7103e45a65f06f277b735ef025636014f0d29dd6de998bc7628e09be9,509
   # - calamity-0.1.19.0
   - github: nitros12/calamity
     commit: 141ad1e269486eeea680e8f7ca457cfa5ece35fd
-  - github: nitros12/fuzzy-dates
-    commit: 24fb3e73621a19f2cad0894412820b56cb67b4b9
-  - git: https://github.com/haskell-beam/beam
-    commit: d5da4c09d816edb6dc689756f67af5c69749b71f
-    subdirs:
-      - beam-core
-      - beam-migrate
-      - beam-postgres
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

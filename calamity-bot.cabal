@@ -4,7 +4,7 @@ cabal-version: 1.18
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5f725093245a4484caaa99e72450d5017bc818c2dbbdef39e2d43e469468f518
+-- hash: 62c6668eefd7f5cc91115042335feef0db276b689c4e24bf8fb37238f0dcce65
 
 name:           calamity-bot
 version:        0.0.0
@@ -35,28 +35,6 @@ flag smuggler2
 library
   exposed-modules:
       CalamityBot
-      CalamityBot.Commands
-      CalamityBot.Commands.Aliases
-      CalamityBot.Commands.Crap
-      CalamityBot.Commands.Prefix
-      CalamityBot.Commands.Reanimate
-      CalamityBot.Commands.Reminders
-      CalamityBot.Db
-      CalamityBot.Db.Aliases
-      CalamityBot.Db.Eff
-      CalamityBot.Db.Guilds
-      CalamityBot.Db.Prefixes
-      CalamityBot.Db.Reminders
-      CalamityBot.Db.Schema
-      CalamityBot.Db.Utils
-      CalamityBot.PrefixHandler
-      CalamityBot.Utils.Config
-      CalamityBot.Utils.Pagination
-      CalamityBot.Utils.Process
-      CalamityBot.Utils.Reanimate
-      CalamityBot.Utils.Utils
-      Polysemy.Immortal
-      Polysemy.Timeout
       Prelude
   other-modules:
       Paths_calamity_bot
@@ -65,41 +43,14 @@ library
   default-extensions: StrictData IncoherentInstances TemplateHaskell RecursiveDo AllowAmbiguousTypes BlockArguments NoMonomorphismRestriction BangPatterns BinaryLiterals UndecidableInstances ConstraintKinds DataKinds DefaultSignatures DeriveDataTypeable DeriveFoldable DeriveFunctor DeriveGeneric DeriveTraversable DoAndIfThenElse EmptyDataDecls ExistentialQuantification FlexibleContexts FlexibleInstances FunctionalDependencies GADTs DerivingVia DerivingStrategies GeneralizedNewtypeDeriving StandaloneDeriving DeriveAnyClass InstanceSigs KindSignatures LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings OverloadedLabels PartialTypeSignatures PatternGuards PolyKinds RankNTypes RecordWildCards ScopedTypeVariables TupleSections TypeFamilies TypeSynonymInstances ViewPatterns DuplicateRecordFields TypeOperators TypeApplications RoleAnnotations PatternSynonyms
   ghc-options: -fplugin=Polysemy.Plugin -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -Wmissing-export-lists -Wpartial-fields -fno-warn-unused-do-bind
   build-depends:
-      JuicyPixels >=3.3 && <3.4
-    , arbor-lru-cache >=0.1 && <0.2
-    , base-noprelude >=4.12 && <5
-    , beam-core >=0.9 && <0.10
-    , beam-postgres >=0.5 && <0.6
-    , bytestring >=0.10 && <0.11
+      base-noprelude >=4.12 && <5
     , calamity >=0.1 && <0.2
-    , data-default-class >=0.1 && <0.2
     , di-polysemy >=0.1 && <0.2
-    , emojis >=0.1 && <0.2
-    , filepath >=1.4 && <1.5
-    , fuzzy-dates-megaparsec >=0.1 && <0.2
     , generic-lens >=2 && <2.1
-    , hourglass >=0.2 && <0.3
-    , immortal >=0.3 && <0.4
     , lens >=4.19 && <4.20
-    , linear >=1.21 && <1.22
-    , megaparsec >=8.0 && <8.1
-    , mime-types >=0.1 && <0.2
     , polysemy >=1.3 && <1.4
     , polysemy-plugin >=0.2 && <0.3
-    , postgresql-simple >=0.6 && <0.7
-    , process >=1.6 && <1.7
-    , process-extras >=0.7 && <0.8
-    , reanimate >=0.3 && <0.4
-    , reanimate-svg >=0.9 && <0.10
     , relude >=0.7 && <0.8
-    , replace-megaparsec >=1.4 && <1.5
-    , resource-pool >=0.2 && <0.3
-    , table-layout >=0.9 && <0.10
-    , text >=1.2 && <1.3
-    , text-show >=3.8 && <3.9
-    , time >=1.9 && <1.10
-    , unordered-containers >=0.2.10 && <0.3
-    , wreq >=0.5 && <0.6
   if flag(smuggler2)
     build-depends:
         smuggler2 >=0.3 && <0.4
@@ -116,43 +67,16 @@ executable calamity-bot
   default-extensions: StrictData IncoherentInstances TemplateHaskell RecursiveDo AllowAmbiguousTypes BlockArguments NoMonomorphismRestriction BangPatterns BinaryLiterals UndecidableInstances ConstraintKinds DataKinds DefaultSignatures DeriveDataTypeable DeriveFoldable DeriveFunctor DeriveGeneric DeriveTraversable DoAndIfThenElse EmptyDataDecls ExistentialQuantification FlexibleContexts FlexibleInstances FunctionalDependencies GADTs DerivingVia DerivingStrategies GeneralizedNewtypeDeriving StandaloneDeriving DeriveAnyClass InstanceSigs KindSignatures LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings OverloadedLabels PartialTypeSignatures PatternGuards PolyKinds RankNTypes RecordWildCards ScopedTypeVariables TupleSections TypeFamilies TypeSynonymInstances ViewPatterns DuplicateRecordFields TypeOperators TypeApplications RoleAnnotations PatternSynonyms
   ghc-options: -O2 -fspecialise-aggressively -flate-specialise -fplugin=Polysemy.Plugin -Wall -threaded -rtsopts -with-rtsopts=-N -Wincomplete-uni-patterns -Wincomplete-record-updates -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -Wmissing-export-lists -Wpartial-fields -fno-warn-unused-do-bind
   build-depends:
-      JuicyPixels >=3.3 && <3.4
-    , arbor-lru-cache >=0.1 && <0.2
-    , base-noprelude >=4.12 && <5
-    , beam-core >=0.9 && <0.10
-    , beam-postgres >=0.5 && <0.6
-    , bytestring >=0.10 && <0.11
+      base-noprelude >=4.12 && <5
     , calamity >=0.1 && <0.2
     , calamity-bot
-    , data-default-class >=0.1 && <0.2
     , di-polysemy >=0.1 && <0.2
-    , emojis >=0.1 && <0.2
-    , filepath >=1.4 && <1.5
-    , fuzzy-dates-megaparsec >=0.1 && <0.2
     , generic-lens >=2 && <2.1
-    , hourglass >=0.2 && <0.3
-    , immortal >=0.3 && <0.4
     , lens >=4.19 && <4.20
-    , linear >=1.21 && <1.22
-    , megaparsec >=8.0 && <8.1
-    , mime-types >=0.1 && <0.2
     , optparse-applicative
     , polysemy >=1.3 && <1.4
     , polysemy-plugin >=0.2 && <0.3
-    , postgresql-simple >=0.6 && <0.7
-    , process >=1.6 && <1.7
-    , process-extras >=0.7 && <0.8
-    , reanimate >=0.3 && <0.4
-    , reanimate-svg >=0.9 && <0.10
     , relude >=0.7 && <0.8
-    , replace-megaparsec >=1.4 && <1.5
-    , resource-pool >=0.2 && <0.3
-    , table-layout >=0.9 && <0.10
-    , text >=1.2 && <1.3
-    , text-show >=3.8 && <3.9
-    , time >=1.9 && <1.10
-    , unordered-containers >=0.2.10 && <0.3
-    , wreq >=0.5 && <0.6
   if flag(smuggler2)
     build-depends:
         smuggler2 >=0.3 && <0.4

@@ -24,11 +24,12 @@ dependencies:
   - base-noprelude >= 4.12 && < 5
   - relude ^>= 0.7
   - calamity ^>= 0.1
-  - di-polysemy ^>= 0.1
+  - di-polysemy ^>= 0.2
   - polysemy ^>= 1.3
   - polysemy-plugin ^>= 0.2
   - lens ^>= 4.19
   - generic-lens ^>= 2
+  - di ^>= 1.3
 
 when:
   condition: flag(smuggler2)

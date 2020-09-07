@@ -12,12 +12,13 @@ import Calamity.Gateway.Types (StatusUpdateData (..))
 import Calamity.Metrics.Noop
 import CalamityBot.Commands
 import CalamityBot.Db
-import CalamityBot.PrefixHandler
+-- import CalamityBot.PrefixHandler
 import CalamityBot.Utils.Config
 import Data.Pool (createPool)
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.Text.Lazy as L
 import Database.PostgreSQL.Simple (close, connectPostgreSQL)
+import qualified Di
 import DiPolysemy
 import Polysemy
 import Polysemy.Immortal
@@ -33,19 +34,20 @@ cfg =
     ]
 
 runBot :: IO ()
-runBot = do
+runBot = Di.new \di -> do
   token <- L.pack <$> getEnv "BOT_TOKEN"
   db_path <- BS.pack <$> getEnv "DB_STRING"
   pool <- createPool (connectPostgreSQL db_path) close 3 0.5 30
   void . runFinal
     . embedToFinal
+    . runDiToIO di
     . configAsConst cfg
     . timeoutToIOFinal
     . immortalToIOFinal
     . runDBEffPooled pool
     . runCacheInMemoryNoMsg
     . runMetricsNoop
-    . useDatabasePrefix "c!"
+    . useConstantPrefix "c!"
     . runBotIO (BotToken token)
     $ do
       addCommands do

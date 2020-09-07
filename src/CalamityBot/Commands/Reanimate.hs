@@ -9,16 +9,11 @@ import CalamityBot.Utils.Reanimate
 import qualified Data.Text.Lazy as L
 import qualified Polysemy as P
 import Reanimate
-import Reanimate.LaTeX (latex)
 import Reanimate.Render (Format(RenderWebm, RenderGif), Raster(RasterAuto))
-import Reanimate.Animation (animate)
-import Data.Default.Class (def)
 
 import           Data.Complex
 import           Graphics.SvgTree hiding ( group )
 import           Linear.V2
-import           Reanimate
-import           Reanimate.Ease
 import           Codec.Picture
 
 protectText :: L.Text -> L.Text
@@ -65,14 +60,14 @@ reanimateGroup = void
         let anim = setDuration 20 $ sceneAnimation $ do
               _ <- newSpriteSVG $ mkBackgroundPixel (PixelRGBA8 252 252 252 0xFF)
               play $ fourierA f (fromToS 0 5)      -- Rotate 15 times
-                # setDuration 30
-                # signalA (reverseS . powerS 2 . reverseS) -- Start fast, end slow
-                # pauseAtEnd 2
+                & setDuration 30
+                & signalA (reverseS . powerS 2 . reverseS) -- Start fast, end slow
+                & pauseAtEnd 2
               play $ fourierA f (constantS 0)       -- Don't rotate at all
-                # setDuration 10
-                # reverseA
-                # signalA (powerS 2)                       -- Start slow, end fast
-                # pauseAtEnd 2
+                & setDuration 10
+                & reverseA
+                & signalA (powerS 2)                       -- Start slow, end fast
+                & pauseAtEnd 2
         r <- P.embed $ renderToMemory anim RasterAuto RenderGif 480 360 15
         case r of
           Right s -> do

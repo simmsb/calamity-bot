@@ -9,6 +9,7 @@ where
 import Calamity
 import Calamity.Commands
 import CalamityBot.Utils.Process
+import CalamityBot.Utils.Utils
 import CalamityBot.Utils.Config
 import Control.Lens hiding (Context)
 import qualified Data.ByteString as B
@@ -18,7 +19,6 @@ import qualified Data.Text as S
 import Network.Mime
 import Network.Wreq
 import qualified Polysemy as P
-import Reanimate.Misc (requireExecutable, withTempFile)
 import Numeric
 
 findVideo :: [Attachment] -> Maybe Attachment
@@ -74,7 +74,7 @@ renderStickbug :: (LB.ByteString, Text)
                -> IO (Either LB.ByteString LB.ByteString)
 renderStickbug (initial, ext) sbfile delay = do
   ffmpeg <- requireExecutable "ffmpeg"
-  withTempFile (S.unpack ext) $ \initialFile -> do
+  withTempFile "stickbug" (S.unpack ext) $ \initialFile -> do
     writeFileLBS initialFile initial
     let df = showFFloat Nothing delay ""
     runCmdLazy ffmpeg [ "-i", initialFile

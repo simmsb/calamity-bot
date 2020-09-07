@@ -4,19 +4,26 @@ module CalamityBot.Utils.Reanimate
   )
 where
 
-import CalamityBot.Utils.Process
+import CalamityBot.Utils.Process ( runCmdLazy )
+import CalamityBot.Utils.Utils
 import Control.Concurrent (forkIO, getNumCapabilities, newQSemN, signalQSemN, waitQSemN)
 import Control.Concurrent.MVar (isEmptyMVar, modifyMVar_)
 import Control.Exception (catch, evaluate, finally, throwIO)
 import qualified Data.ByteString.Lazy as LB
 import Graphics.SvgTree (Number (..))
-import Numeric
+import Numeric ( showFFloat )
 import Reanimate (Animation, duration, frameAt)
 import Reanimate.Animation (renderSvg)
-import Reanimate.Misc (requireExecutable, withTempDir, withTempFile)
 import Reanimate.Parameters (setRootDirectory)
 import Reanimate.Render
-import System.Exit
+    ( FPS,
+      Height,
+      Raster(RasterNone),
+      Width,
+      applyRaster,
+      selectRaster,
+      Format(..) )
+import System.Exit ( ExitCode(ExitFailure, ExitSuccess) )
 import System.FilePath ((</>))
 import System.Process (readProcessWithExitCode, showCommandForUser)
 import Text.Printf (printf)
@@ -42,7 +49,7 @@ renderToMemory ani raster' format width height fps = do
                       , "-pix_fmt", "yuv420p"
                       , "-f", "ismv"
                       ,  "-"]
-      RenderGif -> withTempFile "png" $ \palette -> do
+      RenderGif -> withTempFile "reanimate" "png" $ \palette -> do
         runCmd_ ffmpeg ["-i", template, "-y"
                       ,"-vf", "fps="++show fps++
                         ",scale="++show width++":"++show height ++
@@ -86,7 +93,7 @@ filterFrameList seen nthFrame nFrames =
     isSeen x = any (\y -> x `mod` y == 0) seen
 
 generateFrames :: Raster -> Animation -> Width -> Height -> FPS -> (String -> IO (Either LB.ByteString LB.ByteString)) -> IO (Either LB.ByteString LB.ByteString)
-generateFrames raster ani width_ height_ rate action = withTempDir $ \tmp -> do
+generateFrames raster ani width_ height_ rate action = withTempDir "reanimate" $ \tmp -> do
     setRootDirectory tmp
     done <- newMVar (0::Int)
     let frameName nth = tmp </> printf nameTemplate nth

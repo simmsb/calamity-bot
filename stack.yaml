@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-16.7 
+resolver: lts-16.13
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -43,32 +43,35 @@ resolver: lts-16.7
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
 extra-deps:
-  - lens-4.19.2@sha256:d6264016fb6e8232e3b8c77ce98e6b123691723ebb84165941facf090bc58f5b,15493
-  - polysemy-plugin-0.2.5.0@sha256:67e30be568a141b852aace1a60e180cb5060fbb2835365a81a3ea779536d6d35,2952
-  - ghc-tcplugins-extra-0.3.2@sha256:1bbfd4449c3669a31618ea0ebc5d00d980a53988daad3b6218bab5c8cdff268d,1687
   - data-flags-0.0.3.4@sha256:a133f2912e0e22f03419dc89a04b1e117ff6290f1777f5b7f037f683b80ed2cf,1097
+  - dependent-map-0.4.0.0@sha256:ca2b131046f4340a1c35d138c5a003fe4a5be96b14efc26291ed35fd08c62221,1657
+  - dependent-sum-0.7.1.0@sha256:5599aa89637db434431b1dd3fa7c34bc3d565ee44f0519bfbc877be1927c2531,2068
   - df1-0.4@sha256:b430ee7e0abda6ce9ef03b9fbe532a7384e6de1b4873357cc116db9f614ce398,1104
-  - di-polysemy-0.1.4.0
+  - di-polysemy-0.2.0.0@sha256:9da81102b7e5b2782e4f7194189cde552f042c94ac875ef8f542f6620035f885,2160
   - generic-override-0.0.0.0@sha256:4022243b06e2f225a5d09c54e26a3f545f6bc5cce07a7a8267d10fa64344a189,924
   - generic-override-aeson-0.0.0.0@sha256:b36feb72bf33b8c93e75faac7ea99bbebfec5a22c1259d844706fd03fe71b34e,1446
+  - haskell-src-exts-1.21.1@sha256:11d18ec3f463185f81b7819376b532e3087f8192cffc629aac5c9eec88897b35,4541
+  - lens-4.19.2@sha256:f0570ca0e4624d9daa57256f00f514e87be155401583fa1665faba47376c63a7,16053
+  - polysemy-plugin-0.2.5.0@sha256:67e30be568a141b852aace1a60e180cb5060fbb2835365a81a3ea779536d6d35,2952
+  - reanimate-0.4.3.0@sha256:7885803329d2f878b49a0dba16bcfc79d072640f271dde2e2baa2749673258da,5690
+  - reanimate-svg-0.10.3.0@sha256:b59057132eb1af4981272decd0c56cfd632ab9a40d1e6975d5e2f039526656df,2545
   - stm-containers-1.1.0.4@sha256:f83a683357b6e3b1dda3e70d2077a37224ed534df1f74c4e11f3f6daa7945c5b,3248
+  - table-layout-0.9.0.1@sha256:0f3ad3220caeecedcd833e95e5b754ae2e4a99cf7d7637a53bdf18c29a50a388,7154
+  - constraints-extras-0.3.0.2@sha256:013b8d0392582c6ca068e226718a4fe8be8e22321cc0634f6115505bf377ad26,1853
+  - data-default-instances-base-0.1.0.1@sha256:985a13d7103e45a65f06f277b735ef025636014f0d29dd6de998bc7628e09be9,509
+  - di-1.3@sha256:8e630a6ac40f234fbd39627841d3cfd3800e2189b63c1ee01cf5290eb0138131,1129
   - di-df1-1.2.1@sha256:6be994f4d6acc4e9b498af00367d09e71fe6da42c6c2eb947ab49e19a6ba6e15,999
   - di-handle-1.0.1@sha256:642ce26cc3b166e14782fb3d3acc4a15533e1021bcd6712704531f71c9483d24,720
+  - ghc-tcplugins-extra-0.3.2@sha256:1bbfd4449c3669a31618ea0ebc5d00d980a53988daad3b6218bab5c8cdff268d,1687
+  - hgeometry-0.11.0.0@sha256:09ead201a6ac3492c0be8dda5a6b32792b9ae87cab730b8362d46ee8d5c2acb4,11714
+  - hgeometry-combinatorial-0.11.0.0@sha256:03176f235a1c49a415fe1266274dafca84deb917cbcbf9a654452686b4cd2bfe,8286
   - stm-hamt-1.2.0.4@sha256:7957497c022554b7599e790696d1a3e56359ad99e5da36a251894c626ca1f60a,3970
   - primitive-extras-0.8@sha256:fca0310150496867f5b9421fe1541ecda87fae17eae44885a29f9c52dd00c8ff,2963
   - primitive-unlifted-0.1.3.0@sha256:a98f827740f5dcf097d885b3a47c32f4462204449620abc9d51b8c4f8619f9e6,1427
-  - smuggler2-0.3.2.2@sha256:4483b015a09edd8e4f14d112c9ec4a4436910f09695c34c6f8774aa4504ed8ff,3425
-  - ghc-exactprint-0.6.3@sha256:1c9f8884a3bdce00f3c2febd8276be294faf9732d24bc89efe023f3c5678ea52,9375
-  - dependent-map-0.4.0.0@sha256:ca2b131046f4340a1c35d138c5a003fe4a5be96b14efc26291ed35fd08c62221,1657
-  - dependent-sum-0.7.1.0@sha256:5599aa89637db434431b1dd3fa7c34bc3d565ee44f0519bfbc877be1927c2531,2068
-  - haskell-src-exts-1.21.1@sha256:11d18ec3f463185f81b7819376b532e3087f8192cffc629aac5c9eec88897b35,4541
-  - constraints-0.11.2@sha256:d028005d93f891b48b61ff0c82c6f868859eb728010dea3e355b0c55d0f57cf9,2219
-  - constraints-extras-0.3.0.2@sha256:bf6884be65958e9188ae3c9e5547abfd6d201df021bff8a4704c2c4fe1e1ae5b,1784
-  - table-layout-0.9.0.0@sha256:66dc7b7b9d14fa4769f1192a58ab9721ef8efd1d5773acae34dc5e2dce3fec0a,7106
-  - data-default-instances-base-0.1.0.1@sha256:985a13d7103e45a65f06f277b735ef025636014f0d29dd6de998bc7628e09be9,509
-  # - calamity-0.1.19.0
-  - github: nitros12/calamity
-    commit: 141ad1e269486eeea680e8f7ca457cfa5ece35fd
+  - vinyl-0.13.0@sha256:0f247cd3f8682b30881a07de18e6fec52d540646fbcb328420049cc8d63cd407,3724
+  - calamity-0.1.20.0
+  # - github: nitros12/calamity
+  #   commit: 141ad1e269486eeea680e8f7ca457cfa5ece35fd
   - github: nitros12/fuzzy-dates
     commit: 24fb3e73621a19f2cad0894412820b56cb67b4b9
   - git: https://github.com/haskell-beam/beam

@@ -15,6 +15,10 @@ import           Data.Complex
 import           Graphics.SvgTree hiding ( group )
 import           Linear.V2
 import           Codec.Picture
+import qualified Data.ByteString as B
+import Network.Mime (defaultMimeLookup)
+import Control.Lens
+import Network.Wreq
 
 protectText :: L.Text -> L.Text
 protectText = L.concatMap (fromString . protectChar)
@@ -39,6 +43,15 @@ renderText text =
       rtRotated = mkAnimation 5 (\t -> rotateAroundCenter (t * 360) rt)
   in addStatic (mkBackground "white") rtRotated
 
+findSVG :: [Attachment] -> Maybe Attachment
+findSVG = listToMaybe . filter (\a -> "image/svg" `B.isPrefixOf` defaultMimeLookup (toStrict $ a ^. #filename))
+
+usableTree :: Tree -> Bool
+usableTree None = False
+usableTree (UseTree _ _) = False
+usableTree (DefinitionTree _) = False
+usableTree _ = True
+
 reanimateGroup :: BotC r => P.Sem (DSLState r) ()
 reanimateGroup = void
   . help (const "Commands related to reanimate fuckery")
@@ -53,6 +66,35 @@ reanimateGroup = void
             void $ tell ctx (TFile "lol.webm" s)
           Left e ->
             putLBSLn $ "Failed with reason: " <> e
+
+    help (const "Render a fourier thing of an svg") $
+      command @'[] "renders" \ctx -> do
+        case findSVG (ctx ^. #message . #attachments) of
+          Just svg -> do
+            r <- P.embed $ Network.Wreq.get (L.unpack $ svg ^. #url)
+            let file = r ^. responseBody
+            let Just doc = parseSvgFile "a.svg" (toStrict file)
+            let tree = head . fromList . filter usableTree $ doc ^. Graphics.SvgTree.elements
+            let f = mkSVGLatex $ flipYAxis tree
+            let anim = setDuration 20 $ sceneAnimation $ do
+                  _ <- newSpriteSVG $ mkBackgroundPixel (PixelRGBA8 252 252 252 0xFF)
+                  play $ fourierA f (fromToS 0 5)      -- Rotate 15 times
+                    & setDuration 30
+                    & signalA (reverseS . powerS 2 . reverseS) -- Start fast, end slow
+                    & pauseAtEnd 2
+                  play $ fourierA f (constantS 0)       -- Don't rotate at all
+                    & setDuration 10
+                    & reverseA
+                    & signalA (powerS 2)                       -- Start slow, end fast
+                    & pauseAtEnd 2
+            r <- P.embed $ renderToMemory anim RasterAuto RenderGif 480 360 15
+            case r of
+              Right s -> do
+                void $ tell ctx (TFile "lol.gif" s)
+              Left e ->
+                putLBSLn $ "Failed with reason: " <> e
+          Nothing ->
+            void $ tell @L.Text ctx "Couldn't find an svg"
 
     help (const "Render a fourier thing") $
       command @'[KleenePlusConcat L.Text] "renderf" \ctx msg -> do
@@ -121,6 +163,10 @@ drawCircles' circles = mkGroup
 
 -- layer 1
 newtype Fourier = Fourier {fourierCoefficients :: [Complex Double]}
+
+mkSVGLatex :: Tree -> Fourier
+mkSVGLatex t = mkFourier $ lineToPoints 500 $
+  toLineCommands $ extractPath $ center $ scaleToFit 9.6 7.2 $ t
 
 mkFourierLatex :: L.Text -> Fourier
 mkFourierLatex t = mkFourier $ lineToPoints 500 $

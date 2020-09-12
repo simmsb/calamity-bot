@@ -42,7 +42,7 @@ flags:
     manual: True
 
 executables:
-  calamity-bot:
+  calamity-bot-debug:
     main: Main.hs
     source-dirs: app
     ghc-options:

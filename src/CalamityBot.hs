@@ -6,6 +6,7 @@ module CalamityBot
 where
 
 import Calamity
+import Calamity.Commands
 import Calamity.Cache.InMemory
 import System.Environment
 import Polysemy
@@ -19,8 +20,12 @@ runBot = do
   Di.new \di ->
     void . runFinal
       . embedToFinal
+      . runDiToIO di
+      . useConstantPrefix "leakcheck!"
       . runCacheInMemoryNoMsg
       . runMetricsNoop
-      . runDiToIO di
       . runBotIO (BotToken token)
-      $ pure ()
+      $ addCommands $ do
+        helpCommand
+        command @'[] "test" \ctx ->
+          void $ tell @Text ctx "hi"

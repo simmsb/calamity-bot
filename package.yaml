@@ -21,8 +21,14 @@ description:         A discord bot
 
 
 dependencies:
-  - base-noprelude >= 4.12 && < 5
-  - relude ^>= 0.7
+  - name: base
+    version: ">= 4.12 && < 5"
+    mixin:
+      - hiding (Prelude)
+  - name: relude
+    version: "^>= 0.7"
+    mixin:
+      - (Relude as Prelude)
   - calamity ^>= 0.1
   - di-polysemy ^>= 0.2
   - polysemy ^>= 1.3

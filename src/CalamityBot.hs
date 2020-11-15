@@ -20,12 +20,13 @@ runBot = do
   Di.new \di ->
     void . runFinal
       . embedToFinal
-      . runDiToIO di
       . useConstantPrefix "leakcheck!"
       . runCacheInMemoryNoMsg
       . runMetricsNoop
+      . runDiToIO di
       . runBotIO (BotToken token)
       $ addCommands $ do
         helpCommand
-        command @'[] "test" \ctx ->
-          void $ tell @Text ctx "hi"
+        forM_ [0 .. 100] \i ->
+          command @'[] ("test" <> show i) \ctx ->
+            void $ tell @Text ctx "hi"

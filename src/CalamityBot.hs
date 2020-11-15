@@ -40,7 +40,6 @@ runBot = Di.new \di -> do
   pool <- createPool (connectPostgreSQL db_path) close 3 0.5 30
   void . runFinal
     . embedToFinal
-    . runDiToIO di
     . configAsConst cfg
     . timeoutToIOFinal
     . immortalToIOFinal
@@ -48,6 +47,7 @@ runBot = Di.new \di -> do
     . runCacheInMemoryNoMsg
     . runMetricsNoop
     . useConstantPrefix "c!"
+    . runDiToIO di
     . runBotIO (BotToken token)
     $ do
       addCommands do

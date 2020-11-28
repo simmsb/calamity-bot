@@ -8,6 +8,7 @@ where
 import Calamity
 import Calamity.Cache.InMemory
 import Calamity.Commands
+import Calamity.Cache.Eff
 import Calamity.Gateway.Types (StatusUpdateData (..))
 import Calamity.Metrics.Noop
 import CalamityBot.Commands
@@ -48,7 +49,7 @@ runBot = Di.new \di -> do
     . runMetricsNoop
     . useConstantPrefix "c!"
     . runDiToIO di
-    . runBotIO (BotToken token)
+    . runBotIO (BotToken token) defaultIntents
     $ do
       addCommands do
         void helpCommand
@@ -81,6 +82,9 @@ runBot = Di.new \di -> do
               "The command: " <> codeline (L.fromStrict n)
                 <> ", failed with reason: "
                 <> codeblock' Nothing r
+      react @'MessageCreateEvt \_ -> do
+        users <- getUsers
+        print users
       react @'ReadyEvt \_ -> do
         sendPresence
           StatusUpdateData

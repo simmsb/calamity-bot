@@ -71,7 +71,7 @@ extra-deps:
   - vinyl-0.13.0@sha256:0f247cd3f8682b30881a07de18e6fec52d540646fbcb328420049cc8d63cd407,3724
   # - calamity-0.1.20.0
   - github: nitros12/calamity
-    commit: 8bf97f8341a363ed07f94959b528d5a4745beb78 
+    commit: d84c11ac19c97daaa63ba2df32692c3f79710441 
   - github: nitros12/fuzzy-dates
     commit: 24fb3e73621a19f2cad0894412820b56cb67b4b9
   - github: polysemy-research/polysemy

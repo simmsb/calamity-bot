@@ -6,9 +6,9 @@ module CalamityBot
 where
 
 import Calamity
+import           Calamity.HTTP                  as H
 import Calamity.Cache.InMemory
 import Calamity.Commands
-import Calamity.Cache.Eff
 import Calamity.Gateway.Types (StatusUpdateData (..))
 import Calamity.Metrics.Noop
 import CalamityBot.Commands
@@ -26,6 +26,7 @@ import Polysemy.Immortal
 import Polysemy.Timeout
 import System.Environment
 import TextShow
+import Control.Lens ((^.))
 
 cfg :: HashMap Text Text
 cfg =
@@ -58,6 +59,14 @@ runBot = Di.new \di -> do
         aliasGroup
         reanimateGroup
         crapGroup
+        command @'[] "testup" \ctx ->
+          case ctx ^. #guild of
+            Just g -> do
+              member <- upgrade @Calamity.Member (getID @Guild g, getID @Calamity.Member $ ctx ^. #user)
+              print member
+              member' <- invoke $ H.GetGuildMember g (ctx ^. #user)
+              print member'
+            _ -> print "not a guild"
         hide do
           group "cantseethis" do
             command @'[] "nope" \ctx ->
@@ -82,9 +91,6 @@ runBot = Di.new \di -> do
               "The command: " <> codeline (L.fromStrict n)
                 <> ", failed with reason: "
                 <> codeblock' Nothing r
-      react @'MessageCreateEvt \_ -> do
-        users <- getUsers
-        print users
       react @'ReadyEvt \_ -> do
         sendPresence
           StatusUpdateData

@@ -69,9 +69,10 @@ extra-deps:
   - primitive-extras-0.8@sha256:fca0310150496867f5b9421fe1541ecda87fae17eae44885a29f9c52dd00c8ff,2963
   - primitive-unlifted-0.1.3.0@sha256:a98f827740f5dcf097d885b3a47c32f4462204449620abc9d51b8c4f8619f9e6,1427
   - vinyl-0.13.0@sha256:0f247cd3f8682b30881a07de18e6fec52d540646fbcb328420049cc8d63cd407,3724
-  # - calamity-0.1.20.0
+  - unboxing-vector-0.2.0.0@sha256:a8f8ddab08d16cd4051fb1febb06aaaa54d211b50001664c06282cfdcb97bab0,3768
+    #  - calamity-0.1.22.0
   - github: nitros12/calamity
-    commit: d84c11ac19c97daaa63ba2df32692c3f79710441 
+    commit: 74e89a56e68de8adeb61b4926eec10a1e8bbb43c 
   - github: nitros12/fuzzy-dates
     commit: 24fb3e73621a19f2cad0894412820b56cb67b4b9
   - github: polysemy-research/polysemy

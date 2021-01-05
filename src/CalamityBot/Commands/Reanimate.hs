@@ -3,7 +3,7 @@ module CalamityBot.Commands.Reanimate
     ( reanimateGroup,
     ) where
 
-import Calamity.Commands
+import Calamity.Commands as C
 import Calamity
 import CalamityBot.Utils.Reanimate
 import qualified Data.Text.Lazy as L
@@ -55,7 +55,7 @@ usableTree _ = True
 reanimateGroup :: BotC r => P.Sem (DSLState r) ()
 reanimateGroup = void
   . help (const "Commands related to reanimate fuckery")
-  . group "reanimate"
+  . C.group "reanimate"
   $ do
     help (const "Render a message") $
       command @'[KleenePlusConcat L.Text] "render" \ctx msg -> do

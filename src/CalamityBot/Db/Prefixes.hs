@@ -20,7 +20,7 @@ addPrefix :: (Snowflake Guild, L.Text) -> SqlInsert Pg.Postgres DBPrefixT
 addPrefix (gid, pre_) =
   insert (db ^. #prefixes) (insertValues [DBPrefix (DBGuildId gid) pre_])
 
-countPrefixes :: Snowflake Guild -> SqlSelect Pg.Postgres Int
+countPrefixes :: Snowflake Guild -> SqlSelect Pg.Postgres Integer
 countPrefixes gid = select $
   aggregate_
     (const countAll_)

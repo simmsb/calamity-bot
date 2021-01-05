@@ -1,10 +1,10 @@
-cabal-version: 1.18
+cabal-version: 2.0
 
 -- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a69198cbe701c843df6f290b2b6a246d259dea6227c50f3006d36575a9623d47
+-- hash: 8cf6aa55d512a5a2f6e512114a01ee73c51a7cdb0356f75badb777f45cc67ca4
 
 name:           calamity-bot
 version:        0.0.0
@@ -57,7 +57,6 @@ library
       CalamityBot.Utils.Utils
       Polysemy.Immortal
       Polysemy.Timeout
-      Prelude
   other-modules:
       Paths_calamity_bot
   hs-source-dirs:
@@ -67,7 +66,7 @@ library
   build-depends:
       JuicyPixels >=3.3 && <3.4
     , arbor-lru-cache >=0.1 && <0.2
-    , base-noprelude >=4.12 && <5
+    , base >=4.12 && <5
     , beam-core >=0.9 && <0.10
     , beam-postgres >=0.5 && <0.6
     , bytestring >=0.10 && <0.11
@@ -103,6 +102,9 @@ library
     , time >=1.9 && <1.10
     , unordered-containers >=0.2.10 && <0.3
     , wreq >=0.5 && <0.6
+  mixins:
+      base hiding (Prelude)
+    , relude (Relude as Prelude, Relude.Unsafe, Relude, Relude.Extra)
   if flag(smuggler2)
     build-depends:
         smuggler2 >=0.3 && <0.4
@@ -117,11 +119,11 @@ executable calamity-bot
   hs-source-dirs:
       app
   default-extensions: StrictData IncoherentInstances TemplateHaskell RecursiveDo AllowAmbiguousTypes BlockArguments NoMonomorphismRestriction BangPatterns BinaryLiterals UndecidableInstances ConstraintKinds DataKinds DefaultSignatures DeriveDataTypeable DeriveFoldable DeriveFunctor DeriveGeneric DeriveTraversable DoAndIfThenElse EmptyDataDecls ExistentialQuantification FlexibleContexts FlexibleInstances FunctionalDependencies GADTs DerivingVia DerivingStrategies GeneralizedNewtypeDeriving StandaloneDeriving DeriveAnyClass InstanceSigs KindSignatures LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings OverloadedLabels PartialTypeSignatures PatternGuards PolyKinds RankNTypes RecordWildCards ScopedTypeVariables TupleSections TypeFamilies TypeSynonymInstances ViewPatterns DuplicateRecordFields TypeOperators TypeApplications RoleAnnotations PatternSynonyms
-  ghc-options: -O2 -fspecialise-aggressively -flate-specialise -fplugin=Polysemy.Plugin -Wall -threaded -rtsopts -with-rtsopts=-N -Wincomplete-uni-patterns -Wincomplete-record-updates -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -Wmissing-export-lists -Wpartial-fields -fno-warn-unused-do-bind
+  ghc-options: -O2 -fspecialise-aggressively -flate-specialise -fplugin=Polysemy.Plugin -Wall -threaded -rtsopts -with-rtsopts=-N -Wincomplete-uni-patterns -Wincomplete-record-updates -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -Wmissing-export-lists -Wpartial-fields -fno-warn-unused-do-bind -eventlog
   build-depends:
       JuicyPixels >=3.3 && <3.4
     , arbor-lru-cache >=0.1 && <0.2
-    , base-noprelude >=4.12 && <5
+    , base >=4.12 && <5
     , beam-core >=0.9 && <0.10
     , beam-postgres >=0.5 && <0.6
     , bytestring >=0.10 && <0.11
@@ -159,6 +161,9 @@ executable calamity-bot
     , time >=1.9 && <1.10
     , unordered-containers >=0.2.10 && <0.3
     , wreq >=0.5 && <0.6
+  mixins:
+      base hiding (Prelude)
+    , relude (Relude as Prelude, Relude.Unsafe, Relude, Relude.Extra)
   if flag(smuggler2)
     build-depends:
         smuggler2 >=0.3 && <0.4

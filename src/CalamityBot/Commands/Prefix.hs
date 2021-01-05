@@ -19,7 +19,7 @@ import Database.Beam (runSelectReturningList, runDelete, runInsert, runSelectRet
 guildOnly :: Context -> Maybe L.Text
 guildOnly ctx = maybe (Just "Can only be used in guilds") (const Nothing) (ctx ^. #guild)
 
-prefixLimit :: P.Member DBEff r => Int -> Context -> P.Sem r (Maybe L.Text)
+prefixLimit :: P.Member DBEff r => Integer -> Context -> P.Sem r (Maybe L.Text)
 prefixLimit limit ctx =
   case ctx ^. #guild of
     Just g -> do

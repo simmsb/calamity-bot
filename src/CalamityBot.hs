@@ -8,7 +8,7 @@ where
 import Calamity
 import           Calamity.HTTP                  as H
 import Calamity.Cache.InMemory
-import Calamity.Commands
+import Calamity.Commands as C
 import Calamity.Gateway.Types (StatusUpdateData (..))
 import Calamity.Metrics.Noop
 import CalamityBot.Commands
@@ -68,7 +68,7 @@ runBot = Di.new \di -> do
               print member'
             _ -> print "not a guild"
         hide do
-          group "cantseethis" do
+          C.group "cantseethis" do
             command @'[] "nope" \ctx ->
               void $ tell @L.Text ctx "You found me"
           command @'[] "cantseeme" \ctx ->

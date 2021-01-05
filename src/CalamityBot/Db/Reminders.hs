@@ -70,7 +70,7 @@ remindersForPaginatedAfter (uid, width, target, rid) =
     $ filter_ (\r -> (reminderTarget r, reminderId r) `tupleGT` (val_ target, val_ rid))
     $ allRemindersFor uid
 
-inNMinutes :: QGenExpr e Pg.Postgres s Int -> QGenExpr e Pg.Postgres s UTCTime
+inNMinutes :: QGenExpr e Pg.Postgres s Integer -> QGenExpr e Pg.Postgres s UTCTime
 inNMinutes = customExpr_ innm
   where innm :: (Monoid a, IsString a) => a -> a
         innm offs = "(NOW() + INTERVAL '" <> offs <> " MINUTES')"

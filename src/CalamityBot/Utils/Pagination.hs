@@ -106,7 +106,8 @@ paginate get render dest = (void . P.runFail) do
       Just c' -> do
         let s' = Pagination nextPage c'
         let renderedMsg = appEndo (intoMsg $ render s') def
-        invoke $ EditMessage (getID @Channel msg) (getID @Message msg) (renderedMsg ^. #content) (renderedMsg ^. #embed)
+        invoke $ EditMessage (getID @Channel msg) (getID @Message msg) (editMessageContent (renderedMsg ^. #content) 
+                                                                          <> editMessageEmbed (renderedMsg ^. #embed))
         P.put s'
       Nothing ->
         pure ()

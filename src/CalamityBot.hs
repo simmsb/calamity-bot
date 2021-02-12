@@ -20,6 +20,7 @@ import qualified Data.ByteString.Char8 as BS
 import qualified Data.Text.Lazy as L
 import Database.PostgreSQL.Simple (close, connectPostgreSQL)
 import qualified Di
+import qualified Di.Core as DiC
 import DiPolysemy
 import Polysemy
 import Polysemy.Immortal
@@ -35,11 +36,14 @@ cfg =
     , ("bunny_path", "assets/bunny.mp4")
     ]
 
+filterDi :: DiC.Di l p m -> DiC.Di l p m
+filterDi = DiC.filter (\_ _ _ -> False)
+
 runBot :: IO ()
 runBot = Di.new \di -> do
   token <- L.pack <$> getEnv "BOT_TOKEN"
   db_path <- BS.pack <$> getEnv "DB_STRING"
-  pool <- createPool (connectPostgreSQL db_path) close 3 0.5 30
+  pool <- createPool (connectPostgreSQL db_path) close 2 0.5 2
   void . runFinal
     . embedToFinal
     . configAsConst cfg
@@ -50,7 +54,9 @@ runBot = Di.new \di -> do
     . runMetricsNoop
     . useConstantPrefix "c!"
     . runDiToIO di
+    -- . DiPolysemy.local filterDi -- disables calamity logging
     . runBotIO (BotToken token) defaultIntents
+    -- . DiPolysemy.local (const di)
     $ do
       addCommands do
         void helpCommand
@@ -59,7 +65,8 @@ runBot = Di.new \di -> do
         aliasGroup
         reanimateGroup
         crapGroup
-        command @'[] "testup" \ctx ->
+        command @'[] "testup" \ctx -> do
+          info @Text "hi"
           case ctx ^. #guild of
             Just g -> do
               member <- upgrade @Calamity.Member (getID @Guild g, getID @Calamity.Member $ ctx ^. #user)

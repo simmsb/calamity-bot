@@ -31,6 +31,7 @@ dependencies:
       - (Relude as Prelude, Relude.Unsafe, Relude, Relude.Extra)
   - calamity ^>= 0.1.20
   - di ^>= 1.3
+  - di-core ^>= 1.0
   - di-polysemy ^>= 0.2
   - polysemy ^>= 1.3
   - polysemy-plugin ^>= 0.2
@@ -66,16 +67,6 @@ dependencies:
   - directory ^>= 1.3
   - temporary ^>= 1.3
 
-when:
-  condition: flag(smuggler2)
-  dependencies:
-    - smuggler2 ^>= 0.3
-
-flags:
-  smuggler2:
-    default: False
-    manual: True
-
 executables:
   calamity-bot:
     main: Main.hs
@@ -104,10 +95,6 @@ executables:
       - optparse-applicative
 
 library:
-  when:
-    condition: flag(smuggler2)
-    ghc-options:
-      - -fplugin=Smuggler2.Plugin
   ghc-options:
     - -fplugin=Polysemy.Plugin
     - -Wall

@@ -83,7 +83,7 @@ fmtReminderMessage r = mention (r ^. #reminderUserId) <> ", " <> delta <> " ago,
 reminderTask :: (BotC r, P.Member DBEff r) => P.Sem r ()
 reminderTask = untilJustFinalIO do
   upcoming <- usingConn $ runSelectReturningList upcomingReminders
-  void $ P.sequenceConcurrently $ (P.embed (threadDelaySeconds 60) : map processReminder upcoming)
+  void $ P.sequenceConcurrently $ (P.embed (threadDelaySeconds 6) : map processReminder upcoming)
   pure Nothing
   where
     processReminder :: (BotC r, P.Member DBEff r) => DBReminder -> P.Sem r ()

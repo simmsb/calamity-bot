@@ -4,7 +4,7 @@ cabal-version: 2.0
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8cf6aa55d512a5a2f6e512114a01ee73c51a7cdb0356f75badb777f45cc67ca4
+-- hash: ce3019269322680a1960fe483dfcd9b008a68f4b314292b9ccd8ce11b8154441
 
 name:           calamity-bot
 version:        0.0.0
@@ -27,10 +27,6 @@ extra-doc-files:
 source-repository head
   type: git
   location: https://github.com/nitros12/calamity-bot
-
-flag smuggler2
-  manual: True
-  default: False
 
 library
   exposed-modules:
@@ -73,6 +69,7 @@ library
     , calamity >=0.1.20 && <0.2
     , data-default-class >=0.1 && <0.2
     , di >=1.3 && <1.4
+    , di-core >=1.0 && <1.1
     , di-polysemy >=0.2 && <0.3
     , directory >=1.3 && <1.4
     , emojis >=0.1 && <0.2
@@ -105,11 +102,6 @@ library
   mixins:
       base hiding (Prelude)
     , relude (Relude as Prelude, Relude.Unsafe, Relude, Relude.Extra)
-  if flag(smuggler2)
-    build-depends:
-        smuggler2 >=0.3 && <0.4
-  if flag(smuggler2)
-    ghc-options: -fplugin=Smuggler2.Plugin
   default-language: Haskell2010
 
 executable calamity-bot
@@ -131,6 +123,7 @@ executable calamity-bot
     , calamity-bot
     , data-default-class >=0.1 && <0.2
     , di >=1.3 && <1.4
+    , di-core >=1.0 && <1.1
     , di-polysemy >=0.2 && <0.3
     , directory >=1.3 && <1.4
     , emojis >=0.1 && <0.2
@@ -164,7 +157,4 @@ executable calamity-bot
   mixins:
       base hiding (Prelude)
     , relude (Relude as Prelude, Relude.Unsafe, Relude, Relude.Extra)
-  if flag(smuggler2)
-    build-depends:
-        smuggler2 >=0.3 && <0.4
   default-language: Haskell2010

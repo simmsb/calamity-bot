@@ -65,9 +65,9 @@ extra-deps:
   - constraints-extras-0.3.0.2@sha256:013b8d0392582c6ca068e226718a4fe8be8e22321cc0634f6115505bf377ad26,1853
   - data-default-instances-base-0.1.0.1@sha256:985a13d7103e45a65f06f277b735ef025636014f0d29dd6de998bc7628e09be9,509
   - unboxing-vector-0.2.0.0@sha256:a8f8ddab08d16cd4051fb1febb06aaaa54d211b50001664c06282cfdcb97bab0,3768
-  - github: nitros12/calamity
-    commit: 52343c41ff56e17b274e10d422cacdfa57747a61 
-  - github: nitros12/fuzzy-dates
+  - git: https://github.com/nitros12/calamity
+    commit: 4666990b8c73d0b45e08cc1021cc8795b2b3b5be 
+  - git: https://github.com/nitros12/fuzzy-dates
     commit: 24fb3e73621a19f2cad0894412820b56cb67b4b9
   - git: https://github.com/polysemy-research/polysemy
     commit: 478c86e080f38334f7ea5b0259f900916db58c33 
@@ -104,8 +104,8 @@ extra-deps:
 # Allow a newer minor version of GHC than the snapshot specifies
 # compiler-check: newer-minor
 
-compiler: ghc-8.10.2.20210102
-system-ghc: true
+        #compiler: ghc-8.10.2.20210102
+        #system-ghc: true
 
 ghc-options:
-  "$everything": -O2 -finfo-table-map -fdistinct-constructor-tables
+  "$everything": -O2 #-finfo-table-map -fdistinct-constructor-tables

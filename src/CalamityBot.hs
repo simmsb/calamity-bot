@@ -6,6 +6,8 @@ module CalamityBot
 where
 
 import Calamity
+import Calamity.Utils.Message
+import Calamity.Cache.Eff (getMessage)
 import           Calamity.HTTP                  as H
 import Calamity.Cache.InMemory
 import Calamity.Commands as C
@@ -28,6 +30,7 @@ import Polysemy.Timeout
 import System.Environment
 import TextShow
 import Control.Lens ((^.))
+import Text.Pretty.Simple
 
 cfg :: HashMap Text Text
 cfg =
@@ -50,7 +53,7 @@ runBot = Di.new \di -> do
     . timeoutToIOFinal
     . immortalToIOFinal
     . runDBEffPooled pool
-    . runCacheInMemoryNoMsg
+    . runCacheInMemory
     . runMetricsNoop
     . useConstantPrefix "c!"
     . runDiToIO di
@@ -80,6 +83,15 @@ runBot = Di.new \di -> do
               void $ tell @L.Text ctx "You found me"
           command @'[] "cantseeme" \ctx ->
             void $ tell @L.Text ctx "You found me"
+          command @'[] "prevmsg" \ctx -> do
+            Right msgs <- invoke $ GetChannelMessages (ctx ^. #channel) (Just . ChannelMessagesBefore $ ctx ^. #message . #id) (Just $ ChannelMessagesLimit 10)
+            info . showt $ msgs
+          command @'[Snowflake Message] "inspectmsg" \ctx mid -> do
+            Just msg <- getMessage mid
+            void . tell ctx . codeblock' Nothing $ pShowNoColor msg
+          command @'[Snowflake Message] "inspectmsgF" \ctx mid -> do
+            Right msg <- invoke $ GetMessage (ctx ^. #channel) mid
+            void . tell ctx . codeblock' Nothing $ pShowNoColor msg
       react @('CustomEvt "command-error" (Context, CommandError)) \(ctx, e) -> do
         info $ "Command failed with reason: " <> showtl e
         case e of

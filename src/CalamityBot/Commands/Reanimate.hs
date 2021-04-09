@@ -13,6 +13,7 @@ import Reanimate.Render (Format(RenderWebm, RenderGif), Raster(RasterAuto))
 
 import           Data.Complex
 import           Graphics.SvgTree hiding ( group )
+import qualified Graphics.SvgTree.Types
 import           Linear.V2
 import           Codec.Picture
 import qualified Data.ByteString as B
@@ -73,10 +74,10 @@ reanimateGroup = void
           Just svg -> do
             r <- P.embed $ Network.Wreq.get (L.unpack $ svg ^. #url)
             let file = r ^. responseBody
-            let Just doc = parseSvgFile "a.svg" (toStrict file)
-            let tree = head . fromList . filter usableTree $ doc ^. Graphics.SvgTree.elements
+            let Just doc = parseSvgFile "a.svg" (decodeUtf8 $ toStrict file)
+            let tree = head . fromList . filter usableTree $ doc ^. Graphics.SvgTree.Types.documentElements
             let f = mkSVGLatex $ flipYAxis tree
-            let anim = setDuration 20 $ sceneAnimation $ do
+            let anim = setDuration 20 $ scene $ do
                   _ <- newSpriteSVG $ mkBackgroundPixel (PixelRGBA8 252 252 252 0xFF)
                   play $ fourierA f (fromToS 0 5)      -- Rotate 15 times
                     & setDuration 30
@@ -99,7 +100,7 @@ reanimateGroup = void
     help (const "Render a fourier thing") $
       command @'[KleenePlusConcat L.Text] "renderf" \ctx msg -> do
         let f = mkFourierLatex msg
-        let anim = setDuration 20 $ sceneAnimation $ do
+        let anim = setDuration 20 $ scene $ do
               _ <- newSpriteSVG $ mkBackgroundPixel (PixelRGBA8 252 252 252 0xFF)
               play $ fourierA f (fromToS 0 5)      -- Rotate 15 times
                 & setDuration 30

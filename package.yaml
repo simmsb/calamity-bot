@@ -26,46 +26,46 @@ dependencies:
     mixin:
       - hiding (Prelude)
   - name: relude
-    version: "^>= 0.7"
     mixin:
       - (Relude as Prelude, Relude.Unsafe, Relude, Relude.Extra)
-  - calamity ^>= 0.1.20
-  - di ^>= 1.3
-  - di-core ^>= 1.0
-  - di-polysemy ^>= 0.2
-  - polysemy ^>= 1.3
-  - polysemy-plugin ^>= 0.2
-  - lens ^>= 4.19
-  - generic-lens ^>= 2
-  - text ^>= 1.2
-  - text-show ^>= 3.8
-  - unordered-containers ^>= 0.2.10
-  - beam-core ^>= 0.9
-  - beam-postgres ^>= 0.5
-  - arbor-lru-cache ^>= 0.1
-  - bytestring ^>= 0.10
-  - time ^>= 1.9
-  - hourglass ^>= 0.2
-  - megaparsec ^>= 8.0
-  - replace-megaparsec ^>= 1.4
-  - fuzzy-dates-megaparsec ^>= 0.1
-  - table-layout ^>= 0.9
-  - postgresql-simple ^>= 0.6
-  - resource-pool ^>= 0.2
-  - immortal ^>= 0.3
-  - reanimate ^>= 0.4
-  - reanimate-svg ^>= 0.10
-  - process ^>= 1.6
-  - filepath ^>= 1.4
-  - data-default-class ^>= 0.1
-  - emojis ^>= 0.1
-  - JuicyPixels ^>= 3.3
-  - linear ^>= 1.21
-  - mime-types ^>= 0.1
-  - wreq ^>= 0.5
-  - process-extras ^>= 0.7
-  - directory ^>= 1.3
-  - temporary ^>= 1.3
+  - calamity
+  - di
+  - di-core
+  - di-polysemy
+  - polysemy
+  - polysemy-plugin >= 0.2
+  - lens
+  - generic-lens
+  - text
+  - text-show
+  - unordered-containers
+  - beam-core
+  - beam-postgres
+  - arbor-lru-cache
+  - bytestring
+  - time
+  - hourglass
+  - megaparsec
+  - replace-megaparsec
+  - fuzzy-dates-megaparsec
+  - table-layout
+  - postgresql-simple
+  - resource-pool
+  - immortal
+  - reanimate
+  - reanimate-svg
+  - process
+  - filepath
+  - data-default-class
+  - emojis
+  - JuicyPixels
+  - linear
+  - mime-types
+  - wreq
+  - process-extras
+  - directory
+  - temporary
+  - pretty-simple
 
 executables:
   calamity-bot:

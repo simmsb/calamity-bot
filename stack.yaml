@@ -63,7 +63,7 @@ extra-deps:
   - hgeometry-0.12.0.1@sha256:907916976bb7268521b6aba9ada7557469c32db9f61625e1b1b1c2aab40804bf,14945
   - hgeometry-combinatorial-0.12.0.1@sha256:0c80854ff62c0851e928a617a2d9c38fb89865afed2f840c6caf27068fc60a3d,9061
   - git: https://github.com/nitros12/calamity
-    commit: 72f2d075f4d3087d2f084b087f15346d10d52a57
+    commit: 6c78a8bd6a9047b555f41c277227e182f458ce65
     subdirs:
       - calamity
   - git: https://github.com/nitros12/fuzzy-dates

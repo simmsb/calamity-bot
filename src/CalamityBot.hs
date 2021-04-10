@@ -13,6 +13,7 @@ import Calamity.Cache.InMemory
 import Calamity.Commands as C
 import Calamity.Gateway.Types (StatusUpdateData (..))
 import Calamity.Metrics.Noop
+import qualified Calamity.Types.Model.Presence.Activity
 import CalamityBot.Commands
 import CalamityBot.Db
 -- import CalamityBot.PrefixHandler
@@ -92,6 +93,8 @@ runBot = Di.new \di -> do
           command @'[Snowflake Message] "inspectmsgF" \ctx mid -> do
             Right msg <- invoke $ GetMessage (ctx ^. #channel) mid
             void . tell ctx . codeblock' Nothing $ pShowNoColor msg
+          command @'[] "treply" \ctx ->
+            void $ reply @Text (ctx ^. #message) "hello"
       react @('CustomEvt "command-error" (Context, CommandError)) \(ctx, e) -> do
         info $ "Command failed with reason: " <> showtl e
         case e of
@@ -114,7 +117,7 @@ runBot = Di.new \di -> do
         sendPresence
           StatusUpdateData
             { since = Nothing,
-              game = Just $ activity "Prefix: c!" Game,
+              game = Just $ Calamity.Types.Model.Presence.Activity.activity "Prefix: c!" Game,
               status = "online",
               afk = False
             }

@@ -25,6 +25,7 @@ import Database.PostgreSQL.Simple (close, connectPostgreSQL)
 import qualified Di
 import qualified Di.Core as DiC
 import DiPolysemy
+import qualified Polysemy.Async as P
 import Polysemy
 import Polysemy.Immortal
 import Polysemy.Timeout
@@ -95,6 +96,8 @@ runBot = Di.new \di -> do
             void . tell ctx . codeblock' Nothing $ pShowNoColor msg
           command @'[] "treply" \ctx ->
             void $ reply @Text (ctx ^. #message) "hello"
+          -- command @'[] "spam" \ctx ->
+          --   replicateM_ 10 . P.async $ reply @Text (ctx ^. #message) "hello"
       react @('CustomEvt "command-error" (Context, CommandError)) \(ctx, e) -> do
         info $ "Command failed with reason: " <> showtl e
         case e of

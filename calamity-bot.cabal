@@ -4,7 +4,7 @@ cabal-version: 2.0
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 54efe375366c8687adaf64298159aa3de59d11701629bb38a2ee5f2c8577ab70
+-- hash: f8f416ccf734cbb7b5c23377b7a86a0f7334aad5f4c7428db7331fb135e19051
 
 name:           calamity-bot
 version:        0.0.0
@@ -72,9 +72,9 @@ library
     , di-core
     , di-polysemy
     , directory
+    , duckling
     , emojis
     , filepath
-    , fuzzy-dates-megaparsec
     , generic-lens
     , hourglass
     , immortal
@@ -91,7 +91,6 @@ library
     , reanimate
     , reanimate-svg
     , relude
-    , replace-megaparsec
     , resource-pool
     , table-layout
     , temporary
@@ -127,9 +126,9 @@ executable calamity-bot
     , di-core
     , di-polysemy
     , directory
+    , duckling
     , emojis
     , filepath
-    , fuzzy-dates-megaparsec
     , generic-lens
     , hourglass
     , immortal
@@ -147,7 +146,6 @@ executable calamity-bot
     , reanimate
     , reanimate-svg
     , relude
-    , replace-megaparsec
     , resource-pool
     , table-layout
     , temporary

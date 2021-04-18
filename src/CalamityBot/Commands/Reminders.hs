@@ -1,45 +1,50 @@
 -- |  Reminder related commands
-module CalamityBot.Commands.Reminders
-  ( reminderGroup,
-  )
-where
+module CalamityBot.Commands.Reminders (
+  reminderGroup,
+) where
 
-import Calamity.Commands
 import Calamity
+import Calamity.Commands
 import Calamity.Internal.Utils
 import CalamityBot.Db
 import CalamityBot.Utils.Pagination
-import Control.Concurrent (threadDelay)
 import CalamityBot.Utils.Utils
+import Control.Concurrent (threadDelay)
 import Control.Lens hiding (Context)
-import Data.Dates.Parsing
 import Data.Default.Class
-import qualified Data.Text.Lazy as L
 import Data.Hourglass
+import qualified Data.Text as T
+import qualified Data.Text.Lazy as L
+import Data.Time.Clock (getCurrentTime)
+import Data.Time.LocalTime (utc, utcToZonedTime, zonedTimeToUTC)
 import Data.Traversable
-import qualified Polysemy as P
 import Database.Beam (runDelete, runInsert, runSelectReturningList)
+import qualified Duckling.Core as D
+import qualified Duckling.Time.Types as D
+import qualified Polysemy as P
 import qualified Polysemy.Async as P
 import Polysemy.Immortal
 import Polysemy.Timeout
-import Replace.Megaparsec
 import TextShow (TextShow (showtl))
 import Time.System
 
-mergePreSuff :: L.Text -> L.Text -> L.Text
-mergePreSuff s p = L.strip (L.strip s <> " " <> L.strip p)
+mergePreSuff :: T.Text -> T.Text -> T.Text
+mergePreSuff s p = T.strip (T.strip s <> " " <> T.strip p)
+
+niceRemoveRange :: Int -> Int -> T.Text -> T.Text
+niceRemoveRange s e t = mergePreSuff (T.take s t) (T.drop e t)
 
 timeTable :: [(L.Text, Seconds)]
 timeTable =
-  [ ("year", 365 * day),
-    ("week", 7 * day),
-    ("day", day),
-    ("hour", toSeconds $ Hours 1),
-    ("minute", toSeconds $ Minutes 1),
-    ("second", 1)
+  [ ("year", 365 * day)
+  , ("week", 7 * day)
+  , ("day", day)
+  , ("hour", toSeconds $ Hours 1)
+  , ("minute", toSeconds $ Minutes 1)
+  , ("second", 1)
   ]
-  where
-    day = toSeconds $ Hours 24
+ where
+  day = toSeconds $ Hours 24
 
 humanListConcat :: [L.Text] -> L.Text
 humanListConcat xs = case nonEmpty xs of
@@ -58,13 +63,13 @@ formatTimeDiff start end =
    in filter ((/= 0) . snd) (go diff)
         & map (\(name, Seconds n) -> showtl n <> " " <> name <> memptyIfTrue (n == 1) "s")
         & humanListConcat
-  where
-    go :: Seconds -> [(L.Text, Seconds)]
-    go duration = flip evalState duration $ for timeTable \(name, period) -> do
-      duration' <- get
-      let (n, duration'') = divMod duration' period
-      put duration''
-      pure (name, n)
+ where
+  go :: Seconds -> [(L.Text, Seconds)]
+  go duration = flip evalState duration $ for timeTable \(name, period) -> do
+    duration' <- get
+    let (n, duration'') = divMod duration' period
+    put duration''
+    pure (name, n)
 
 threadDelaySeconds :: Int -> IO ()
 threadDelaySeconds = threadDelay . (* 1000000)
@@ -77,25 +82,25 @@ sleepUntil when_ = do
 
 fmtReminderMessage :: DBReminder -> L.Text
 fmtReminderMessage r = mention (r ^. #reminderUserId) <> ", " <> delta <> " ago, you asked me to remind you about: " <> (r ^. #reminderMessage)
-  where
-    delta = formatTimeDiff (utcTimeToHourglass (r ^. #reminderCreated)) (utcTimeToHourglass (r ^. #reminderTarget))
+ where
+  delta = formatTimeDiff (utcTimeToHourglass (r ^. #reminderCreated)) (utcTimeToHourglass (r ^. #reminderTarget))
 
 reminderTask :: (BotC r, P.Member DBEff r) => P.Sem r ()
 reminderTask = untilJustFinalIO do
   upcoming <- usingConn $ runSelectReturningList upcomingReminders
   void $ P.sequenceConcurrently $ (P.embed (threadDelaySeconds 6) : map processReminder upcoming)
   pure Nothing
-  where
-    processReminder :: (BotC r, P.Member DBEff r) => DBReminder -> P.Sem r ()
-    processReminder r = do
-      P.embed . sleepUntil $ utcTimeToHourglass (r ^. #reminderTarget)
-      let msg = fmtReminderMessage r
-      resp <- tell (r ^. #reminderChannelId) msg
-      case resp of
-        Left _ ->
-          void $ tell (r ^. #reminderUserId) msg
-        _ -> pure ()
-      usingConn (runDelete $ removeReminder (r ^. #reminderUserId, r ^. #reminderId))
+ where
+  processReminder :: (BotC r, P.Member DBEff r) => DBReminder -> P.Sem r ()
+  processReminder r = do
+    P.embed . sleepUntil $ utcTimeToHourglass (r ^. #reminderTarget)
+    let msg = fmtReminderMessage r
+    resp <- tell (r ^. #reminderChannelId) msg
+    case resp of
+      Left _ ->
+        void $ tell (r ^. #reminderUserId) msg
+      _ -> pure ()
+    usingConn (runDelete $ removeReminder (r ^. #reminderUserId, r ^. #reminderId))
 
 reminderGroup :: (BotC r, P.Members '[DBEff, Immortal, Timeout] r) => P.Sem (DSLState r) ()
 reminderGroup = void
@@ -105,24 +110,32 @@ reminderGroup = void
     void $ createImmortal (const reminderTask)
 
     help (const "Add a reminder") $
-      command @'[KleenePlusConcat L.Text] "add" \ctx msg -> do
-        now <- P.embed dateCurrent
-        let cfg = defaultConfig now
-        case breakCap (pDateTime @_ @L.Text cfg) msg of
-          Just (prefix, when_, suffix) -> do
-            let msg' = mergePreSuff prefix suffix
-            let user = ctx ^. #user
-            let chan = ctx ^. #channel
-            let now' = hourglassToUTCTime now
-            let when' = hourglassToUTCTime when_
-            if when_ < now
-              then void $ tell @L.Text ctx "That time is in the past!"
+      command @'[KleenePlusConcat Text] "add" \ctx msg -> do
+        now <- P.embed getCurrentTime
+        let locale = D.makeLocale D.EN Nothing
+            dnow = D.fromZonedTime $ utcToZonedTime utc now
+            dctx = D.Context dnow locale
+            opts = D.Options True
+            parsedEntities = D.parse msg dctx opts [D.Seal D.Time]
+
+        case viaNonEmpty head parsedEntities of
+          Just e -> do
+            let msg' = toLazy $ niceRemoveRange (e ^. #start) (e ^. #end) msg
+                user = ctx ^. #user
+                chan = ctx ^. #channel
+            when <- case e ^. #value of
+              D.RVal D.Time (D.TimeValue (D.SimpleValue (D.InstantValue when _)) _ _) ->
+                pure $ zonedTimeToUTC when
+              _ ->
+                fail "Invalid time"
+            if when < now
+              then fail "That time is in the past"
               else do
-                let deltaMsg = formatTimeDiff now when_
-                void $ usingConn (runInsert (addReminder (getID user, getID chan, msg', now', when')))
+                let deltaMsg = formatTimeDiff (utcTimeToHourglass now) (utcTimeToHourglass when)
+                void $ usingConn (runInsert (addReminder (getID user, getID chan, msg', now, when)))
                 void $ tell @L.Text ctx ("Ok, I'll remind you about: " <> codeline msg' <> ", in: " <> deltaMsg)
           Nothing ->
-            void $ tell @L.Text ctx "I couldn't parse the times from that"
+            fail "I couldn't parse the times from that"
 
     help (const "List your reminders") $
       command @'[] "list" \ctx ->

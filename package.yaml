@@ -46,8 +46,6 @@ dependencies:
   - time
   - hourglass
   - megaparsec
-  - replace-megaparsec
-  - fuzzy-dates-megaparsec
   - table-layout
   - postgresql-simple
   - resource-pool
@@ -66,6 +64,7 @@ dependencies:
   - directory
   - temporary
   - pretty-simple
+  - duckling
 
 executables:
   calamity-bot:

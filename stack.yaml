@@ -63,13 +63,10 @@ extra-deps:
   - hgeometry-0.12.0.1@sha256:907916976bb7268521b6aba9ada7557469c32db9f61625e1b1b1c2aab40804bf,14945
   - hgeometry-combinatorial-0.12.0.1@sha256:0c80854ff62c0851e928a617a2d9c38fb89865afed2f840c6caf27068fc60a3d,9061
   - duckling-0.2.0.0
-  - git: https://github.com/nitros12/calamity
-    commit: e7a1345c21c939977dfc68187d65b26d6a7a29dd
+  - git: https://github.com/simmsb/calamity
+    commit: 546cdf8e83ce1168c3cc39b9cf66145ca1015403
     subdirs:
       - calamity
-  # - archive: /home/ben/dev/calamity/calamity/.stack-work/dist/x86_64-linux-tinfo6/Cabal-3.2.1.0/calamity-0.1.28.3.tar.gz
-  - git: https://github.com/nitros12/fuzzy-dates
-    commit: a21f7f0637e79c3543a1b593f5ad88a84a99d559
   - git: https://github.com/haskell-beam/beam
     commit: 596981a1ea6765b9f311d48a2ec4d8460ebc4b7e
     subdirs:

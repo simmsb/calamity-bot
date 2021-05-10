@@ -1,10 +1,10 @@
 cabal-version: 2.0
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f8f416ccf734cbb7b5c23377b7a86a0f7334aad5f4c7428db7331fb135e19051
+-- hash: f262cfc65fd297beffd547c783fd8caa2e75d6afa4b597d460c1ae4278d47d7a
 
 name:           calamity-bot
 version:        0.0.0
@@ -18,7 +18,8 @@ maintainer:     ben@bensimms.moe
 copyright:      2019 Ben Simms
 license:        MIT
 license-file:   LICENSE
-tested-with:    GHC == 8.8.2
+tested-with:
+    GHC == 8.8.2
 build-type:     Simple
 extra-doc-files:
     README.md
@@ -57,7 +58,60 @@ library
       Paths_calamity_bot
   hs-source-dirs:
       src
-  default-extensions: StrictData IncoherentInstances TemplateHaskell RecursiveDo AllowAmbiguousTypes BlockArguments NoMonomorphismRestriction BangPatterns BinaryLiterals UndecidableInstances ConstraintKinds DataKinds DefaultSignatures DeriveDataTypeable DeriveFoldable DeriveFunctor DeriveGeneric DeriveTraversable DoAndIfThenElse EmptyDataDecls ExistentialQuantification FlexibleContexts FlexibleInstances FunctionalDependencies GADTs DerivingVia DerivingStrategies GeneralizedNewtypeDeriving StandaloneDeriving DeriveAnyClass InstanceSigs KindSignatures LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings OverloadedLabels PartialTypeSignatures PatternGuards PolyKinds RankNTypes RecordWildCards ScopedTypeVariables TupleSections TypeFamilies TypeSynonymInstances ViewPatterns DuplicateRecordFields TypeOperators TypeApplications RoleAnnotations PatternSynonyms
+  default-extensions:
+      StrictData
+      IncoherentInstances
+      TemplateHaskell
+      RecursiveDo
+      AllowAmbiguousTypes
+      BlockArguments
+      NoMonomorphismRestriction
+      BangPatterns
+      BinaryLiterals
+      UndecidableInstances
+      ConstraintKinds
+      DataKinds
+      DefaultSignatures
+      DeriveDataTypeable
+      DeriveFoldable
+      DeriveFunctor
+      DeriveGeneric
+      DeriveTraversable
+      DoAndIfThenElse
+      EmptyDataDecls
+      ExistentialQuantification
+      FlexibleContexts
+      FlexibleInstances
+      FunctionalDependencies
+      GADTs
+      DerivingVia
+      DerivingStrategies
+      GeneralizedNewtypeDeriving
+      StandaloneDeriving
+      DeriveAnyClass
+      InstanceSigs
+      KindSignatures
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      OverloadedLabels
+      PartialTypeSignatures
+      PatternGuards
+      PolyKinds
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      TupleSections
+      TypeFamilies
+      TypeSynonymInstances
+      ViewPatterns
+      DuplicateRecordFields
+      TypeOperators
+      TypeApplications
+      RoleAnnotations
+      PatternSynonyms
   ghc-options: -fplugin=Polysemy.Plugin -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -Wmissing-export-lists -Wpartial-fields -fno-warn-unused-do-bind
   build-depends:
       JuicyPixels
@@ -68,6 +122,7 @@ library
     , bytestring
     , calamity
     , data-default-class
+    , df1
     , di
     , di-core
     , di-polysemy
@@ -110,7 +165,60 @@ executable calamity-bot
       Paths_calamity_bot
   hs-source-dirs:
       app
-  default-extensions: StrictData IncoherentInstances TemplateHaskell RecursiveDo AllowAmbiguousTypes BlockArguments NoMonomorphismRestriction BangPatterns BinaryLiterals UndecidableInstances ConstraintKinds DataKinds DefaultSignatures DeriveDataTypeable DeriveFoldable DeriveFunctor DeriveGeneric DeriveTraversable DoAndIfThenElse EmptyDataDecls ExistentialQuantification FlexibleContexts FlexibleInstances FunctionalDependencies GADTs DerivingVia DerivingStrategies GeneralizedNewtypeDeriving StandaloneDeriving DeriveAnyClass InstanceSigs KindSignatures LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings OverloadedLabels PartialTypeSignatures PatternGuards PolyKinds RankNTypes RecordWildCards ScopedTypeVariables TupleSections TypeFamilies TypeSynonymInstances ViewPatterns DuplicateRecordFields TypeOperators TypeApplications RoleAnnotations PatternSynonyms
+  default-extensions:
+      StrictData
+      IncoherentInstances
+      TemplateHaskell
+      RecursiveDo
+      AllowAmbiguousTypes
+      BlockArguments
+      NoMonomorphismRestriction
+      BangPatterns
+      BinaryLiterals
+      UndecidableInstances
+      ConstraintKinds
+      DataKinds
+      DefaultSignatures
+      DeriveDataTypeable
+      DeriveFoldable
+      DeriveFunctor
+      DeriveGeneric
+      DeriveTraversable
+      DoAndIfThenElse
+      EmptyDataDecls
+      ExistentialQuantification
+      FlexibleContexts
+      FlexibleInstances
+      FunctionalDependencies
+      GADTs
+      DerivingVia
+      DerivingStrategies
+      GeneralizedNewtypeDeriving
+      StandaloneDeriving
+      DeriveAnyClass
+      InstanceSigs
+      KindSignatures
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      OverloadedLabels
+      PartialTypeSignatures
+      PatternGuards
+      PolyKinds
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      TupleSections
+      TypeFamilies
+      TypeSynonymInstances
+      ViewPatterns
+      DuplicateRecordFields
+      TypeOperators
+      TypeApplications
+      RoleAnnotations
+      PatternSynonyms
   ghc-options: -O2 -fspecialise-aggressively -flate-specialise -fplugin=Polysemy.Plugin -Wall -threaded -rtsopts -with-rtsopts=-N -Wincomplete-uni-patterns -Wincomplete-record-updates -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -Wmissing-export-lists -Wpartial-fields -fno-warn-unused-do-bind -eventlog
   build-depends:
       JuicyPixels
@@ -122,6 +230,7 @@ executable calamity-bot
     , calamity
     , calamity-bot
     , data-default-class
+    , df1
     , di
     , di-core
     , di-polysemy

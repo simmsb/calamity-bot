@@ -22,7 +22,7 @@ aliasGroup = void
   . groupA "alias" ["aliases"]
   $ do
     handler <- fetchHandler
-    react @('CustomEvt "command-not-found" (Message, [L.Text])) \(msg, path) ->
+    react @('CustomEvt CommandNotFound) \(CommandNotFound msg path) ->
       case path of
         (aliasName : _) -> do
           alias' <- usingConn (runSelectReturningOne $ getAlias (getID @User msg, aliasName))

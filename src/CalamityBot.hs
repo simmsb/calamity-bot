@@ -5,7 +5,7 @@ module CalamityBot (
 ) where
 
 import Calamity
-import Calamity.Cache.Eff (getMessage)
+import Calamity.Cache.Eff (getMessage, getGuilds)
 import Calamity.Cache.InMemory
 import Calamity.Commands as C
 import Calamity.Gateway.Types (StatusUpdateData (..))
@@ -21,8 +21,8 @@ import Data.Pool (createPool)
 import qualified Data.Text.Lazy as L
 import Database.PostgreSQL.Simple (close, connectPostgreSQL)
 import qualified Di
-
--- import qualified Di.Core as DiC
+import qualified Df1
+import qualified Di.Core as DiC
 
 import Control.Lens ((^.))
 import DiPolysemy
@@ -41,8 +41,8 @@ cfg =
     , ("bunny_path", "assets/bunny.mp4")
     ]
 
--- filterDi :: DiC.Di l p m -> DiC.Di l p m
--- filterDi = DiC.filter (\_ _ _ -> False)
+filterDi :: DiC.Di l Di.Path m -> DiC.Di l Di.Path m
+filterDi = DiC.filter (\_ p _ -> Df1.Push "calamity" `notElem` p)
 
 runBot :: IO ()
 runBot = Di.new \di -> do
@@ -59,68 +59,70 @@ runBot = Di.new \di -> do
     . runMetricsNoop
     . useDatabasePrefix "c!"
     . runDiToIO di
-    -- . DiPolysemy.local filterDi -- disables calamity logging
+    . DiPolysemy.local filterDi
     . runBotIO (BotToken token) defaultIntents
-    -- . DiPolysemy.local (const di)
     $ do
-      DiPolysemy.local (const di) $
-        DiPolysemy.push "calamity-bot" $ addCommands do
-          void helpCommand
-          prefixGroup
-          reminderGroup
-          aliasGroup
-          reanimateGroup
-          crapGroup
-          command @'[] "testup" \ctx -> do
-            info @Text "hi"
-            case ctx ^. #guild of
-              Just g -> do
-                member <- upgrade @Calamity.Member (getID @Guild g, getID @Calamity.Member $ ctx ^. #user)
-                print member
-                member' <- invoke $ H.GetGuildMember g (ctx ^. #user)
-                print member'
-              _ -> putStrLn "not a guild"
-          hide do
-            C.group "cantseethis" do
-              command @'[] "nope" \ctx ->
-                void $ tell @L.Text ctx "You found me"
-            command @'[] "cantseeme" \ctx ->
+      DiPolysemy.push "calamity-bot" $ addCommands do
+        void helpCommand
+        prefixGroup
+        reminderGroup
+        aliasGroup
+        reanimateGroup
+        crapGroup
+        command @'[] "testup" \ctx -> do
+          info @Text "hi"
+          case ctx ^. #guild of
+            Just g -> do
+              member <- upgrade @Calamity.Member (getID @Guild g, getID @Calamity.Member $ ctx ^. #user)
+              print member
+              member' <- invoke $ H.GetGuildMember g (ctx ^. #user)
+              print member'
+            _ -> putStrLn "not a guild"
+        hide do
+          C.group "cantseethis" do
+            command @'[] "nope" \ctx ->
               void $ tell @L.Text ctx "You found me"
-            command @'[] "prevmsg" \ctx -> do
-              Right msgs <- invoke $ GetChannelMessages (ctx ^. #channel) (Just . ChannelMessagesBefore $ ctx ^. #message . #id) (Just $ ChannelMessagesLimit 10)
-              info . showt $ msgs
-            command @'[Snowflake Message] "inspectmsg" \ctx mid -> do
-              Just msg <- getMessage mid
-              void . tell ctx . codeblock' Nothing $ pShowNoColor msg
-            command @'[Snowflake Message] "inspectmsgF" \ctx mid -> do
-              Right msg <- invoke $ GetMessage (ctx ^. #channel) mid
-              void . tell ctx . codeblock' Nothing $ pShowNoColor msg
-            command @'[] "treply" \ctx ->
-              void $ reply @Text (ctx ^. #message) "hello"
-            -- command @'[] "spam" \ctx ->
-            --   replicateM_ 10 . P.async $ reply @Text (ctx ^. #message) "hello"
-            -- command @'[] "makeChannel" \ctx -> do
-            --   case ctx ^. #guild of
-            --     Just g -> do
-            --       Right ch <-
-            --         invoke $
-            --           CreateGuildChannel g $
-            --             ChannelCreateData
-            --               { name = "test"
-            --               , type_ = Just GuildTextType
-            --               , topic = Nothing
-            --               , bitrate = Nothing
-            --               , userLimit = Nothing
-            --               , rateLimitPerUser = Nothing
-            --               , position = Nothing
-            --               , permissionOverwrites = Nothing
-            --               , parentID = Nothing
-            --               , nsfw = Nothing
-            --               }
-            --       void . reply @Text (ctx ^. #message) $ showt ch
-            --     Nothing ->
-            --       void . reply @Text (ctx ^. #message) $ "not a guild lol"
-      react @( 'CustomEvt "command-error" (Context, CommandError)) \(ctx, e) -> do
+          command @'[] "cantseeme" \ctx ->
+            void $ tell @L.Text ctx "You found me"
+          command @'[] "prevmsg" \ctx -> do
+            Right msgs <- invoke $ GetChannelMessages (ctx ^. #channel) (Just . ChannelMessagesBefore $ ctx ^. #message . #id) (Just $ ChannelMessagesLimit 10)
+            info . showt $ msgs
+          command @'[Snowflake Message] "inspectmsg" \ctx mid -> do
+            Just msg <- getMessage mid
+            void . tell ctx . codeblock' Nothing $ pShowNoColor msg
+          command @'[Snowflake Message] "inspectmsgF" \ctx mid -> do
+            Right msg <- invoke $ GetMessage (ctx ^. #channel) mid
+            void . tell ctx . codeblock' Nothing $ pShowNoColor msg
+          command @'[] "treply" \ctx ->
+            void $ reply @Text (ctx ^. #message) "hello"
+          -- command @'[] "listguilds" \ctx -> do
+          --   guilds <- getGuilds
+          --   let gf = L.unlines ["id: " <> showtl (g ^. #id) <> ", name: " <> (g ^. #name) | g <- guilds]
+          --   void . tell ctx . codeblock' Nothing $ gf
+          -- command @'[] "spam" \ctx ->
+          --   replicateM_ 10 . P.async $ reply @Text (ctx ^. #message) "hello"
+          -- command @'[] "makeChannel" \ctx -> do
+          --   case ctx ^. #guild of
+          --     Just g -> do
+          --       Right ch <-
+          --         invoke $
+          --           CreateGuildChannel g $
+          --             ChannelCreateData
+          --               { name = "test"
+          --               , type_ = Just GuildTextType
+          --               , topic = Nothing
+          --               , bitrate = Nothing
+          --               , userLimit = Nothing
+          --               , rateLimitPerUser = Nothing
+          --               , position = Nothing
+          --               , permissionOverwrites = Nothing
+          --               , parentID = Nothing
+          --               , nsfw = Nothing
+          --               }
+          --       void . reply @Text (ctx ^. #message) $ showt ch
+          --     Nothing ->
+          --       void . reply @Text (ctx ^. #message) $ "not a guild lol"
+      react @( 'CustomEvt CtxCommandError) \(CtxCommandError ctx e) -> do
         info $ "Command failed with reason: " <> showtl e
         case e of
           ParseError n r ->

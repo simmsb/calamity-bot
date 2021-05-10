@@ -32,6 +32,7 @@ dependencies:
   - di
   - di-core
   - di-polysemy
+  - df1
   - polysemy
   - polysemy-plugin >= 0.2
   - lens

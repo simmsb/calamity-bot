@@ -61,13 +61,13 @@ pattern ArrowRight <-
 
 data PaginationDir a = MoveLeft a | MoveRight a | Initial
 
-embedFooter :: LText -> Embed
-embedFooter t = def & #footer ?~ EmbedFooter t Nothing Nothing
+mkembedFooter :: LText -> Embed
+mkembedFooter t = def & #footer ?~ EmbedFooter t Nothing Nothing
 
 renderPaginationEmbed :: ([a] -> Embed) -> (Pagination a -> Embed)
 renderPaginationEmbed f (Pagination page content) =
   let e = f $ toList content
-   in e <> embedFooter ("Page " <> showtl page)
+   in e <> mkembedFooter ("Page " <> showtl page)
 
 paginate ::
   (BotC r, P.Member Timeout r, Tellable t, ToMessage m, Typeable a) =>

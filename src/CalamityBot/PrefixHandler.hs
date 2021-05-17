@@ -4,7 +4,8 @@ module CalamityBot.PrefixHandler
   )
 where
 
-import Calamity.Commands.ParsePrefix
+import Calamity (Message)
+import Calamity.Commands (ParsePrefix(..))
 import CalamityBot.Db
 import Control.Lens
 import qualified Data.Text.Lazy as L
@@ -16,7 +17,7 @@ firstJusts (Just x : _) = Just x
 firstJusts (_ : xs) = firstJusts xs
 firstJusts [] = Nothing
 
-useDatabasePrefix :: Member DBEff r => L.Text -> Sem (ParsePrefix ': r) a -> Sem r a
+useDatabasePrefix :: Member DBEff r => L.Text -> Sem (ParsePrefix Message ': r) a -> Sem r a
 useDatabasePrefix def =
   interpret \case
     ParsePrefix m -> do

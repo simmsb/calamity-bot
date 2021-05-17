@@ -7,7 +7,8 @@ module CalamityBot.Commands.Crap
 where
 
 import Calamity
-import Calamity.Commands
+import Calamity.Commands hiding (FullContext(..), LightContext(..))
+import Calamity.Commands.Context (FullContext)
 import CalamityBot.Utils.Process
 import CalamityBot.Utils.Utils
 import CalamityBot.Utils.Config
@@ -24,7 +25,7 @@ import Numeric
 findVideo :: [Attachment] -> Maybe Attachment
 findVideo = listToMaybe . filter (\a -> "video" `B.isPrefixOf` defaultMimeLookup (toStrict $ a ^. #filename))
 
-crapGroup :: (BotC r, P.Member Config r) => P.Sem (DSLState r) ()
+crapGroup :: (BotC r, P.Member Config r) => P.Sem (DSLState FullContext r) ()
 crapGroup = void
   . help (const "Shitty commands that I Hate")
   . groupA "crap" ["c"]

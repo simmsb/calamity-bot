@@ -5,7 +5,10 @@ module CalamityBot.Commands.Aliases
 where
 
 import Calamity
-import Calamity.Commands
+import Calamity.Commands hiding (FullContext(..), LightContext(..))
+import Calamity.Commands.Context (FullContext)
+import CalamityCommands.Utils (handleCommands)
+import CalamityCommands.Context (ConstructContext)
 import CalamityBot.Db
 import CalamityBot.Utils.Pagination
 import Data.Default.Class
@@ -16,7 +19,7 @@ import qualified Polysemy as P
 import Polysemy.Immortal
 import Polysemy.Timeout
 
-aliasGroup :: (BotC r, P.Members '[DBEff, Immortal, Timeout, ParsePrefix] r) => P.Sem (DSLState r) ()
+aliasGroup :: (BotC r, P.Members '[DBEff, Immortal, Timeout, ParsePrefix Message, ConstructContext Message FullContext IO ()] r) => P.Sem (DSLState FullContext r) ()
 aliasGroup = void
   . help (const "Commands related to making aliases")
   . groupA "alias" ["aliases"]

@@ -6,7 +6,8 @@ module CalamityBot.Commands.Prefix
   )
 where
 
-import Calamity.Commands
+import Calamity.Commands hiding (FullContext(..), LightContext(..))
+import Calamity.Commands.Context (FullContext)
 import Calamity
 import CalamityBot.Db
 import Control.Lens hiding (Context)
@@ -16,10 +17,10 @@ import Relude.Unsafe (fromJust)
 import TextShow (TextShow (showtl))
 import Database.Beam (runSelectReturningList, runDelete, runInsert, runSelectReturningOne)
 
-guildOnly :: Context -> Maybe L.Text
+guildOnly :: FullContext -> Maybe L.Text
 guildOnly ctx = maybe (Just "Can only be used in guilds") (const Nothing) (ctx ^. #guild)
 
-prefixLimit :: P.Member DBEff r => Integer -> Context -> P.Sem r (Maybe L.Text)
+prefixLimit :: P.Member DBEff r => Integer -> FullContext -> P.Sem r (Maybe L.Text)
 prefixLimit limit ctx =
   case ctx ^. #guild of
     Just g -> do
@@ -33,7 +34,7 @@ prefixLimit limit ctx =
 maintainGuild :: P.Member DBEff r => Snowflake Guild -> P.Sem r ()
 maintainGuild gid = void $ usingConn (runInsert $ addGuild gid)
 
-prefixGroup :: (BotC r, P.Member DBEff r) => P.Sem (DSLState r) ()
+prefixGroup :: (BotC r, P.Member DBEff r) => P.Sem (DSLState FullContext r) ()
 prefixGroup = void
   . help (const "Commands related to setting prefixes for the bot")
   . requiresPure [("guildOnly", guildOnly)]

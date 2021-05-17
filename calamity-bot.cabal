@@ -4,7 +4,7 @@ cabal-version: 2.0
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f262cfc65fd297beffd547c783fd8caa2e75d6afa4b597d460c1ae4278d47d7a
+-- hash: 12cd0ad03946a1375da13de6aaa332a407a5d723dcd18f036678013340ebc886
 
 name:           calamity-bot
 version:        0.0.0
@@ -121,6 +121,7 @@ library
     , beam-postgres
     , bytestring
     , calamity
+    , calamity-commands
     , data-default-class
     , df1
     , di
@@ -229,6 +230,7 @@ executable calamity-bot
     , bytestring
     , calamity
     , calamity-bot
+    , calamity-commands
     , data-default-class
     , df1
     , di

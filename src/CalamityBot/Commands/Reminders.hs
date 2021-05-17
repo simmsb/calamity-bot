@@ -4,7 +4,8 @@ module CalamityBot.Commands.Reminders (
 ) where
 
 import Calamity
-import Calamity.Commands
+import Calamity.Commands hiding (FullContext(..), LightContext(..))
+import Calamity.Commands.Context (FullContext)
 import Calamity.Internal.Utils
 import CalamityBot.Db
 import CalamityBot.Utils.Pagination
@@ -102,7 +103,7 @@ reminderTask = untilJustFinalIO do
       _ -> pure ()
     usingConn (runDelete $ removeReminder (r ^. #reminderUserId, r ^. #reminderId))
 
-reminderGroup :: (BotC r, P.Members '[DBEff, Immortal, Timeout] r) => P.Sem (DSLState r) ()
+reminderGroup :: (BotC r, P.Members '[DBEff, Immortal, Timeout] r) => P.Sem (DSLState FullContext r) ()
 reminderGroup = void
   . help (const "Commands related to making reminders")
   . groupA "remind" ["reminder", "reminders"]

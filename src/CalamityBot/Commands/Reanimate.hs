@@ -3,7 +3,8 @@ module CalamityBot.Commands.Reanimate
     ( reanimateGroup,
     ) where
 
-import Calamity.Commands as C
+import Calamity.Commands as C hiding (FullContext(..), LightContext(..))
+import Calamity.Commands.Context (FullContext)
 import Calamity
 import CalamityBot.Utils.Reanimate
 import qualified Data.Text.Lazy as L
@@ -53,7 +54,7 @@ usableTree (UseTree _ _) = False
 usableTree (DefinitionTree _) = False
 usableTree _ = True
 
-reanimateGroup :: BotC r => P.Sem (DSLState r) ()
+reanimateGroup :: BotC r => P.Sem (DSLState FullContext r) ()
 reanimateGroup = void
   . help (const "Commands related to reanimate fuckery")
   . C.group "reanimate"

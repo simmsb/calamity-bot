@@ -7,7 +7,8 @@ module CalamityBot (
 import Calamity
 import Calamity.Cache.Eff (getMessage, getGuilds)
 import Calamity.Cache.InMemory
-import Calamity.Commands as C
+import Calamity.Commands as C hiding (FullContext(..), LightContext(..))
+import Calamity.Commands.Context (FullContext)
 import Calamity.Gateway.Types (StatusUpdateData (..))
 import Calamity.HTTP as H
 import Calamity.Metrics.Noop
@@ -58,6 +59,7 @@ runBot = Di.new \di -> do
     . runCacheInMemory
     . runMetricsNoop
     . useDatabasePrefix "c!"
+    . C.useFullContext
     . runDiToIO di
     . DiPolysemy.local filterDi
     . runBotIO (BotToken token) defaultIntents
@@ -122,7 +124,7 @@ runBot = Di.new \di -> do
           --       void . reply @Text (ctx ^. #message) $ showt ch
           --     Nothing ->
           --       void . reply @Text (ctx ^. #message) $ "not a guild lol"
-      react @( 'CustomEvt CtxCommandError) \(CtxCommandError ctx e) -> do
+      react @( 'CustomEvt (CtxCommandError FullContext)) \(CtxCommandError ctx e) -> do
         info $ "Command failed with reason: " <> showtl e
         case e of
           ParseError n r ->

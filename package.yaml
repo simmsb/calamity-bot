@@ -29,6 +29,7 @@ dependencies:
     mixin:
       - (Relude as Prelude, Relude.Unsafe, Relude, Relude.Extra)
   - calamity
+  - calamity-commands
   - di
   - di-core
   - di-polysemy

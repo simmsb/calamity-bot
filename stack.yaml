@@ -64,9 +64,10 @@ extra-deps:
   - hgeometry-combinatorial-0.12.0.1@sha256:0c80854ff62c0851e928a617a2d9c38fb89865afed2f840c6caf27068fc60a3d,9061
   - duckling-0.2.0.0
   - git: https://github.com/simmsb/calamity
-    commit: 546cdf8e83ce1168c3cc39b9cf66145ca1015403
+    commit: 4c3fabe961b6b5330bb8d4e3a042cf7532b6d92b
     subdirs:
       - calamity
+      - calamity-commands
   - git: https://github.com/haskell-beam/beam
     commit: 596981a1ea6765b9f311d48a2ec4d8460ebc4b7e
     subdirs:

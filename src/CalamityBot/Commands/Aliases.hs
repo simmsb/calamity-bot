@@ -5,7 +5,7 @@ module CalamityBot.Commands.Aliases
 where
 
 import Calamity
-import Calamity.Commands hiding (FullContext(..), LightContext(..))
+import Calamity.Commands
 import Calamity.Commands.Context (FullContext)
 import CalamityCommands.Utils (handleCommands)
 import CalamityCommands.Context (ConstructContext)

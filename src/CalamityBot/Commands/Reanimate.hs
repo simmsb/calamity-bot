@@ -3,7 +3,7 @@ module CalamityBot.Commands.Reanimate
     ( reanimateGroup,
     ) where
 
-import Calamity.Commands as C hiding (FullContext(..), LightContext(..))
+import Calamity.Commands as C
 import Calamity.Commands.Context (FullContext)
 import Calamity
 import CalamityBot.Utils.Reanimate

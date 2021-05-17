@@ -4,7 +4,7 @@ module CalamityBot.Commands.Reminders (
 ) where
 
 import Calamity
-import Calamity.Commands hiding (FullContext(..), LightContext(..))
+import Calamity.Commands
 import Calamity.Commands.Context (FullContext)
 import Calamity.Internal.Utils
 import CalamityBot.Db

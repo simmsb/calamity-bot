@@ -6,7 +6,7 @@ module CalamityBot.Commands.Prefix
   )
 where
 
-import Calamity.Commands hiding (FullContext(..), LightContext(..))
+import Calamity.Commands
 import Calamity.Commands.Context (FullContext)
 import Calamity
 import CalamityBot.Db

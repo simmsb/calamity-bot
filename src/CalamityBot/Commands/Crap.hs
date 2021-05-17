@@ -7,7 +7,7 @@ module CalamityBot.Commands.Crap
 where
 
 import Calamity
-import Calamity.Commands hiding (FullContext(..), LightContext(..))
+import Calamity.Commands
 import Calamity.Commands.Context (FullContext)
 import CalamityBot.Utils.Process
 import CalamityBot.Utils.Utils

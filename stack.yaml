@@ -64,7 +64,7 @@ extra-deps:
   - hgeometry-combinatorial-0.12.0.1@sha256:0c80854ff62c0851e928a617a2d9c38fb89865afed2f840c6caf27068fc60a3d,9061
   - duckling-0.2.0.0
   - git: https://github.com/simmsb/calamity
-    commit: 169d7f8672ceabbf5f7f3015df915b971aeb2c33
+    commit: c8ad9341f49c3cb6601bb6e50d02734484a8608c
     subdirs:
       - calamity
       - calamity-commands

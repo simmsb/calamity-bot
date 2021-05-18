@@ -9,6 +9,7 @@ import Calamity.Commands
 import Calamity.Commands.Context (FullContext)
 import CalamityCommands.Utils (handleCommands)
 import CalamityCommands.Context (ConstructContext)
+import CalamityCommands.ParsePrefix (ParsePrefix)
 import CalamityBot.Db
 import CalamityBot.Utils.Pagination
 import Data.Default.Class

@@ -5,7 +5,7 @@ module CalamityBot.PrefixHandler
 where
 
 import Calamity (Message)
-import Calamity.Commands (ParsePrefix(..))
+import CalamityCommands.ParsePrefix (ParsePrefix(..))
 import CalamityBot.Db
 import Control.Lens
 import qualified Data.Text.Lazy as L

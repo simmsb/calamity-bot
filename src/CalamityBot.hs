@@ -61,7 +61,7 @@ runBot = Di.new \di -> do
     . useDatabasePrefix "c!"
     . useFullContext
     . runDiToIO di
-    . DiPolysemy.local filterDi
+    -- . DiPolysemy.local filterDi
     . runBotIO (BotToken token) defaultIntents
     $ do
       DiPolysemy.push "calamity-bot" $ addCommands do
@@ -84,6 +84,10 @@ runBot = Di.new \di -> do
           C.group "cantseethis" do
             command @'[] "nope" \ctx ->
               void $ tell @L.Text ctx "You found me"
+          command @'[] "testguild" \ctx ->
+            void $ print $ ctx ^. #guild
+          command @'[Calamity.Member] "testmember" \ctx member -> 
+            void $ tell @L.Text ctx (showtl member)
           command @'[] "cantseeme" \ctx ->
             void $ tell @L.Text ctx "You found me"
           command @'[] "prevmsg" \ctx -> do

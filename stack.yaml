@@ -64,7 +64,7 @@ extra-deps:
   - hgeometry-combinatorial-0.12.0.1@sha256:0c80854ff62c0851e928a617a2d9c38fb89865afed2f840c6caf27068fc60a3d,9061
   - duckling-0.2.0.0
   - git: https://github.com/simmsb/calamity
-    commit: b67fb1514982ab61316c53552f4d01c336dfd069
+    commit: be7543bbd5498f98ddcb55b70968b1f72e58cb72
     subdirs:
       - calamity
       - calamity-commands
@@ -99,8 +99,8 @@ extra-deps:
 # Allow a newer minor version of GHC than the snapshot specifies
 # compiler-check: newer-minor
 
-        #compiler: ghc-8.10.2.20210102
-        #system-ghc: true
+#compiler: ghc-8.10.2.20210102
+#system-ghc: true
 
 ghc-options:
   "$everything": -O2 #-finfo-table-map -fdistinct-constructor-tables

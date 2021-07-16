@@ -151,7 +151,7 @@ runBot = Di.new \di -> do
           StatusUpdateData
             { since = Nothing
             , game = Just $ Calamity.Types.Model.Presence.Activity.activity "Prefix: c!" Game
-            , status = "online"
+            , status = Online
             , afk = False
             }
       pure ()

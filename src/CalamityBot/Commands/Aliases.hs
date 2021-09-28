@@ -20,19 +20,19 @@ import qualified Polysemy as P
 import Polysemy.Immortal
 import Polysemy.Timeout
 
-aliasGroup :: (BotC r, P.Members '[DBEff, Immortal, Timeout, ParsePrefix Message, ConstructContext Message FullContext IO ()] r) => P.Sem (DSLState FullContext r) ()
+aliasGroup :: (BotC r, P.Members '[DBEff, Immortal, Timeout, ParsePrefix Message, ConstructContext (Message, User, Maybe Member) FullContext IO ()] r) => P.Sem (DSLState FullContext r) ()
 aliasGroup = void
   . help (const "Commands related to making aliases")
   . groupA "alias" ["aliases"]
   $ do
     handler <- fetchHandler
-    react @('CustomEvt CommandNotFound) \(CommandNotFound msg path) ->
+    react @('CustomEvt CommandNotFound) \(CommandNotFound msg usr mem path) ->
       case path of
         (aliasName : _) -> do
           alias' <- usingConn (runSelectReturningOne $ getAlias (getID @User msg, aliasName))
           case alias' of
             Just alias -> do
-              void $ handleCommands handler msg "" (alias ^. #aliasValue)
+              void $ handleCommands handler (msg, usr, mem) "" (alias ^. #aliasValue)
             Nothing -> pure ()
         [] -> pure ()
 

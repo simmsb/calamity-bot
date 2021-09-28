@@ -5,7 +5,7 @@ module CalamityBot (
 ) where
 
 import Calamity
-import Calamity.Cache.Eff (getMessage, getGuilds)
+import Calamity.Cache.Eff (getMessage, getGuilds, CacheEff)
 import Calamity.Cache.InMemory
 import Calamity.Commands as C
 import Calamity.Commands.Context (FullContext, useFullContext)
@@ -35,6 +35,7 @@ import System.Environment
 import Text.Pretty.Simple
 import TextShow
 
+
 cfg :: HashMap Text Text
 cfg =
   fromList
@@ -42,8 +43,9 @@ cfg =
     , ("bunny_path", "assets/bunny.mp4")
     ]
 
-filterDi :: DiC.Di l Di.Path m -> DiC.Di l Di.Path m
-filterDi = DiC.filter (\_ p _ -> Df1.Push "calamity" `notElem` p)
+-- filterDi :: DiC.Di l Di.Path m -> DiC.Di l Di.Path m
+-- filterDi = DiC.filter (\_ p _ -> Df1.Push "calamity" `notElem` p)
+
 
 runBot :: IO ()
 runBot = Di.new \di -> do

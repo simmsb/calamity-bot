@@ -15,15 +15,14 @@ import CalamityBot.Utils.Config
 import Control.Lens hiding (Context)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as LB
-import qualified Data.Text.Lazy as L
-import qualified Data.Text as S
+import qualified Data.Text as T
 import Network.Mime
 import Network.Wreq
 import qualified Polysemy as P
 import Numeric
 
 findVideo :: [Attachment] -> Maybe Attachment
-findVideo = listToMaybe . filter (\a -> "video" `B.isPrefixOf` defaultMimeLookup (toStrict $ a ^. #filename))
+findVideo = find (\a -> "video" `B.isPrefixOf` defaultMimeLookup (a ^. #filename))
 
 crapGroup :: (BotC r, P.Member Config r) => P.Sem (DSLState FullContext r) ()
 crapGroup = void
@@ -38,16 +37,16 @@ crapGroup = void
           sbfile <- getCfg "stickbug_path"
           case findVideo (ctx ^. #message . #attachments) of
             Just video -> do
-              r <- P.embed $ Network.Wreq.get (L.unpack $ video ^. #url)
+              r <- P.embed $ Network.Wreq.get (T.unpack $ video ^. #url)
               let file = r ^. responseBody
-              Just ext <- pure ((last <$>) . nonEmpty . fileNameExtensions . toStrict $ video ^. #filename)
+              Just ext <- pure ((last <$>) . nonEmpty . fileNameExtensions $ video ^. #filename)
               out <- P.embed $ renderStickbug (file, ext) sbfile delay
               case out of
                 Right res ->
                   void $ tell ctx (TFile (fn <> ".mp4") res)
                 Left e -> putLBSLn e
             Nothing ->
-              void $ tell @L.Text ctx "Couldn't find a video"
+              void $ tell @T.Text ctx "Couldn't find a video"
 
     -- shameless
     help (const "Haha get bunnyd lol") $
@@ -58,16 +57,16 @@ crapGroup = void
           sbfile <- getCfg "bunny_path"
           case findVideo (ctx ^. #message . #attachments) of
             Just video -> do
-              r <- P.embed $ Network.Wreq.get (L.unpack $ video ^. #url)
+              r <- P.embed $ Network.Wreq.get (T.unpack $ video ^. #url)
               let file = r ^. responseBody
-              Just ext <- pure ((last <$>) . nonEmpty . fileNameExtensions . toStrict $ video ^. #filename)
+              Just ext <- pure ((last <$>) . nonEmpty . fileNameExtensions $ video ^. #filename)
               out <- P.embed $ renderStickbug (file, ext) sbfile delay
               case out of
                 Right res ->
                   void $ tell ctx (TFile (fn <> ".mp4") res)
                 Left e -> putLBSLn e
             Nothing ->
-              void $ tell @L.Text ctx "Couldn't find a video"
+              void $ tell @T.Text ctx "Couldn't find a video"
 
 renderStickbug :: (LB.ByteString, Text)
                -> Text
@@ -75,11 +74,11 @@ renderStickbug :: (LB.ByteString, Text)
                -> IO (Either LB.ByteString LB.ByteString)
 renderStickbug (initial, ext) sbfile delay = do
   ffmpeg <- requireExecutable "ffmpeg"
-  withTempFile "stickbug" (S.unpack ext) $ \initialFile -> do
+  withTempFile "stickbug" (T.unpack ext) $ \initialFile -> do
     writeFileLBS initialFile initial
     let df = showFFloat Nothing delay ""
     runCmdLazy ffmpeg [ "-i", initialFile
-                      , "-i", S.unpack sbfile
+                      , "-i", T.unpack sbfile
                       ,"-threads", "0"
                       , "-filter_complex", "[1:v][0:v]scale2ref[v1][v0];"
                                            <> "[v0]trim=end=" <> df <> ", setpts=PTS-STARTPTS,setsar=sar=1[v00];"

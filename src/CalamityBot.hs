@@ -19,7 +19,7 @@ import CalamityBot.PrefixHandler
 import CalamityBot.Utils.Config
 import qualified Data.ByteString.Char8 as BS
 import Data.Pool (createPool)
-import qualified Data.Text.Lazy as L
+import qualified Data.Text as T
 import Database.PostgreSQL.Simple (close, connectPostgreSQL)
 import qualified Di
 import qualified Df1
@@ -49,7 +49,7 @@ cfg =
 
 runBot :: IO ()
 runBot = Di.new \di -> do
-  token <- L.pack <$> getEnv "BOT_TOKEN"
+  token <- T.pack <$> getEnv "BOT_TOKEN"
   db_path <- BS.pack <$> getEnv "DB_STRING"
   pool <- createPool (connectPostgreSQL db_path) close 2 0.5 2
   void . runFinal
@@ -85,27 +85,27 @@ runBot = Di.new \di -> do
         hide do
           C.group "cantseethis" do
             command @'[] "nope" \ctx ->
-              void $ tell @L.Text ctx "You found me"
+              void $ tell @T.Text ctx "You found me"
           command @'[] "testguild" \ctx ->
             void $ print $ ctx ^. #guild
           command @'[Calamity.Member] "testmember" \ctx member -> 
-            void $ tell @L.Text ctx (showtl member)
+            void $ tell @T.Text ctx (showt member)
           command @'[] "cantseeme" \ctx ->
-            void $ tell @L.Text ctx "You found me"
+            void $ tell @T.Text ctx "You found me"
           command @'[] "prevmsg" \ctx -> do
             Right msgs <- invoke $ GetChannelMessages (ctx ^. #channel) (Just . ChannelMessagesBefore $ ctx ^. #message . #id) (Just $ ChannelMessagesLimit 10)
             info . showt $ msgs
           command @'[Snowflake Message] "inspectmsg" \ctx mid -> do
             Just msg <- getMessage mid
-            void . tell ctx . codeblock' Nothing $ pShowNoColor msg
+            void . tell ctx . codeblock' Nothing . fromLazy $ pShowNoColor msg
           command @'[Snowflake Message] "inspectmsgF" \ctx mid -> do
             Right msg <- invoke $ GetMessage (ctx ^. #channel) mid
-            void . tell ctx . codeblock' Nothing $ pShowNoColor msg
+            void . tell ctx . codeblock' Nothing . fromLazy $ pShowNoColor msg
           command @'[] "treply" \ctx ->
             void $ reply @Text (ctx ^. #message) "hello"
           -- command @'[] "listguilds" \ctx -> do
           --   guilds <- getGuilds
-          --   let gf = L.unlines ["id: " <> showtl (g ^. #id) <> ", name: " <> (g ^. #name) | g <- guilds]
+          --   let gf = T.unlines ["id: " <> showtl (g ^. #id) <> ", name: " <> (g ^. #name) | g <- guilds]
           --   void . tell ctx . codeblock' Nothing $ gf
           -- command @'[] "spam" \ctx ->
           --   replicateM_ 10 . P.async $ reply @Text (ctx ^. #message) "hello"
@@ -131,21 +131,21 @@ runBot = Di.new \di -> do
           --     Nothing ->
           --       void . reply @Text (ctx ^. #message) $ "not a guild lol"
       react @( 'CustomEvt (CtxCommandError FullContext)) \(CtxCommandError ctx e) -> do
-        info $ "Command failed with reason: " <> showtl e
+        info $ "Command failed with reason: " <> showt e
         case e of
           ParseError n r ->
             void . tell ctx $
-              "Failed to parse parameter: " <> codeline (L.fromStrict n)
+              "Failed to parse parameter: " <> codeline n
                 <> ", with reason: "
                 <> codeblock' Nothing r
           CheckError n r ->
             void . tell ctx $
-              "The following check failed: " <> codeline (L.fromStrict n)
+              "The following check failed: " <> codeline n
                 <> ", with reason: "
                 <> codeblock' Nothing r
           InvokeError n r ->
             void . tell ctx $
-              "The command: " <> codeline (L.fromStrict n)
+              "The command: " <> codeline n
                 <> ", failed with reason: "
                 <> codeblock' Nothing r
       react @ 'ReadyEvt \_ -> do

@@ -1,4 +1,4 @@
-name:                calamity-bot
+# name:                calamity-bot
 version:             0.0.0
 github:              "nitros12/calamity-bot"
 homepage:            https://github.com/nitros12/calamity-bot
@@ -13,7 +13,7 @@ build-type:          Simple
 extra-doc-files:
   - README.md
   - CHANGELOG.md
-tested-with:         GHC == 8.8.2
+tested-with:         GHC == 8.10.7
 
 
 synopsis:            A discord bot
@@ -66,7 +66,7 @@ dependencies:
   - directory
   - temporary
   - pretty-simple
-  - duckling
+    # - duckling
 
 executables:
   calamity-bot:

@@ -11,23 +11,23 @@ import Calamity.Commands.Context (FullContext)
 import Calamity
 import CalamityBot.Db
 import Control.Lens hiding (Context)
-import qualified Data.Text.Lazy as L
+import qualified Data.Text as T
 import qualified Polysemy as P
 import Relude.Unsafe (fromJust)
-import TextShow (TextShow (showtl))
+import TextShow (TextShow (showt))
 import Database.Beam (runSelectReturningList, runDelete, runInsert, runSelectReturningOne)
 
-guildOnly :: FullContext -> Maybe L.Text
+guildOnly :: FullContext -> Maybe T.Text
 guildOnly ctx = maybe (Just "Can only be used in guilds") (const Nothing) (ctx ^. #guild)
 
-prefixLimit :: P.Member DBEff r => Integer -> FullContext -> P.Sem r (Maybe L.Text)
+prefixLimit :: P.Member DBEff r => Integer -> FullContext -> P.Sem r (Maybe T.Text)
 prefixLimit limit ctx =
   case ctx ^. #guild of
     Just g -> do
       np <- fromMaybe 0 <$> usingConn (runSelectReturningOne . countPrefixes $ getID @Guild g)
       pure
         if np > limit
-          then Just ("Prefix limit reached (" <> showtl limit <> ")")
+          then Just ("Prefix limit reached (" <> showt limit <> ")")
           else Nothing
     Nothing -> pure Nothing
 
@@ -44,22 +44,22 @@ prefixGroup = void
       maintainGuild (getID g)
 
     requires' "prefixLimit" (prefixLimit 6) $ help (const "Add a new prefix") $
-      command @'[Named "prefix" L.Text] "add" \ctx p -> do
+      command @'[Named "prefix" T.Text] "add" \ctx p -> do
         let g = fromJust (ctx ^. #guild)
             gid = getID @Guild g
         maintainGuild gid
         usingConn (runInsert $ addPrefix (gid, p))
-        void $ tell @L.Text ctx ("Added prefix: " <> p)
+        void $ tell @T.Text ctx ("Added prefix: " <> p)
 
     help (const "Remove a prefix") $
-      command @'[Named "prefix" L.Text] "remove" \ctx p -> do
+      command @'[Named "prefix" T.Text] "remove" \ctx p -> do
         let g = fromJust (ctx ^. #guild)
         usingConn (runDelete $ removePrefix (getID @Guild g, p))
-        void $ tell @L.Text ctx ("Removed prefix (if it existed): " <> p)
+        void $ tell @T.Text ctx ("Removed prefix (if it existed): " <> p)
 
     help (const "List prefixes") $
       commandA @'[] "list" ["show"] \ctx -> do
         let g = fromJust (ctx ^. #guild)
             gid = getID @Guild g
         prefixes <- usingConn $ runSelectReturningList (getPrefixes' gid)
-        void $ tell @L.Text ctx ("Prefixes: " <> L.unwords (map codeline prefixes))
+        void $ tell @T.Text ctx ("Prefixes: " <> T.unwords (map codeline prefixes))

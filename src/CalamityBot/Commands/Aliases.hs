@@ -14,7 +14,7 @@ import CalamityBot.Db
 import CalamityBot.Utils.Pagination
 import Data.Default.Class
 import Control.Lens hiding (Context)
-import qualified Data.Text.Lazy as L
+import qualified Data.Text as T
 import Database.Beam (runDelete, runInsert, runSelectReturningList, runSelectReturningOne)
 import qualified Polysemy as P
 import Polysemy.Immortal
@@ -37,10 +37,10 @@ aliasGroup = void
         [] -> pure ()
 
     help (const "Add an alias") $
-      command @'[Named "name" L.Text, Named "command" (KleenePlusConcat L.Text)] "add" \ctx name cmd -> do
+      command @'[Named "name" T.Text, Named "command" (KleenePlusConcat T.Text)] "add" \ctx name cmd -> do
         let user = ctx ^. #user
         void . usingConn . runInsert $ addAlias (getID user, name, cmd)
-        void $ tell @L.Text ctx ("Added the alias: " <> codeline name <> ", with the value: " <> codeline cmd)
+        void $ tell @T.Text ctx ("Added the alias: " <> codeline name <> ", with the value: " <> codeline cmd)
 
     help (const "List your aliases") $
       command @'[] "list" \ctx ->
@@ -50,14 +50,14 @@ aliasGroup = void
             render aliases =
               def & #title ?~ ("Aliases for: " <> displayUser user)
                 & #description ?~ renderDesc aliases
-            renderDesc :: [DBAlias] -> LText
+            renderDesc :: [DBAlias] -> Text
             renderDesc aliases = formatPagination2 ["name", "alias"] aliases (\r -> (r ^. #aliasName, r ^. #aliasValue))
             width = 10
             user = ctx ^. #user
          in paginate get (renderPaginationEmbed render) ctx
 
     help (const "Remove an alias") $
-      command @'[Named "name" L.Text] "remove" \ctx name -> do
+      command @'[Named "name" T.Text] "remove" \ctx name -> do
         let user = ctx ^. #user
         usingConn . runDelete $ removeAliasByName (getID user, name)
-        void $ tell @L.Text ctx "Removed that alias if it existed"
+        void $ tell @T.Text ctx "Removed that alias if it existed"

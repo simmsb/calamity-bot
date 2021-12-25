@@ -14,12 +14,12 @@ import Calamity (Channel, Snowflake (..), User)
 import CalamityBot.Db.Schema
 import CalamityBot.Db.Utils
 import Control.Lens hiding ((<.))
-import qualified Data.Text.Lazy as L
+import qualified Data.Text as T
 import Data.Time.Clock
 import Database.Beam
 import qualified Database.Beam.Postgres as Pg
 
-addReminder :: (Snowflake User, Snowflake Channel, L.Text, UTCTime, UTCTime) -> SqlInsert Pg.Postgres DBReminderT
+addReminder :: (Snowflake User, Snowflake Channel, T.Text, UTCTime, UTCTime) -> SqlInsert Pg.Postgres DBReminderT
 addReminder (uid, cid, msg, created, target) =
   insert
     (db ^. #reminders)

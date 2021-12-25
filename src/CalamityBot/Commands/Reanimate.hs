@@ -7,13 +7,13 @@ import Calamity.Commands as C
 import Calamity.Commands.Context (FullContext)
 import Calamity
 import CalamityBot.Utils.Reanimate
-import qualified Data.Text.Lazy as L
+import qualified Data.Text as T
 import qualified Polysemy as P
 import Reanimate
 import Reanimate.Render (Format(RenderWebm, RenderGif), Raster(RasterAuto))
 
 import           Data.Complex
-import           Graphics.SvgTree hiding ( group )
+import           Graphics.SvgTree
 import qualified Graphics.SvgTree.Types
 import           Linear.V2
 import           Codec.Picture
@@ -22,8 +22,8 @@ import Network.Mime (defaultMimeLookup)
 import Control.Lens
 import Network.Wreq
 
-protectText :: L.Text -> L.Text
-protectText = L.concatMap (fromString . protectChar)
+protectText :: T.Text -> T.Text
+protectText = T.concatMap (fromString . protectChar)
 
 protectChar :: Char -> String
 protectChar '#'  = "\\#"
@@ -39,14 +39,14 @@ protectChar '_'  = "\\_{}"
 protectChar x = [x]
 
 
-renderText :: L.Text -> Animation
+renderText :: T.Text -> Animation
 renderText text =
-  let rt = center . latex . L.toStrict $ text
+  let rt = center . latex $ text
       rtRotated = mkAnimation 5 (\t -> rotateAroundCenter (t * 360) rt)
   in addStatic (mkBackground "white") rtRotated
 
 findSVG :: [Attachment] -> Maybe Attachment
-findSVG = listToMaybe . filter (\a -> "image/svg" `B.isPrefixOf` defaultMimeLookup (toStrict $ a ^. #filename))
+findSVG = listToMaybe . filter (\a -> "image/svg" `B.isPrefixOf` defaultMimeLookup (a ^. #filename))
 
 usableTree :: Tree -> Bool
 usableTree None = False
@@ -60,7 +60,7 @@ reanimateGroup = void
   . C.group "reanimate"
   $ do
     help (const "Render a message") $
-      command @'[KleenePlusConcat L.Text] "render" \ctx msg -> do
+      command @'[KleenePlusConcat T.Text] "render" \ctx msg -> do
         let anim = renderText msg
         r <- P.embed $ renderToMemory anim RasterAuto RenderWebm 400 400 30
         case r of
@@ -73,9 +73,9 @@ reanimateGroup = void
       command @'[] "renders" \ctx -> do
         case findSVG (ctx ^. #message . #attachments) of
           Just svg -> do
-            r <- P.embed $ Network.Wreq.get (L.unpack $ svg ^. #url)
+            r <- P.embed $ Network.Wreq.get (T.unpack $ svg ^. #url)
             let file = r ^. responseBody
-            let Just doc = parseSvgFile "a.svg" (decodeUtf8 $ toStrict file)
+            let Just doc = parseSvgFile "a.svg" (decodeUtf8 file)
             let tree = head . fromList . filter usableTree $ doc ^. Graphics.SvgTree.Types.documentElements
             let f = mkSVGLatex $ flipYAxis tree
             let anim = setDuration 20 $ scene $ do
@@ -96,10 +96,10 @@ reanimateGroup = void
               Left e ->
                 putLBSLn $ "Failed with reason: " <> e
           Nothing ->
-            void $ tell @L.Text ctx "Couldn't find an svg"
+            void $ tell @T.Text ctx "Couldn't find an svg"
 
     help (const "Render a fourier thing") $
-      command @'[KleenePlusConcat L.Text] "renderf" \ctx msg -> do
+      command @'[KleenePlusConcat T.Text] "renderf" \ctx msg -> do
         let f = mkFourierLatex msg
         let anim = setDuration 20 $ scene $ do
               _ <- newSpriteSVG $ mkBackgroundPixel (PixelRGBA8 252 252 252 0xFF)
@@ -170,9 +170,9 @@ mkSVGLatex :: Tree -> Fourier
 mkSVGLatex t = mkFourier $ lineToPoints 500 $
   toLineCommands $ extractPath $ center $ scaleToFit 9.6 7.2 $ t
 
-mkFourierLatex :: L.Text -> Fourier
+mkFourierLatex :: T.Text -> Fourier
 mkFourierLatex t = mkFourier $ lineToPoints 500 $
-  toLineCommands $ extractPath $ center $ scaleToFit 9.6 7.2 $ latex (toStrict t)
+  toLineCommands $ extractPath $ center $ scaleToFit 9.6 7.2 $ latex t
 
 fourierLen :: Fourier -> Double
 fourierLen f = sum $ map magnitude $ drop 1 $ take 500 $ fourierCoefficients f

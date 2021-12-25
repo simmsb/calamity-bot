@@ -4,7 +4,7 @@ cabal-version: 2.0
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 12cd0ad03946a1375da13de6aaa332a407a5d723dcd18f036678013340ebc886
+-- hash: 47539032c7268dca14b0b29c1678f01bda2f506b8ffcafa47bbac6f91464ffef
 
 name:           calamity-bot
 version:        0.0.0
@@ -19,7 +19,7 @@ copyright:      2019 Ben Simms
 license:        MIT
 license-file:   LICENSE
 tested-with:
-    GHC == 8.8.2
+    GHC == 8.10.7
 build-type:     Simple
 extra-doc-files:
     README.md
@@ -128,7 +128,6 @@ library
     , di-core
     , di-polysemy
     , directory
-    , duckling
     , emojis
     , filepath
     , generic-lens
@@ -237,7 +236,6 @@ executable calamity-bot
     , di-core
     , di-polysemy
     , directory
-    , duckling
     , emojis
     , filepath
     , generic-lens

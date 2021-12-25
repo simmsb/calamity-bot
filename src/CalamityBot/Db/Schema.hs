@@ -34,21 +34,21 @@ instance Table DBGuildT where
 
 data DBPrefixT f = DBPrefix
   { prefixGuild :: PrimaryKey DBGuildT f,
-    prefixPre   :: Columnar f LText
+    prefixPre   :: Columnar f Text
   }
   deriving (Generic, Beamable)
 
 type DBPrefix = DBPrefixT Identity
 
 instance Table DBPrefixT where
-  data PrimaryKey DBPrefixT f = DBPrefixId (PrimaryKey DBGuildT f) (Columnar f LText) deriving (Generic, Beamable)
+  data PrimaryKey DBPrefixT f = DBPrefixId (PrimaryKey DBGuildT f) (Columnar f Text) deriving (Generic, Beamable)
   primaryKey = DBPrefixId <$> prefixGuild <*> prefixPre
 
 data DBReminderT f = DBReminder
   { reminderId        :: Columnar f Text,
     reminderUserId    :: Columnar f (Snowflake User),
     reminderChannelId :: Columnar f (Snowflake Channel),
-    reminderMessage   :: Columnar f LText,
+    reminderMessage   :: Columnar f Text,
     reminderCreated   :: Columnar f UTCTime,
     reminderTarget    :: Columnar f UTCTime
   }
@@ -62,15 +62,15 @@ instance Table DBReminderT where
 
 data DBAliasT f = DBAlias
   { aliasUserId :: Columnar f (Snowflake User),
-    aliasName   :: Columnar f LText,
-    aliasValue  :: Columnar f LText
+    aliasName   :: Columnar f Text,
+    aliasValue  :: Columnar f Text
   }
   deriving (Generic, Beamable)
 
 type DBAlias = DBAliasT Identity
 
 instance Table DBAliasT where
-  data PrimaryKey DBAliasT f = DBAliasId (Columnar f (Snowflake User)) (Columnar f LText) deriving (Generic, Beamable)
+  data PrimaryKey DBAliasT f = DBAliasId (Columnar f (Snowflake User)) (Columnar f Text) deriving (Generic, Beamable)
   primaryKey = DBAliasId <$> aliasUserId <*> aliasName
 
 data BotDB f = BotDB

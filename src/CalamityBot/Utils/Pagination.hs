@@ -12,7 +12,7 @@ import Calamity
 import Control.Lens
 import Data.Hourglass (Duration (Duration))
 import Data.Maybe
-import qualified Data.Text.Lazy as L
+import qualified Data.Text as T
 import Polysemy (Sem, raise)
 import qualified Polysemy as P
 import qualified Polysemy.Fail as P
@@ -21,12 +21,12 @@ import Polysemy.Timeout
 import Relude.Extra (bimapBoth)
 import Text.Emoji
 import Text.Layout.Table
-import TextShow (showtl)
+import TextShow (showt)
 
-formatPagination2 :: [String] -> [t] -> (t -> (LText, LText)) -> LText
+formatPagination2 :: [String] -> [t] -> (t -> (Text, Text)) -> Text
 formatPagination2 _ [] _ = codeline "No content"
 formatPagination2 titles xs fmt =
-  codeblock' Nothing $ L.pack linefmt
+  codeblock' Nothing $ T.pack linefmt
   where
     formattedLines = map fmt xs
     linefmt =
@@ -35,7 +35,7 @@ formatPagination2 titles xs fmt =
         unicodeRoundS
         (titlesH titles)
         ( map (rowG . (\(a, b) -> [a, b])) $
-            (map (bimapBoth L.unpack) formattedLines)
+            (map (bimapBoth T.unpack) formattedLines)
         )
 
 data Pagination a = Pagination
@@ -45,7 +45,7 @@ data Pagination a = Pagination
   deriving (Generic, Show)
 
 namedEmoji :: Text -> RawEmoji
-namedEmoji = UnicodeEmoji . L.fromStrict . fromJust . emojiFromAlias
+namedEmoji = UnicodeEmoji . fromJust . emojiFromAlias
 
 pattern ArrowLeft :: RawEmoji
 pattern ArrowLeft <-
@@ -61,13 +61,13 @@ pattern ArrowRight <-
 
 data PaginationDir a = MoveLeft a | MoveRight a | Initial
 
-mkembedFooter :: LText -> Embed
+mkembedFooter :: Text -> Embed
 mkembedFooter t = def & #footer ?~ EmbedFooter t Nothing Nothing
 
 renderPaginationEmbed :: ([a] -> Embed) -> (Pagination a -> Embed)
 renderPaginationEmbed f (Pagination page content) =
   let e = f $ toList content
-   in e <> mkembedFooter ("Page " <> showtl page)
+   in e <> mkembedFooter ("Page " <> showt page)
 
 paginate ::
   (BotC r, P.Member Timeout r, Tellable t, ToMessage m, Typeable a) =>

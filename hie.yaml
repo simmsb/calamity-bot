@@ -1,3 +1,2 @@
 cradle:
-  stack:
-    component: "calamity-bot:lib"
+  cabal:

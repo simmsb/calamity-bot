@@ -1,126 +1,122 @@
-cabal-version: 2.0
-
--- This file has been generated from package.yaml by hpack version 0.34.4.
---
--- see: https://github.com/sol/hpack
---
--- hash: 47539032c7268dca14b0b29c1678f01bda2f506b8ffcafa47bbac6f91464ffef
-
-name:           calamity-bot
-version:        0.0.0
-synopsis:       A discord bot
-description:    A discord bot
-category:       Bots
-homepage:       https://github.com/nitros12/calamity-bot
-bug-reports:    https://github.com/nitros12/calamity-bot/issues
-author:         Ben Simms
-maintainer:     ben@bensimms.moe
-copyright:      2019 Ben Simms
-license:        MIT
-license-file:   LICENSE
-tested-with:
-    GHC == 8.10.7
-build-type:     Simple
+cabal-version:   2.0
+name:            calamity-bot
+version:         0.0.0
+synopsis:        A discord bot
+description:     A discord bot
+category:        Bots
+homepage:        https://github.com/nitros12/calamity-bot
+bug-reports:     https://github.com/nitros12/calamity-bot/issues
+author:          Ben Simms
+maintainer:      ben@bensimms.moe
+copyright:       2019 Ben Simms
+license:         MIT
+license-file:    LICENSE
+tested-with:     GHC ==8.10.7
+build-type:      Simple
 extra-doc-files:
-    README.md
-    CHANGELOG.md
+  CHANGELOG.md
+  README.md
 
 source-repository head
-  type: git
+  type:     git
   location: https://github.com/nitros12/calamity-bot
 
 library
   exposed-modules:
-      CalamityBot
-      CalamityBot.Commands
-      CalamityBot.Commands.Aliases
-      CalamityBot.Commands.Crap
-      CalamityBot.Commands.Prefix
-      CalamityBot.Commands.Reanimate
-      CalamityBot.Commands.Reminders
-      CalamityBot.Db
-      CalamityBot.Db.Aliases
-      CalamityBot.Db.Eff
-      CalamityBot.Db.Guilds
-      CalamityBot.Db.Prefixes
-      CalamityBot.Db.Reminders
-      CalamityBot.Db.Schema
-      CalamityBot.Db.Utils
-      CalamityBot.PrefixHandler
-      CalamityBot.Utils.Config
-      CalamityBot.Utils.Pagination
-      CalamityBot.Utils.Process
-      CalamityBot.Utils.Reanimate
-      CalamityBot.Utils.Utils
-      Polysemy.Immortal
-      Polysemy.Timeout
-  other-modules:
-      Paths_calamity_bot
-  hs-source-dirs:
-      src
+    CalamityBot
+    CalamityBot.Commands
+    CalamityBot.Commands.Aliases
+    CalamityBot.Commands.Crap
+    CalamityBot.Commands.Prefix
+    CalamityBot.Commands.Reanimate
+    CalamityBot.Commands.Reminders
+    CalamityBot.Db
+    CalamityBot.Db.Aliases
+    CalamityBot.Db.Eff
+    CalamityBot.Db.Guilds
+    CalamityBot.Db.Prefixes
+    CalamityBot.Db.Reminders
+    CalamityBot.Db.Schema
+    CalamityBot.Db.Utils
+    CalamityBot.PrefixHandler
+    CalamityBot.Utils.Config
+    CalamityBot.Utils.Pagination
+    CalamityBot.Utils.Process
+    CalamityBot.Utils.Reanimate
+    CalamityBot.Utils.Utils
+    Polysemy.Immortal
+    Polysemy.Timeout
+
+  hs-source-dirs:     src
   default-extensions:
-      StrictData
-      IncoherentInstances
-      TemplateHaskell
-      RecursiveDo
-      AllowAmbiguousTypes
-      BlockArguments
-      NoMonomorphismRestriction
-      BangPatterns
-      BinaryLiterals
-      UndecidableInstances
-      ConstraintKinds
-      DataKinds
-      DefaultSignatures
-      DeriveDataTypeable
-      DeriveFoldable
-      DeriveFunctor
-      DeriveGeneric
-      DeriveTraversable
-      DoAndIfThenElse
-      EmptyDataDecls
-      ExistentialQuantification
-      FlexibleContexts
-      FlexibleInstances
-      FunctionalDependencies
-      GADTs
-      DerivingVia
-      DerivingStrategies
-      GeneralizedNewtypeDeriving
-      StandaloneDeriving
-      DeriveAnyClass
-      InstanceSigs
-      KindSignatures
-      LambdaCase
-      MultiParamTypeClasses
-      MultiWayIf
-      NamedFieldPuns
-      OverloadedStrings
-      OverloadedLabels
-      PartialTypeSignatures
-      PatternGuards
-      PolyKinds
-      RankNTypes
-      RecordWildCards
-      ScopedTypeVariables
-      TupleSections
-      TypeFamilies
-      TypeSynonymInstances
-      ViewPatterns
-      DuplicateRecordFields
-      TypeOperators
-      TypeApplications
-      RoleAnnotations
-      PatternSynonyms
-  ghc-options: -fplugin=Polysemy.Plugin -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -Wmissing-export-lists -Wpartial-fields -fno-warn-unused-do-bind
+    NoMonomorphismRestriction
+    AllowAmbiguousTypes
+    BangPatterns
+    BinaryLiterals
+    BlockArguments
+    ConstraintKinds
+    DataKinds
+    DefaultSignatures
+    DeriveAnyClass
+    DeriveDataTypeable
+    DeriveFoldable
+    DeriveFunctor
+    DeriveGeneric
+    DeriveTraversable
+    DerivingStrategies
+    DerivingVia
+    DoAndIfThenElse
+    DuplicateRecordFields
+    EmptyDataDecls
+    ExistentialQuantification
+    FlexibleContexts
+    FlexibleInstances
+    FunctionalDependencies
+    GADTs
+    GeneralizedNewtypeDeriving
+    IncoherentInstances
+    InstanceSigs
+    KindSignatures
+    LambdaCase
+    MultiParamTypeClasses
+    MultiWayIf
+    NamedFieldPuns
+    OverloadedLabels
+    OverloadedStrings
+    PartialTypeSignatures
+    PatternGuards
+    PatternSynonyms
+    PolyKinds
+    RankNTypes
+    RecordWildCards
+    RecursiveDo
+    RoleAnnotations
+    ScopedTypeVariables
+    StandaloneDeriving
+    StrictData
+    TemplateHaskell
+    TupleSections
+    TypeApplications
+    TypeFamilies
+    TypeOperators
+    TypeSynonymInstances
+    UndecidableInstances
+    ViewPatterns
+
+  ghc-options:
+    -fplugin=Polysemy.Plugin -Wall -Wincomplete-uni-patterns
+    -Wincomplete-record-updates -Wcompat -Widentities
+    -Wredundant-constraints -fhide-source-paths -Wmissing-export-lists
+    -Wpartial-fields -fno-warn-unused-do-bind -fno-warn-name-shadowing
+    -fno-warn-unused-top-binds -fno-warn-unused-imports
+
   build-depends:
-      JuicyPixels
-    , arbor-lru-cache
-    , base >=4.12 && <5
+      arbor-lru-cache
+    , base                  >=4.12    && <5
     , beam-core
     , beam-postgres
     , bytestring
-    , calamity
+    , calamity              ==0.2.0.2
     , calamity-commands
     , data-default-class
     , df1
@@ -133,12 +129,13 @@ library
     , generic-lens
     , hourglass
     , immortal
+    , JuicyPixels
     , lens
     , linear
     , megaparsec
     , mime-types
     , polysemy
-    , polysemy-plugin >=0.2
+    , polysemy-plugin       >=0.2
     , postgresql-simple
     , pretty-simple
     , process
@@ -154,80 +151,88 @@ library
     , time
     , unordered-containers
     , wreq
+
   mixins:
-      base hiding (Prelude)
-    , relude (Relude as Prelude, Relude.Unsafe, Relude, Relude.Extra)
-  default-language: Haskell2010
+    base hiding (Prelude),
+    relude (Relude as Prelude, Relude.Unsafe, Relude, Relude.Extra)
+
+  default-language:   Haskell2010
 
 executable calamity-bot
-  main-is: Main.hs
-  other-modules:
-      Paths_calamity_bot
-  hs-source-dirs:
-      app
+  main-is:            Main.hs
+  other-modules:      Paths_calamity_bot
+  hs-source-dirs:     app
   default-extensions:
-      StrictData
-      IncoherentInstances
-      TemplateHaskell
-      RecursiveDo
-      AllowAmbiguousTypes
-      BlockArguments
-      NoMonomorphismRestriction
-      BangPatterns
-      BinaryLiterals
-      UndecidableInstances
-      ConstraintKinds
-      DataKinds
-      DefaultSignatures
-      DeriveDataTypeable
-      DeriveFoldable
-      DeriveFunctor
-      DeriveGeneric
-      DeriveTraversable
-      DoAndIfThenElse
-      EmptyDataDecls
-      ExistentialQuantification
-      FlexibleContexts
-      FlexibleInstances
-      FunctionalDependencies
-      GADTs
-      DerivingVia
-      DerivingStrategies
-      GeneralizedNewtypeDeriving
-      StandaloneDeriving
-      DeriveAnyClass
-      InstanceSigs
-      KindSignatures
-      LambdaCase
-      MultiParamTypeClasses
-      MultiWayIf
-      NamedFieldPuns
-      OverloadedStrings
-      OverloadedLabels
-      PartialTypeSignatures
-      PatternGuards
-      PolyKinds
-      RankNTypes
-      RecordWildCards
-      ScopedTypeVariables
-      TupleSections
-      TypeFamilies
-      TypeSynonymInstances
-      ViewPatterns
-      DuplicateRecordFields
-      TypeOperators
-      TypeApplications
-      RoleAnnotations
-      PatternSynonyms
-  ghc-options: -O2 -fspecialise-aggressively -flate-specialise -fplugin=Polysemy.Plugin -Wall -threaded -rtsopts -with-rtsopts=-N -Wincomplete-uni-patterns -Wincomplete-record-updates -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -Wmissing-export-lists -Wpartial-fields -fno-warn-unused-do-bind -eventlog
+    NoMonomorphismRestriction
+    AllowAmbiguousTypes
+    BangPatterns
+    BinaryLiterals
+    BlockArguments
+    ConstraintKinds
+    DataKinds
+    DefaultSignatures
+    DeriveAnyClass
+    DeriveDataTypeable
+    DeriveFoldable
+    DeriveFunctor
+    DeriveGeneric
+    DeriveTraversable
+    DerivingStrategies
+    DerivingVia
+    DoAndIfThenElse
+    DuplicateRecordFields
+    EmptyDataDecls
+    ExistentialQuantification
+    FlexibleContexts
+    FlexibleInstances
+    FunctionalDependencies
+    GADTs
+    GeneralizedNewtypeDeriving
+    IncoherentInstances
+    InstanceSigs
+    KindSignatures
+    LambdaCase
+    MultiParamTypeClasses
+    MultiWayIf
+    NamedFieldPuns
+    OverloadedLabels
+    OverloadedStrings
+    PartialTypeSignatures
+    PatternGuards
+    PatternSynonyms
+    PolyKinds
+    RankNTypes
+    RecordWildCards
+    RecursiveDo
+    RoleAnnotations
+    ScopedTypeVariables
+    StandaloneDeriving
+    StrictData
+    TemplateHaskell
+    TupleSections
+    TypeApplications
+    TypeFamilies
+    TypeOperators
+    TypeSynonymInstances
+    UndecidableInstances
+    ViewPatterns
+
+  ghc-options:
+    -O2 -fspecialise-aggressively -flate-specialise
+    -fplugin=Polysemy.Plugin -Wall -threaded -rtsopts -with-rtsopts=-N
+    -Wincomplete-uni-patterns -Wincomplete-record-updates -Wcompat
+    -Widentities -Wredundant-constraints -fhide-source-paths
+    -Wmissing-export-lists -Wpartial-fields -fno-warn-unused-do-bind
+    -fno-warn-name-shadowing -fno-warn-unused-top-binds
+    -fno-warn-unused-imports
+
   build-depends:
-      JuicyPixels
-    , arbor-lru-cache
-    , base >=4.12 && <5
+      arbor-lru-cache
+    , base                  >=4.12    && <5
     , beam-core
     , beam-postgres
     , bytestring
-    , calamity
+    , calamity              ==0.2.0.2
     , calamity-bot
     , calamity-commands
     , data-default-class
@@ -241,13 +246,14 @@ executable calamity-bot
     , generic-lens
     , hourglass
     , immortal
+    , JuicyPixels
     , lens
     , linear
     , megaparsec
     , mime-types
     , optparse-applicative
     , polysemy
-    , polysemy-plugin >=0.2
+    , polysemy-plugin       >=0.2
     , postgresql-simple
     , pretty-simple
     , process
@@ -263,7 +269,9 @@ executable calamity-bot
     , time
     , unordered-containers
     , wreq
+
   mixins:
-      base hiding (Prelude)
-    , relude (Relude as Prelude, Relude.Unsafe, Relude, Relude.Extra)
-  default-language: Haskell2010
+    base hiding (Prelude),
+    relude (Relude as Prelude, Relude.Unsafe, Relude, Relude.Extra)
+
+  default-language:   Haskell2010

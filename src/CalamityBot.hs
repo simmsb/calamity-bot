@@ -1,5 +1,3 @@
-{-# LANGUAGE QuasiQuotes #-}
-
 module CalamityBot (
   runBot,
 ) where
@@ -13,8 +11,12 @@ import Calamity.Gateway.Types (StatusUpdateData (..))
 import Calamity.HTTP as H
 import Calamity.Metrics.Noop
 import qualified Calamity.Types.Model.Presence.Activity
-import CalamityBot.Commands
-import CalamityBot.Db
+import CalamityBot.Commands.Aliases ( aliasGroup )
+import CalamityBot.Commands.Crap ( crapGroup )
+import CalamityBot.Commands.Prefix ( prefixGroup )
+import CalamityBot.Commands.Reanimate ( reanimateGroup )
+import CalamityBot.Commands.Reminders ( reminderGroup )
+import CalamityBot.Db.Eff ( runDBEffPooled )
 import CalamityBot.PrefixHandler
 import CalamityBot.Utils.Config
 import qualified Data.ByteString.Char8 as BS

@@ -1,18 +1,23 @@
 -- |
-module Polysemy.Immortal
-  ( Immortal (..),
-    createImmortal,
-    mortalize,
-    immortalize,
-    stop,
-    wait,
-    immortalToIOFinal,
-  )
-where
+module Polysemy.Immortal (
+  Immortal (..),
+  createImmortal,
+  mortalize,
+  immortalize,
+  stop,
+  wait,
+  immortalToIOFinal,
+) where
 
 import qualified Control.Immortal as Immortal
-import Polysemy
-import Polysemy.Final
+import Polysemy (Final, Inspector (inspect), Member, Sem, makeSem)
+import Polysemy.Final (
+  bindS,
+  getInitialStateS,
+  getInspectorS,
+  interpretFinal,
+  liftS,
+ )
 
 data Immortal m a where
   CreateImmortal :: (Immortal.Thread -> m a) -> Immortal m Immortal.Thread

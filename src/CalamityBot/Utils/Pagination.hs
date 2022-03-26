@@ -1,12 +1,11 @@
 -- | Pagination helper functions
-module CalamityBot.Utils.Pagination
-  ( formatPagination2,
-    Pagination (..),
-    PaginationDir (..),
-    paginate,
-    renderPaginationEmbed,
-  )
-where
+module CalamityBot.Utils.Pagination (
+  formatPagination2,
+  Pagination (..),
+  PaginationDir (..),
+  paginate,
+  renderPaginationEmbed,
+) where
 
 import Calamity
 import Control.Lens
@@ -34,13 +33,12 @@ formatPagination2 titles xs fmt =
         [column (expandUntil 20) right def def, column (expandUntil 80) left def def]
         unicodeRoundS
         (titlesH titles)
-        ( map (rowG . (\(a, b) -> [a, b])) $
-            (map (bimapBoth T.unpack) formattedLines)
+        ( map ((rowG . (\(a, b) -> [a, b])) . bimapBoth T.unpack) formattedLines
         )
 
 data Pagination a = Pagination
-  { page :: Int,
-    content :: NonEmpty a
+  { page :: Int
+  , content :: NonEmpty a
   }
   deriving (Generic, Show)
 
@@ -87,7 +85,7 @@ paginate get render dest = (void . P.runFail) do
 
   (timeoutDuration (Duration 1 0 0 0) . P.evalState initP . forever) do
     r <-
-      waitUntil @'RawMessageReactionAddEvt
+      waitUntil @ 'RawMessageReactionAddEvt
         ( \r ->
             (getID @Message r == getID msg)
               && (getID @User r /= getID msg)
@@ -106,8 +104,13 @@ paginate get render dest = (void . P.runFail) do
       Just c' -> do
         let s' = Pagination nextPage c'
         let renderedMsg = appEndo (intoMsg $ render s') def
-        invoke $ EditMessage (getID @Channel msg) (getID @Message msg) (editMessageContent (renderedMsg ^. #content) 
-                                                                          <> editMessageEmbed (renderedMsg ^. #embed))
+        invoke $
+          EditMessage
+            (getID @Channel msg)
+            (getID @Message msg)
+            ( editMessageContent (renderedMsg ^. #content)
+                <> editMessageEmbed (renderedMsg ^. #embed)
+            )
         P.put s'
       Nothing ->
         pure ()

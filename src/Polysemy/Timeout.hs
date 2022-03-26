@@ -1,16 +1,15 @@
 -- |
-module Polysemy.Timeout
-  ( Timeout (..),
-    timeout,
-    timeoutDuration,
-    timeoutToIOFinal,
-  )
-where
+module Polysemy.Timeout (
+  Timeout (..),
+  timeout,
+  timeoutDuration,
+  timeoutToIOFinal,
+) where
 
-import qualified System.Timeout as T
+import Data.Hourglass (Duration, toSeconds)
 import Polysemy
 import Polysemy.Final
-import Data.Hourglass (toSeconds, Duration)
+import qualified System.Timeout as T
 
 data Timeout m a where
   Timeout :: Int -> m a -> Timeout m (Maybe a)
@@ -28,4 +27,4 @@ timeoutToIOFinal = interpretFinal $ \case
   Timeout time fm -> do
     ins <- getInspectorS
     fm' <- runS fm
-    fmap (fmap join) <$> (liftS $ T.timeout time (inspect ins <$> fm'))
+    fmap (fmap join) <$> liftS (T.timeout time (inspect ins <$> fm'))

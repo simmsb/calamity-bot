@@ -1,12 +1,11 @@
 -- | Prefix models
-module CalamityBot.Db.Prefixes
-  ( addPrefix,
-    getPrefixes,
-    getPrefixes',
-    countPrefixes,
-    removePrefix,
-  )
-where
+module CalamityBot.Db.Prefixes (
+  addPrefix,
+  getPrefixes,
+  getPrefixes',
+  countPrefixes,
+  removePrefix,
+) where
 
 import Calamity (Guild, Snowflake (..))
 import CalamityBot.Db.Schema
@@ -21,10 +20,11 @@ addPrefix (gid, pre_) =
   insert (db ^. #prefixes) (insertValues [DBPrefix (DBGuildId gid) pre_])
 
 countPrefixes :: Snowflake Guild -> SqlSelect Pg.Postgres Integer
-countPrefixes gid = select $
-  aggregate_
-    (const countAll_)
-    (filter_ (\p -> prefixGuild p ==. val_ (DBGuildId gid)) $ all_ (db ^. #prefixes))
+countPrefixes gid =
+  select $
+    aggregate_
+      (const countAll_)
+      (filter_ (\p -> prefixGuild p ==. val_ (DBGuildId gid)) $ all_ (db ^. #prefixes))
 
 getPrefixes' :: Snowflake Guild -> SqlSelect Pg.Postgres T.Text
 getPrefixes' = select . getPrefixes

@@ -1,13 +1,12 @@
 -- |
-module CalamityBot.Utils.Config
-  ( Config (..),
-    getCfg,
-    configAsConst,
-  )
-where
+module CalamityBot.Utils.Config (
+  Config (..),
+  getCfg,
+  configAsConst,
+) where
 
-import Polysemy
 import Data.HashMap.Strict ((!))
+import Polysemy
 
 data Config m a where
   GetCfg :: Text -> Config m Text

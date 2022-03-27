@@ -1,16 +1,16 @@
 -- |
-module CalamityBot.PrefixHandler
-  ( useDatabasePrefix,
-  )
-where
+module CalamityBot.PrefixHandler (
+  useDatabasePrefix,
+) where
 
 import Calamity (Message)
-import CalamityCommands.ParsePrefix (ParsePrefix(..))
-import CalamityBot.Db
+import CalamityBot.Db.Eff ( DBEff, usingConn )
+import CalamityBot.Db.Prefixes ( getPrefixes' )
+import CalamityCommands.ParsePrefix (ParsePrefix (..))
 import Control.Lens
 import qualified Data.Text as T
-import Polysemy
 import Database.Beam (runSelectReturningList)
+import Polysemy
 
 firstJusts :: [Maybe a] -> Maybe a
 firstJusts (Just x : _) = Just x

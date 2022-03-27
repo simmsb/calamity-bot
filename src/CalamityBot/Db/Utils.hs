@@ -1,12 +1,11 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 
 -- | db utilities
-module CalamityBot.Db.Utils
-  ( idAsInt,
-    tupleLT,
-    tupleGT,
-  )
-where
+module CalamityBot.Db.Utils (
+  idAsInt,
+  tupleLT,
+  tupleGT,
+) where
 
 import Calamity (Snowflake (..))
 import Database.Beam (FromBackendRow, HasSqlEqualityCheck (..), QGenExpr, SqlEq, SqlOrd, (&&.), (<.), (==.), (>.), (||.))
@@ -18,15 +17,13 @@ import Database.Beam.Postgres.Syntax (PgValueSyntax)
 idAsInt :: Snowflake a -> Int64
 idAsInt = fromIntegral . fromSnowflake
 
-
-deriving via (Word64) instance HasSqlValueSyntax Value (Snowflake a)
-deriving via (Word64) instance HasSqlValueSyntax PgValueSyntax (Snowflake a)
-deriving via (Word64) instance FromBackendRow Postgres (Snowflake a)
-
+deriving via Word64 instance HasSqlValueSyntax Value (Snowflake a)
+deriving via Word64 instance HasSqlValueSyntax PgValueSyntax (Snowflake a)
+deriving via Word64 instance FromBackendRow Postgres (Snowflake a)
 
 instance HasSqlEqualityCheck Postgres (Snowflake a)
--- instance SqlOrderable Postgres LText
 
+-- instance SqlOrderable Postgres LText
 
 -- instance HasSqlValueSyntax Value (Snowflake a) where
 --   sqlValueSyntax = sqlValueSyntax . fromSnowflake

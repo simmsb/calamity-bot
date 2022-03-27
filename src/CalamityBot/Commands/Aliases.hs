@@ -1,19 +1,27 @@
 -- | Alias commands
-module CalamityBot.Commands.Aliases
-  ( aliasGroup,
-  )
-where
+module CalamityBot.Commands.Aliases (
+  aliasGroup,
+) where
 
 import Calamity
 import Calamity.Commands
 import Calamity.Commands.Context (FullContext)
-import CalamityCommands.Utils (handleCommands)
+import CalamityBot.Db.Aliases (
+  addAlias,
+  aliasesForPaginatedAfter,
+  aliasesForPaginatedBefore,
+  aliasesForPaginatedInitial,
+  getAlias,
+  removeAliasByName,
+ )
+import CalamityBot.Db.Eff (DBEff, usingConn)
+import CalamityBot.Db.Schema (DBAlias)
+import CalamityBot.Utils.Pagination
 import CalamityCommands.Context (ConstructContext)
 import CalamityCommands.ParsePrefix (ParsePrefix)
-import CalamityBot.Db
-import CalamityBot.Utils.Pagination
-import Data.Default.Class
+import CalamityCommands.Utils (handleCommands)
 import Control.Lens hiding (Context)
+import Data.Default.Class
 import qualified Data.Text as T
 import Database.Beam (runDelete, runInsert, runSelectReturningList, runSelectReturningOne)
 import qualified Polysemy as P
@@ -26,7 +34,7 @@ aliasGroup = void
   . groupA "alias" ["aliases"]
   $ do
     handler <- fetchHandler
-    react @('CustomEvt CommandNotFound) \(CommandNotFound msg usr mem path) ->
+    react @( 'CustomEvt CommandNotFound) \(CommandNotFound msg usr mem path) ->
       case path of
         (aliasName : _) -> do
           alias' <- usingConn (runSelectReturningOne $ getAlias (getID @User msg, aliasName))

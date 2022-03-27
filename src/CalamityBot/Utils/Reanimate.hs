@@ -1,107 +1,166 @@
 -- | Reanimate fuckery
-module CalamityBot.Utils.Reanimate
-  ( renderToMemory,
-  )
-where
+module CalamityBot.Utils.Reanimate (
+  renderToMemory,
+) where
 
-import CalamityBot.Utils.Process ( runCmdLazy )
+import CalamityBot.Utils.Process (runCmdLazy)
 import CalamityBot.Utils.Utils
 import Control.Concurrent (forkIO, getNumCapabilities, newQSemN, signalQSemN, waitQSemN)
 import Control.Concurrent.MVar (isEmptyMVar, modifyMVar_)
 import Control.Exception (catch, evaluate, finally, throwIO)
 import qualified Data.ByteString.Lazy as LB
 import Graphics.SvgTree (Number (..))
-import Numeric ( showFFloat )
+import Numeric (showFFloat)
 import Reanimate (Animation, duration, frameAt)
 import Reanimate.Animation (renderSvg)
 import Reanimate.Parameters (setRootDirectory)
-import Reanimate.Render
-    ( FPS,
-      Height,
-      Raster(RasterNone),
-      Width,
-      applyRaster,
-      selectRaster,
-      Format(..) )
-import System.Exit ( ExitCode(ExitFailure, ExitSuccess) )
+import Reanimate.Render (
+  FPS,
+  Format (..),
+  Height,
+  Raster (RasterNone),
+  Width,
+  applyRaster,
+  selectRaster,
+ )
+import System.Exit (ExitCode (ExitFailure, ExitSuccess))
 import System.FilePath ((</>))
 import System.Process (readProcessWithExitCode, showCommandForUser)
 import Text.Printf (printf)
 
-renderToMemory :: Animation
-       -> Raster
-       -> Format
-       -> Width
-       -> Height
-       -> FPS
-       -> IO (Either LB.ByteString LB.ByteString)
+renderToMemory ::
+  Animation ->
+  Raster ->
+  Format ->
+  Width ->
+  Height ->
+  FPS ->
+  IO (Either LB.ByteString LB.ByteString)
 renderToMemory ani raster' format width height fps = do
   ffmpeg <- requireExecutable "ffmpeg"
   raster <- selectRaster raster'
   generateFrames raster ani width height fps $ \template ->
     case format of
       RenderMp4 ->
-        runCmdLazy ffmpeg ["-r", show fps, "-i", template, "-y"
-                      , "-c:v", "libx264", "-vf", "fps="++show fps
-                      , "-preset", "slow"
-                      , "-crf", "18"
-                      , "-movflags", "+faststart"
-                      , "-pix_fmt", "yuv420p"
-                      , "-f", "ismv"
-                      ,  "-"]
+        runCmdLazy
+          ffmpeg
+          [ "-r"
+          , show fps
+          , "-i"
+          , template
+          , "-y"
+          , "-c:v"
+          , "libx264"
+          , "-vf"
+          , "fps=" ++ show fps
+          , "-preset"
+          , "slow"
+          , "-crf"
+          , "18"
+          , "-movflags"
+          , "+faststart"
+          , "-pix_fmt"
+          , "yuv420p"
+          , "-f"
+          , "ismv"
+          , "-"
+          ]
       RenderGif -> withTempFile "reanimate" "png" $ \palette -> do
-        runCmd_ ffmpeg ["-i", template, "-y"
-                      ,"-vf", "fps="++show fps++
-                        ",scale="++show width++":"++show height ++
-                        ":flags=lanczos,palettegen"
-                      ,"-t", showFFloat Nothing (duration ani) ""
-                      , palette ]
+        runCmd_
+          ffmpeg
+          [ "-i"
+          , template
+          , "-y"
+          , "-vf"
+          , "fps=" ++ show fps
+              ++ ",scale="
+              ++ show width
+              ++ ":"
+              ++ show height
+              ++ ":flags=lanczos,palettegen"
+          , "-t"
+          , showFFloat Nothing (duration ani) ""
+          , palette
+          ]
 
-        runCmdLazy ffmpeg ["-framerate", show fps,"-i", template, "-y"
-                      ,"-i", palette
-                      ,"-threads", "0"
-                      ,"-filter_complex"
-                      ,"fps="++show fps++
-                        ",scale="++show width++":"++show height ++
-                        ":flags=lanczos[x];[x][1:v]paletteuse"
-                      ,"-t", showFFloat Nothing (duration ani) ""
-                      , "-f", "gif"
-                      , "-"]
+        runCmdLazy
+          ffmpeg
+          [ "-framerate"
+          , show fps
+          , "-i"
+          , template
+          , "-y"
+          , "-i"
+          , palette
+          , "-threads"
+          , "0"
+          , "-filter_complex"
+          , "fps=" ++ show fps
+              ++ ",scale="
+              ++ show width
+              ++ ":"
+              ++ show height
+              ++ ":flags=lanczos[x];[x][1:v]paletteuse"
+          , "-t"
+          , showFFloat Nothing (duration ani) ""
+          , "-f"
+          , "gif"
+          , "-"
+          ]
       RenderWebm ->
-        runCmdLazy ffmpeg ["-r", show fps, "-i", template, "-y"
-                      , "-c:v", "libvpx-vp9", "-vf", "fps="++show fps
-                      , "-threads", "0"
-                      , "-f", "webm"
-                      , "-"]
+        runCmdLazy
+          ffmpeg
+          [ "-r"
+          , show fps
+          , "-i"
+          , template
+          , "-y"
+          , "-c:v"
+          , "libvpx-vp9"
+          , "-vf"
+          , "fps=" ++ show fps
+          , "-threads"
+          , "0"
+          , "-f"
+          , "webm"
+          , "-"
+          ]
 
 rasterTemplate :: Raster -> String
 rasterTemplate RasterNone = "render-%05d.svg"
-rasterTemplate _          = "render-%05d.png"
+rasterTemplate _ = "render-%05d.png"
 
 frameOrder :: Int -> Int -> [Int]
 frameOrder fps nFrames = worker [] fps
   where
     worker _seen 0 = []
     worker seen nthFrame =
-      filterFrameList seen nthFrame nFrames ++
-      worker (nthFrame : seen) (nthFrame `div` 2)
+      filterFrameList seen nthFrame nFrames
+        ++ worker (nthFrame : seen) (nthFrame `div` 2)
 
 filterFrameList :: [Int] -> Int -> Int -> [Int]
 filterFrameList seen nthFrame nFrames =
-    filter (not.isSeen) [0, nthFrame .. nFrames-1]
+  filter (not . isSeen) [0, nthFrame .. nFrames -1]
   where
     isSeen x = any (\y -> x `mod` y == 0) seen
 
-generateFrames :: Raster -> Animation -> Width -> Height -> FPS -> (String -> IO (Either LB.ByteString LB.ByteString)) -> IO (Either LB.ByteString LB.ByteString)
+generateFrames ::
+  Raster ->
+  Animation ->
+  Width ->
+  Height ->
+  FPS ->
+  (String -> IO (Either LB.ByteString LB.ByteString)) ->
+  IO (Either LB.ByteString LB.ByteString)
 generateFrames raster ani width_ height_ rate action = withTempDir "reanimate" $ \tmp -> do
-    setRootDirectory tmp
-    done <- newMVar (0::Int)
-    let frameName nth = tmp </> printf nameTemplate nth
-    concurrentForM_ frames $ \n -> do
-      writeFile (frameName n) $ renderSvg width height $ nthFrame n
-      applyRaster raster (frameName n)
-      modifyMVar_ done $ \nDone -> return (nDone+1)
-    action (tmp </> rasterTemplate raster)
+  setRootDirectory tmp
+  done <- newMVar (0 :: Int)
+  let frameName nth = tmp </> printf nameTemplate nth
+  concurrentForM_ frames $ \n -> do
+    writeFile (frameName n) $ renderSvg width height $ nthFrame n
+    applyRaster raster (frameName n)
+    modifyMVar_ done $ \nDone -> return (nDone + 1)
+  action (tmp </> rasterTemplate raster)
   where
     width = Just $ Px $ fromIntegral width_
     height = Just $ Px $ fromIntegral height_
@@ -127,7 +186,7 @@ concurrentForM_ lst action = do
   mbE <- tryTakeMVar eVar
   case mbE of
     Nothing -> return ()
-    Just e  -> throwIO (e :: SomeException)
+    Just e -> throwIO (e :: SomeException)
 
 runCmd_ :: FilePath -> [String] -> IO (Either String String)
 runCmd_ exec args = do
@@ -135,12 +194,18 @@ runCmd_ exec args = do
   _ <- evaluate (length out + length err)
   case ret of
     ExitSuccess -> return (Right out)
-    ExitFailure err' | False ->
-      return $ Left $
-        "Failed to run: " ++ showCommandForUser exec args ++ "\n" ++
-        "Error code: " ++ show err' ++ "\n" ++
-        "stderr: " ++ err
-    ExitFailure{} | null err -> -- LaTeX prints errors to stdout. :(
-      return $ Left out
-    ExitFailure{} ->
+    ExitFailure err'
+      | False ->
+        return $
+          Left $
+            "Failed to run: " ++ showCommandForUser exec args ++ "\n"
+              ++ "Error code: "
+              ++ show err'
+              ++ "\n"
+              ++ "stderr: "
+              ++ err
+    ExitFailure {}
+      | null err -> -- LaTeX prints errors to stdout. :(
+        return $ Left out
+    ExitFailure {} ->
       return $ Left err

@@ -1,18 +1,17 @@
 -- | DB schema
-module CalamityBot.Db.Schema
-  ( DBGuildT (..),
-    DBPrefixT (..),
-    DBReminderT (..),
-    DBAliasT (..),
-    DBGuild,
-    DBPrefix,
-    DBReminder,
-    DBAlias,
-    BotDB,
-    PrimaryKey(DBGuildId, DBPrefixId, DBReminderId, DBAliasId),
-    db,
-  )
-where
+module CalamityBot.Db.Schema (
+  DBGuildT (..),
+  DBPrefixT (..),
+  DBReminderT (..),
+  DBAliasT (..),
+  DBGuild,
+  DBPrefix,
+  DBReminder,
+  DBAlias,
+  BotDB,
+  PrimaryKey (DBGuildId, DBPrefixId, DBReminderId, DBAliasId),
+  db,
+) where
 
 -- https://haskell-beam.github.io/beam/user-guide/models/#the-beamable-type-class
 
@@ -21,8 +20,8 @@ import Data.Time (UTCTime)
 import Database.Beam
 
 data DBGuildT f = DBGuild
-  { guildId       :: Columnar f (Snowflake Guild),
-    guildLastSeen :: Columnar f UTCTime
+  { guildId :: Columnar f (Snowflake Guild)
+  , guildLastSeen :: Columnar f UTCTime
   }
   deriving (Generic, Beamable)
 
@@ -33,8 +32,8 @@ instance Table DBGuildT where
   primaryKey = DBGuildId . guildId
 
 data DBPrefixT f = DBPrefix
-  { prefixGuild :: PrimaryKey DBGuildT f,
-    prefixPre   :: Columnar f Text
+  { prefixGuild :: PrimaryKey DBGuildT f
+  , prefixPre :: Columnar f Text
   }
   deriving (Generic, Beamable)
 
@@ -45,12 +44,12 @@ instance Table DBPrefixT where
   primaryKey = DBPrefixId <$> prefixGuild <*> prefixPre
 
 data DBReminderT f = DBReminder
-  { reminderId        :: Columnar f Text,
-    reminderUserId    :: Columnar f (Snowflake User),
-    reminderChannelId :: Columnar f (Snowflake Channel),
-    reminderMessage   :: Columnar f Text,
-    reminderCreated   :: Columnar f UTCTime,
-    reminderTarget    :: Columnar f UTCTime
+  { reminderId :: Columnar f Text
+  , reminderUserId :: Columnar f (Snowflake User)
+  , reminderChannelId :: Columnar f (Snowflake Channel)
+  , reminderMessage :: Columnar f Text
+  , reminderCreated :: Columnar f UTCTime
+  , reminderTarget :: Columnar f UTCTime
   }
   deriving (Generic, Beamable)
 
@@ -61,9 +60,9 @@ instance Table DBReminderT where
   primaryKey = DBReminderId . reminderId
 
 data DBAliasT f = DBAlias
-  { aliasUserId :: Columnar f (Snowflake User),
-    aliasName   :: Columnar f Text,
-    aliasValue  :: Columnar f Text
+  { aliasUserId :: Columnar f (Snowflake User)
+  , aliasName :: Columnar f Text
+  , aliasValue :: Columnar f Text
   }
   deriving (Generic, Beamable)
 
@@ -74,10 +73,10 @@ instance Table DBAliasT where
   primaryKey = DBAliasId <$> aliasUserId <*> aliasName
 
 data BotDB f = BotDB
-  { guilds    :: f (TableEntity DBGuildT),
-    prefixes  :: f (TableEntity DBPrefixT),
-    reminders :: f (TableEntity DBReminderT),
-    aliases   :: f (TableEntity DBAliasT)
+  { guilds :: f (TableEntity DBGuildT)
+  , prefixes :: f (TableEntity DBPrefixT)
+  , reminders :: f (TableEntity DBReminderT)
+  , aliases :: f (TableEntity DBAliasT)
   }
   deriving (Generic, Database be)
 

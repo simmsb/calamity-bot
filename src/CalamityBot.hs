@@ -3,7 +3,7 @@ module CalamityBot (
 ) where
 
 import Calamity
-import Calamity.Cache.Eff (getMessage, getGuilds, CacheEff)
+import Calamity.Cache.Eff (CacheEff, getGuilds, getMessage)
 import Calamity.Cache.InMemory
 import Calamity.Commands as C
 import Calamity.Commands.Context (FullContext, useFullContext)
@@ -11,32 +11,29 @@ import Calamity.Gateway.Types (StatusUpdateData (..))
 import Calamity.HTTP as H
 import Calamity.Metrics.Noop
 import qualified Calamity.Types.Model.Presence.Activity
-import CalamityBot.Commands.Aliases ( aliasGroup )
-import CalamityBot.Commands.Crap ( crapGroup )
-import CalamityBot.Commands.Prefix ( prefixGroup )
-import CalamityBot.Commands.Reanimate ( reanimateGroup )
-import CalamityBot.Commands.Reminders ( reminderGroup )
-import CalamityBot.Db.Eff ( runDBEffPooled )
+import CalamityBot.Commands.Aliases (aliasGroup)
+import CalamityBot.Commands.Crap (crapGroup)
+import CalamityBot.Commands.Prefix (prefixGroup)
+import CalamityBot.Commands.Reanimate (reanimateGroup)
+import CalamityBot.Commands.Reminders (reminderGroup)
+import CalamityBot.Db.Eff (runDBEffPooled)
 import CalamityBot.PrefixHandler
 import CalamityBot.Utils.Config
+import Control.Lens ((^.))
 import qualified Data.ByteString.Char8 as BS
 import Data.Pool (createPool)
 import qualified Data.Text as T
 import Database.PostgreSQL.Simple (close, connectPostgreSQL)
-import qualified Di
 import qualified Df1
+import qualified Di
 import qualified Di.Core as DiC
-
-import Control.Lens ((^.))
 import DiPolysemy
 import Polysemy
--- import qualified Polysemy.Async as P
 import Polysemy.Immortal
 import Polysemy.Timeout
 import System.Environment
 import Text.Pretty.Simple
 import TextShow
-
 
 cfg :: HashMap Text Text
 cfg =
@@ -47,7 +44,6 @@ cfg =
 
 -- filterDi :: DiC.Di l Di.Path m -> DiC.Di l Di.Path m
 -- filterDi = DiC.filter (\_ p _ -> Df1.Push "calamity" `notElem` p)
-
 
 runBot :: IO ()
 runBot = Di.new \di -> do
@@ -90,7 +86,7 @@ runBot = Di.new \di -> do
               void $ tell @T.Text ctx "You found me"
           command @'[] "testguild" \ctx ->
             void $ print $ ctx ^. #guild
-          command @'[Calamity.Member] "testmember" \ctx member -> 
+          command @'[Calamity.Member] "testmember" \ctx member ->
             void $ tell @T.Text ctx (showt member)
           command @'[] "cantseeme" \ctx ->
             void $ tell @T.Text ctx "You found me"
@@ -105,33 +101,33 @@ runBot = Di.new \di -> do
             void . tell ctx . codeblock' Nothing . fromLazy $ pShowNoColor msg
           command @'[] "treply" \ctx ->
             void $ reply @Text (ctx ^. #message) "hello"
-          -- command @'[] "listguilds" \ctx -> do
-          --   guilds <- getGuilds
-          --   let gf = T.unlines ["id: " <> showtl (g ^. #id) <> ", name: " <> (g ^. #name) | g <- guilds]
-          --   void . tell ctx . codeblock' Nothing $ gf
-          -- command @'[] "spam" \ctx ->
-          --   replicateM_ 10 . P.async $ reply @Text (ctx ^. #message) "hello"
-          -- command @'[] "makeChannel" \ctx -> do
-          --   case ctx ^. #guild of
-          --     Just g -> do
-          --       Right ch <-
-          --         invoke $
-          --           CreateGuildChannel g $
-          --             ChannelCreateData
-          --               { name = "test"
-          --               , type_ = Just GuildTextType
-          --               , topic = Nothing
-          --               , bitrate = Nothing
-          --               , userLimit = Nothing
-          --               , rateLimitPerUser = Nothing
-          --               , position = Nothing
-          --               , permissionOverwrites = Nothing
-          --               , parentID = Nothing
-          --               , nsfw = Nothing
-          --               }
-          --       void . reply @Text (ctx ^. #message) $ showt ch
-          --     Nothing ->
-          --       void . reply @Text (ctx ^. #message) $ "not a guild lol"
+      -- command @'[] "listguilds" \ctx -> do
+      --   guilds <- getGuilds
+      --   let gf = T.unlines ["id: " <> showtl (g ^. #id) <> ", name: " <> (g ^. #name) | g <- guilds]
+      --   void . tell ctx . codeblock' Nothing $ gf
+      -- command @'[] "spam" \ctx ->
+      --   replicateM_ 10 . P.async $ reply @Text (ctx ^. #message) "hello"
+      -- command @'[] "makeChannel" \ctx -> do
+      --   case ctx ^. #guild of
+      --     Just g -> do
+      --       Right ch <-
+      --         invoke $
+      --           CreateGuildChannel g $
+      --             ChannelCreateData
+      --               { name = "test"
+      --               , type_ = Just GuildTextType
+      --               , topic = Nothing
+      --               , bitrate = Nothing
+      --               , userLimit = Nothing
+      --               , rateLimitPerUser = Nothing
+      --               , position = Nothing
+      --               , permissionOverwrites = Nothing
+      --               , parentID = Nothing
+      --               , nsfw = Nothing
+      --               }
+      --       void . reply @Text (ctx ^. #message) $ showt ch
+      --     Nothing ->
+      --       void . reply @Text (ctx ^. #message) $ "not a guild lol"
       react @( 'CustomEvt (CtxCommandError FullContext)) \(CtxCommandError ctx e) -> do
         info $ "Command failed with reason: " <> showt e
         case e of

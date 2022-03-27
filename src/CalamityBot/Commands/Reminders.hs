@@ -7,7 +7,15 @@ import Calamity
 import Calamity.Commands
 import Calamity.Commands.Context (FullContext)
 import Calamity.Internal.Utils
-import CalamityBot.Db
+import CalamityBot.Db.Eff (DBEff, usingConn)
+import CalamityBot.Db.Reminders (
+  remindersForPaginatedAfter,
+  remindersForPaginatedBefore,
+  remindersForPaginatedInitial,
+  removeReminder,
+  upcomingReminders,
+ )
+import CalamityBot.Db.Schema (DBReminder)
 import CalamityBot.Utils.Pagination
 import CalamityBot.Utils.Utils
 import Control.Concurrent (threadDelay)
@@ -19,8 +27,6 @@ import Data.Time.Clock (getCurrentTime)
 import Data.Time.LocalTime (utc, utcToZonedTime, zonedTimeToUTC)
 import Data.Traversable
 import Database.Beam (runDelete, runInsert, runSelectReturningList)
--- import qualified Duckling.Core as D
--- import qualified Duckling.Time.Types as D
 import qualified Polysemy as P
 import qualified Polysemy.Async as P
 import Polysemy.Immortal
@@ -43,8 +49,8 @@ timeTable =
   , ("minute", toSeconds $ Minutes 1)
   , ("second", 1)
   ]
- where
-  day = toSeconds $ Hours 24
+  where
+    day = toSeconds $ Hours 24
 
 humanListConcat :: [T.Text] -> T.Text
 humanListConcat xs = case nonEmpty xs of
@@ -63,13 +69,13 @@ formatTimeDiff start end =
    in filter ((/= 0) . snd) (go diff)
         & map (\(name, Seconds n) -> showt n <> " " <> name <> memptyIfTrue (n == 1) "s")
         & humanListConcat
- where
-  go :: Seconds -> [(T.Text, Seconds)]
-  go duration = flip evalState duration $ for timeTable \(name, period) -> do
-    duration' <- get
-    let (n, duration'') = divMod duration' period
-    put duration''
-    pure (name, n)
+  where
+    go :: Seconds -> [(T.Text, Seconds)]
+    go duration = flip evalState duration $ for timeTable \(name, period) -> do
+      duration' <- get
+      let (n, duration'') = divMod duration' period
+      put duration''
+      pure (name, n)
 
 threadDelaySeconds :: Int -> IO ()
 threadDelaySeconds = threadDelay . (* 1000000)
@@ -82,25 +88,25 @@ sleepUntil when_ = do
 
 fmtReminderMessage :: DBReminder -> T.Text
 fmtReminderMessage r = mention (r ^. #reminderUserId) <> ", " <> delta <> " ago, you asked me to remind you about: " <> (r ^. #reminderMessage)
- where
-  delta = formatTimeDiff (utcTimeToHourglass (r ^. #reminderCreated)) (utcTimeToHourglass (r ^. #reminderTarget))
+  where
+    delta = formatTimeDiff (utcTimeToHourglass (r ^. #reminderCreated)) (utcTimeToHourglass (r ^. #reminderTarget))
 
 reminderTask :: (BotC r, P.Member DBEff r) => P.Sem r ()
 reminderTask = untilJustFinalIO do
   upcoming <- usingConn $ runSelectReturningList upcomingReminders
   void $ P.sequenceConcurrently $ (P.embed (threadDelaySeconds 6) : map processReminder upcoming)
   pure Nothing
- where
-  processReminder :: (BotC r, P.Member DBEff r) => DBReminder -> P.Sem r ()
-  processReminder r = do
-    P.embed . sleepUntil $ utcTimeToHourglass (r ^. #reminderTarget)
-    let msg = fmtReminderMessage r
-    resp <- tell (r ^. #reminderChannelId) msg
-    case resp of
-      Left _ ->
-        void $ tell (r ^. #reminderUserId) msg
-      _ -> pure ()
-    usingConn (runDelete $ removeReminder (r ^. #reminderUserId, r ^. #reminderId))
+  where
+    processReminder :: (BotC r, P.Member DBEff r) => DBReminder -> P.Sem r ()
+    processReminder r = do
+      P.embed . sleepUntil $ utcTimeToHourglass (r ^. #reminderTarget)
+      let msg = fmtReminderMessage r
+      resp <- tell (r ^. #reminderChannelId) msg
+      case resp of
+        Left _ ->
+          void $ tell (r ^. #reminderUserId) msg
+        _ -> pure ()
+      usingConn (runDelete $ removeReminder (r ^. #reminderUserId, r ^. #reminderId))
 
 reminderGroup :: (BotC r, P.Members '[DBEff, Immortal, Timeout] r) => P.Sem (DSLState FullContext r) ()
 reminderGroup = void

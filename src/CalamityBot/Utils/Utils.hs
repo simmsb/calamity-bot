@@ -1,12 +1,11 @@
 -- | utilities
-module CalamityBot.Utils.Utils
-  ( utcTimeToHourglass,
-    hourglassToUTCTime,
-    requireExecutable,
-    withTempDir,
-    withTempFile,
-  )
-where
+module CalamityBot.Utils.Utils (
+  utcTimeToHourglass,
+  hourglassToUTCTime,
+  requireExecutable,
+  withTempDir,
+  withTempFile,
+) where
 
 import qualified Data.Hourglass as H
 import qualified Data.Time as T

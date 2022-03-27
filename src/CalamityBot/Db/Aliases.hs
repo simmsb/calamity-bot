@@ -1,14 +1,13 @@
 -- | Alias models
-module CalamityBot.Db.Aliases
-  ( addAlias,
-    getAlias,
-    removeAliasByName,
-    allAliasesFor,
-    aliasesForPaginatedInitial,
-    aliasesForPaginatedBefore,
-    aliasesForPaginatedAfter,
-  )
-where
+module CalamityBot.Db.Aliases (
+  addAlias,
+  getAlias,
+  removeAliasByName,
+  allAliasesFor,
+  aliasesForPaginatedInitial,
+  aliasesForPaginatedBefore,
+  aliasesForPaginatedAfter,
+) where
 
 import Calamity (Snowflake (..), User)
 import CalamityBot.Db.Schema
@@ -51,20 +50,20 @@ allAliasesForR uid =
 
 aliasesForPaginatedInitial :: (Snowflake User, Int) -> SqlSelect Pg.Postgres DBAlias
 aliasesForPaginatedInitial (uid, width) =
-  select
-    $ limit_ (fromIntegral width)
-    $ allAliasesFor uid
+  select $
+    limit_ (fromIntegral width) $
+      allAliasesFor uid
 
 aliasesForPaginatedBefore :: (Snowflake User, Int, T.Text) -> SqlSelect Pg.Postgres DBAlias
 aliasesForPaginatedBefore (uid, width, name) =
-  select
-    $ limit_ (fromIntegral width)
-    $ filter_ (\r -> aliasName r <. val_ name)
-    $ allAliasesForR uid
+  select $
+    limit_ (fromIntegral width) $
+      filter_ (\r -> aliasName r <. val_ name) $
+        allAliasesForR uid
 
 aliasesForPaginatedAfter :: (Snowflake User, Int, T.Text) -> SqlSelect Pg.Postgres DBAlias
 aliasesForPaginatedAfter (uid, width, name) =
-  select
-    $ limit_ (fromIntegral width)
-    $ filter_ (\r -> aliasName r >. val_ name)
-    $ allAliasesFor uid
+  select $
+    limit_ (fromIntegral width) $
+      filter_ (\r -> aliasName r >. val_ name) $
+        allAliasesFor uid

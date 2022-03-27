@@ -1,21 +1,18 @@
-{-# LANGUAGE BlockArguments #-}
-
 -- | Prefix related commands
-module CalamityBot.Commands.Prefix
-  ( prefixGroup,
-  )
-where
+module CalamityBot.Commands.Prefix (
+  prefixGroup,
+) where
 
+import Calamity
 import Calamity.Commands
 import Calamity.Commands.Context (FullContext)
-import Calamity
 import CalamityBot.Db
 import Control.Lens hiding (Context)
 import qualified Data.Text as T
+import Database.Beam (runDelete, runInsert, runSelectReturningList, runSelectReturningOne)
 import qualified Polysemy as P
 import Relude.Unsafe (fromJust)
 import TextShow (TextShow (showt))
-import Database.Beam (runSelectReturningList, runDelete, runInsert, runSelectReturningOne)
 
 guildOnly :: FullContext -> Maybe T.Text
 guildOnly ctx = maybe (Just "Can only be used in guilds") (const Nothing) (ctx ^. #guild)
@@ -40,16 +37,17 @@ prefixGroup = void
   . requiresPure [("guildOnly", guildOnly)]
   . groupA "prefix" ["prefixes"]
   $ do
-    react @'GuildCreateEvt \(g, _) -> -- TODO move this and maintainGuild
+    react @ 'GuildCreateEvt \(g, _) -> -- TODO move this and maintainGuild
       maintainGuild (getID g)
 
-    requires' "prefixLimit" (prefixLimit 6) $ help (const "Add a new prefix") $
-      command @'[Named "prefix" T.Text] "add" \ctx p -> do
-        let g = fromJust (ctx ^. #guild)
-            gid = getID @Guild g
-        maintainGuild gid
-        usingConn (runInsert $ addPrefix (gid, p))
-        void $ tell @T.Text ctx ("Added prefix: " <> p)
+    requires' "prefixLimit" (prefixLimit 6) $
+      help (const "Add a new prefix") $
+        command @'[Named "prefix" T.Text] "add" \ctx p -> do
+          let g = fromJust (ctx ^. #guild)
+              gid = getID @Guild g
+          maintainGuild gid
+          usingConn (runInsert $ addPrefix (gid, p))
+          void $ tell @T.Text ctx ("Added prefix: " <> p)
 
     help (const "Remove a prefix") $
       command @'[Named "prefix" T.Text] "remove" \ctx p -> do

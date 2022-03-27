@@ -1,15 +1,14 @@
 -- |
-module CalamityBot.Db.Eff
-  ( DBEff (..),
-    usingConn,
-    runDBEffPooled,
-  )
-where
+module CalamityBot.Db.Eff (
+  DBEff (..),
+  usingConn,
+  runDBEffPooled,
+) where
 
-import Polysemy
 import Data.Pool
+import Database.Beam.Postgres (Pg, runBeamPostgres)
 import Database.PostgreSQL.Simple
-import Database.Beam.Postgres (runBeamPostgres, Pg)
+import Polysemy
 
 data DBEff m a where
   UsingConn :: Pg a -> DBEff m a

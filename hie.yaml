@@ -1,2 +1,7 @@
 cradle:
   cabal:
+    - path: "./src"
+      component: "lib:calamity-bot"
+
+    - path: "./app/Main.hs"
+      component: "calamity-bot:exe:calamity-bot"

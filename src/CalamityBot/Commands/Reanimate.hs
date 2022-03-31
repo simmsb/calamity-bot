@@ -18,10 +18,11 @@ import Graphics.SvgTree
 import qualified Graphics.SvgTree.Types
 import Linear.V2
 import Network.Mime (defaultMimeLookup)
-import Network.Wreq
+import qualified Network.HTTP.Req as Req
+import qualified Text.URI as URI
 import qualified Polysemy as P
 import Reanimate
-import Reanimate.Render (Format (RenderGif, RenderWebm), Raster (RasterAuto))
+import Reanimate.Render (Format (RenderGif, RenderWebm, RenderMp4), Raster (RasterAuto))
 
 protectText :: T.Text -> T.Text
 protectText = T.concatMap (fromString . protectChar)
@@ -62,7 +63,7 @@ reanimateGroup = void
     help (const "Render a message") $
       command @'[KleenePlusConcat T.Text] "render" \ctx msg -> do
         let anim = renderText msg
-        r <- P.embed $ renderToMemory anim RasterAuto RenderWebm 400 400 30
+        r <- P.embed $ renderToMemory anim RasterAuto RenderGif 400 400 30
         case r of
           Right s -> do
             void $ tell ctx (TFile "lol.webm" s)
@@ -73,9 +74,11 @@ reanimateGroup = void
       command @'[] "renders" \ctx -> do
         case findSVG (ctx ^. #message . #attachments) of
           Just svg -> do
-            r <- P.embed $ Network.Wreq.get (T.unpack $ svg ^. #url)
-            let file = r ^. responseBody
-            let Just doc = parseSvgFile "a.svg" (decodeUtf8 file)
+            Just uri <- pure $ URI.mkURI (svg ^. #url)
+            Just (url, options) <- pure $ Req.useHttpsURI uri
+            r <- P.embed . Req.runReq Req.defaultHttpConfig $ Req.req Req.GET url Req.NoReqBody Req.lbsResponse options
+            let file = Req.responseBody r
+            Just doc <- pure $ parseSvgFile "a.svg" (decodeUtf8 file)
             let tree = head . fromList . filter usableTree $ doc ^. Graphics.SvgTree.Types.documentElements
             let f = mkSVGLatex $ flipYAxis tree
             let anim = setDuration 20 $
@@ -179,7 +182,7 @@ mkSVGLatex :: Tree -> Fourier
 mkSVGLatex t =
   mkFourier $
     lineToPoints 500 $
-      toLineCommands $ extractPath $ center $ scaleToFit 9.6 7.2 $ t
+      toLineCommands $ extractPath $ center $ scaleToFit 9.6 7.2 t
 
 mkFourierLatex :: T.Text -> Fourier
 mkFourierLatex t =

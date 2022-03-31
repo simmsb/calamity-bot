@@ -50,6 +50,9 @@
         ];
         pkgs = import nixpkgs { inherit system overlays; inherit (haskellNix) config; };
         flake = pkgs.calamity-bot.flake { };
+        tex = pkgs.texlive.combine {
+          inherit (pkgs.texlive) scheme-medium standalone preview was;
+        };
       in
       flake // {
         # Built by `nix build .`
@@ -59,9 +62,20 @@
           ociImage =
             let bot = self.defaultPackage.${system}; in
             pkgs.dockerTools.buildLayeredImage {
-              name = bot.name;
+              name = "ghcr.io/simmsb/calamity-bot";
               tag = "latest";
-              contents = [ bot pkgs.bashInteractive pkgs.busybox pkgs.cacert ];
+              contents = [
+                bot
+                pkgs.bashInteractive
+                pkgs.busybox
+                pkgs.cacert
+                pkgs.ffmpeg
+                tex
+                pkgs.zlib.dev
+                pkgs.zlib.out
+                pkgs.librsvg
+                pkgs.gmp
+              ];
               config = {
                 Cmd = [ "/bin/calamity-bot" ];
               };

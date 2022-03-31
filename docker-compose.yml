@@ -24,8 +24,14 @@ services:
     networks:
       - db
 
+  duckling:
+    image: ghcr.io/simmsb/duckling:latest
+    restart: always
+    networks:
+      - duckling
+
   bot:
-    build: .
+    image: ghcr.io/simmsb/calamity-bot:latest
     restart: always
     depends_on:
       - db_up
@@ -33,11 +39,15 @@ services:
     env_file: .env
     environment:
       - DB_STRING=host=db port=5432 user=$POSTGRES_USER dbname=$POSTGRES_DATABASE password=$POSTGRES_PASSWORD
+    volumes:
+      - ./assets:/assets
     networks:
       - db
+      - duckling
 
 volumes:
   db-data:
 
 networks:
   db:
+  duckling:

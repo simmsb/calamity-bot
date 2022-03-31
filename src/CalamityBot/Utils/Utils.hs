@@ -10,11 +10,12 @@ module CalamityBot.Utils.Utils (
 import qualified Data.Hourglass as H
 import qualified Data.Time as T
 import qualified Data.Time.Clock.POSIX as T
-import System.Directory (findExecutable)
+import System.Directory (findExecutable, createDirectoryIfMissing)
 import System.FilePath ((<.>))
 import System.IO (hClose)
 import System.IO.Temp (withSystemTempDirectory, withSystemTempFile)
 import qualified Time.Compat as H
+import System.Environment (setEnv)
 
 utcTimeToHourglass :: T.UTCTime -> H.DateTime
 utcTimeToHourglass u =
@@ -35,9 +36,14 @@ requireExecutable exec = do
     Just path -> return path
 
 withTempDir :: String -> (FilePath -> IO a) -> IO a
-withTempDir = withSystemTempDirectory
+withTempDir name action = do
+  setEnv "TMPDIR" "/tmp"
+  createDirectoryIfMissing False "/tmp"
+  withSystemTempDirectory name action
 
 withTempFile :: String -> String -> (FilePath -> IO a) -> IO a
-withTempFile name ext action =
+withTempFile name ext action = do
+  setEnv "TMPDIR" "/tmp"
+  createDirectoryIfMissing False "/tmp"
   withSystemTempFile (name <.> ext) $ \path hd ->
     hClose hd >> action path

@@ -194,8 +194,7 @@ runCmd_ exec args = do
   _ <- evaluate (length out + length err)
   case ret of
     ExitSuccess -> return (Right out)
-    ExitFailure err'
-      | False ->
+    ExitFailure err' | False ->
         return $
           Left $
             "Failed to run: " ++ showCommandForUser exec args ++ "\n"
@@ -207,5 +206,5 @@ runCmd_ exec args = do
     ExitFailure {}
       | null err -> -- LaTeX prints errors to stdout. :(
         return $ Left out
-    ExitFailure {} ->
-      return $ Left err
+    -- ExitFailure {} ->
+    --   return $ Left err

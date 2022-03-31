@@ -14,7 +14,8 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Text as T
 import Network.Mime
-import Network.Wreq
+import qualified Network.HTTP.Req as Req
+import qualified Text.URI as URI
 import Numeric
 import qualified Polysemy as P
 
@@ -34,8 +35,10 @@ crapGroup = void
           sbfile <- getCfg "stickbug_path"
           case findVideo (ctx ^. #message . #attachments) of
             Just video -> do
-              r <- P.embed $ Network.Wreq.get (T.unpack $ video ^. #url)
-              let file = r ^. responseBody
+              Just uri <- pure $ URI.mkURI (video ^. #url)
+              Just (url, options) <- pure $ Req.useHttpsURI uri
+              r <- P.embed . Req.runReq Req.defaultHttpConfig $ Req.req Req.GET url Req.NoReqBody Req.lbsResponse options
+              let file = Req.responseBody r
               Just ext <- pure ((last <$>) . nonEmpty . fileNameExtensions $ video ^. #filename)
               out <- P.embed $ renderStickbug (file, ext) sbfile delay
               case out of
@@ -54,8 +57,10 @@ crapGroup = void
           sbfile <- getCfg "bunny_path"
           case findVideo (ctx ^. #message . #attachments) of
             Just video -> do
-              r <- P.embed $ Network.Wreq.get (T.unpack $ video ^. #url)
-              let file = r ^. responseBody
+              Just uri <- pure $ URI.mkURI (video ^. #url)
+              Just (url, options) <- pure $ Req.useHttpsURI uri
+              r <- P.embed . Req.runReq Req.defaultHttpConfig $ Req.req Req.GET url Req.NoReqBody Req.lbsResponse options
+              let file = Req.responseBody r
               Just ext <- pure ((last <$>) . nonEmpty . fileNameExtensions $ video ^. #filename)
               out <- P.embed $ renderStickbug (file, ext) sbfile delay
               case out of

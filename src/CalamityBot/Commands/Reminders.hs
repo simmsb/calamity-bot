@@ -1,3 +1,5 @@
+{-# LANGUAGE QuasiQuotes #-}
+
 -- |  Reminder related commands
 module CalamityBot.Commands.Reminders (
   reminderGroup,
@@ -9,6 +11,7 @@ import Calamity.Commands.Context (FullContext)
 import Calamity.Internal.Utils
 import CalamityBot.Db.Eff (DBEff, usingConn)
 import CalamityBot.Db.Reminders (
+  addReminder,
   remindersForPaginatedAfter,
   remindersForPaginatedBefore,
   remindersForPaginatedInitial,
@@ -20,13 +23,15 @@ import CalamityBot.Utils.Pagination
 import CalamityBot.Utils.Utils
 import Control.Concurrent (threadDelay)
 import Control.Lens hiding (Context)
+import Data.Aeson
 import Data.Default.Class
 import Data.Hourglass
 import qualified Data.Text as T
 import Data.Time.Clock (getCurrentTime)
-import Data.Time.LocalTime (utc, utcToZonedTime, zonedTimeToUTC)
+import Data.Time.LocalTime (ZonedTime, utc, utcToZonedTime, zonedTimeToUTC)
 import Data.Traversable
 import Database.Beam (runDelete, runInsert, runSelectReturningList)
+import qualified Network.HTTP.Req as Req
 import qualified Polysemy as P
 import qualified Polysemy.Async as P
 import Polysemy.Immortal
@@ -94,7 +99,7 @@ fmtReminderMessage r = mention (r ^. #reminderUserId) <> ", " <> delta <> " ago,
 reminderTask :: (BotC r, P.Member DBEff r) => P.Sem r ()
 reminderTask = untilJustFinalIO do
   upcoming <- usingConn $ runSelectReturningList upcomingReminders
-  void $ P.sequenceConcurrently $ (P.embed (threadDelaySeconds 6) : map processReminder upcoming)
+  void $ P.sequenceConcurrently (P.embed (threadDelaySeconds 6) : map processReminder upcoming)
   pure Nothing
   where
     processReminder :: (BotC r, P.Member DBEff r) => DBReminder -> P.Sem r ()
@@ -108,6 +113,57 @@ reminderTask = untilJustFinalIO do
         _ -> pure ()
       usingConn (runDelete $ removeReminder (r ^. #reminderUserId, r ^. #reminderId))
 
+data DucklingTime = DucklingTime
+  { start :: Int
+  , end :: Int
+  , time :: ZonedTime
+  }
+  deriving (Generic)
+
+data DucklingResponseValue = DucklingResponseValue
+  { value :: ZonedTime
+  , grain :: Text
+  }
+  deriving (Generic, FromJSON)
+
+data DucklingResponseValues = DucklingResponseValues
+  { values :: [DucklingResponseValue]
+  , value :: ZonedTime
+  , grain :: Text
+  }
+  deriving (Generic, FromJSON)
+
+data DucklingResponse = DucklingResponse
+  { body :: Text
+  , start :: Int
+  , value :: DucklingResponseValues
+  , end :: Int
+  , dim :: Text
+  , latent :: Bool
+  }
+  deriving (Generic, FromJSON)
+
+parseWithDuckling :: Text -> IO (Maybe DucklingTime)
+parseWithDuckling input = do
+  let (url, options) = [Req.urlQ|http://duckling:8000/parse|]
+      params =
+        mconcat
+          [ "locale" Req.=: ("en_GB" :: T.Text)
+          , "text" Req.=: input
+          , "dims" Req.=: ("[\"time\"]" :: T.Text)
+          ]
+  r <- Req.runReq Req.defaultHttpConfig $ Req.req Req.POST url (Req.ReqBodyUrlEnc params) Req.jsonResponse options
+  let val :: Maybe (NonEmpty DucklingResponse) = Req.responseBody r
+  case val of
+    Just (val' :| _) ->
+      pure . Just $
+        DucklingTime
+          { start = val' ^. #start
+          , end = val' ^. #end
+          , time = val' ^. #value . #value
+          }
+    _ -> pure Nothing
+
 reminderGroup :: (BotC r, P.Members '[DBEff, Immortal, Timeout] r) => P.Sem (DSLState FullContext r) ()
 reminderGroup = void
   . help (const "Commands related to making reminders")
@@ -115,33 +171,25 @@ reminderGroup = void
   $ do
     void $ createImmortal (const reminderTask)
 
-    -- help (const "Add a reminder") $
-    --   command @'[KleenePlusConcat Text] "add" \ctx msg -> do
-    --     now <- P.embed getCurrentTime
-    --     let locale = D.makeLocale D.EN Nothing
-    --         dnow = D.fromZonedTime $ utcToZonedTime utc now
-    --         dctx = D.Context dnow locale
-    --         opts = D.Options True
-    --         parsedEntities = D.parse msg dctx opts [D.Seal D.Time]
+    help (const "Add a reminder") $
+      command @'[KleenePlusConcat Text] "add" \ctx msg -> do
+        parsed <- P.embed $ parseWithDuckling msg
+        now <- P.embed getCurrentTime
 
-    --     case viaNonEmpty head parsedEntities of
-    --       Just e -> do
-    --         let msg' = toLazy $ niceRemoveRange (e ^. #start) (e ^. #end) msg
-    --             user = ctx ^. #user
-    --             chan = ctx ^. #channel
-    --         when <- case e ^. #value of
-    --           D.RVal D.Time (D.TimeValue (D.SimpleValue (D.InstantValue when _)) _ _) ->
-    --             pure $ zonedTimeToUTC when
-    --           _ ->
-    --             fail "Invalid time"
-    --         if when < now
-    --           then fail "That time is in the past"
-    --           else do
-    --             let deltaMsg = formatTimeDiff (utcTimeToHourglass now) (utcTimeToHourglass when)
-    --             void $ usingConn (runInsert (addReminder (getID user, getID chan, msg', now, when)))
-    --             void $ tell @T.Text ctx ("Ok, I'll remind you about: " <> codeline msg' <> ", in: " <> deltaMsg)
-    --       Nothing ->
-    --         fail "I couldn't parse the times from that"
+        case parsed of
+          Just e -> do
+            let msg' = niceRemoveRange (e ^. #start) (e ^. #end) msg
+                user = ctx ^. #user
+                chan = ctx ^. #channel
+                whenUtc = zonedTimeToUTC (e ^. #time)
+            if whenUtc < now
+              then fail "That time is in the past"
+              else do
+                let deltaMsg = formatTimeDiff (utcTimeToHourglass now) (utcTimeToHourglass whenUtc)
+                void $ usingConn (runInsert (addReminder (getID user, getID chan, msg', now, whenUtc)))
+                void $ tell @T.Text ctx ("Ok, I'll remind you about: " <> codeline msg' <> ", in: " <> deltaMsg)
+          Nothing ->
+            fail "I couldn't parse the times from that"
 
     help (const "List your reminders") $
       command @'[] "list" \ctx ->

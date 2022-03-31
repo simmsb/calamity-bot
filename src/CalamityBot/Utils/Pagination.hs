@@ -68,7 +68,7 @@ renderPaginationEmbed f (Pagination page content) =
    in e <> mkembedFooter ("Page " <> showt page)
 
 paginate ::
-  (BotC r, P.Member Timeout r, Tellable t, ToMessage m, Typeable a) =>
+  (BotC r, P.Member Timeout r, Tellable t, ToMessage m) =>
   -- | Getter function, Nothing = fetch initial page
   (PaginationDir a -> Sem r [a]) ->
   -- | Render function

@@ -1,4 +1,26 @@
 packages:
   ./
 
+source-repository-package
+  type: git
+  location: https://github.com/muesli4/table-layout.git
+  tag: 6adc5d46d29da4509295fce0967ad98b49d56669
+  --sha256: 0fr9smxpa1004849lx8gw1cq1lahvj4qgpm7vgr48156779sv7wf
+
+source-repository-package
+  type: git
+  location: https://github.com/TeofilC/relude
+  tag: 23feee16dae03e0796ac3cb2e318c943d906ca22
+  --sha256: 0gbsfgsnlmldvlns9778mhnqrzp4zlzza6dg82gfad47ms8043vy
+
 allow-newer: reanimate:aeson
+           , ListLike:text
+           , generic-lens:text
+           , generic-lens-core:text
+           , beam-postgres:text
+           , beam-migrate:text
+           , beam-core:text
+           , geojson:text
+           , relude:hashable
+           , relude:text
+           , table-layout:base

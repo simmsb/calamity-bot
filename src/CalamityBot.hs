@@ -14,7 +14,7 @@ import qualified Calamity.Types.Model.Presence.Activity
 import CalamityBot.Commands.Aliases (aliasGroup)
 import CalamityBot.Commands.Crap (crapGroup)
 import CalamityBot.Commands.Prefix (prefixGroup)
-import CalamityBot.Commands.Reanimate (reanimateGroup)
+-- import CalamityBot.Commands.Reanimate (reanimateGroup)
 import CalamityBot.Commands.Reminders (reminderGroup)
 import CalamityBot.Db.Eff (runDBEffPooled)
 import CalamityBot.PrefixHandler
@@ -69,7 +69,7 @@ runBot = Di.new \di -> do
         prefixGroup
         reminderGroup
         aliasGroup
-        reanimateGroup
+        -- reanimateGroup
         crapGroup
         command @'[] "testup" \ctx -> do
           info @Text "hi"
@@ -146,7 +146,7 @@ runBot = Di.new \di -> do
               "The command: " <> codeline n
                 <> ", failed with reason: "
                 <> codeblock' Nothing r
-      react @ 'ReadyEvt \_ -> do
+      react @'ReadyEvt \_ -> do
         sendPresence
           StatusUpdateData
             { since = Nothing

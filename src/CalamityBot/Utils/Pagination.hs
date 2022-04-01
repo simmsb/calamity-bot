@@ -32,6 +32,7 @@ formatPagination2 titles xs fmt =
       tableString
         [column (expandUntil 20) right def def, column (expandUntil 80) left def def]
         unicodeRoundS
+        noneH
         (titlesH titles)
         ( map ((rowG . (\(a, b) -> [a, b])) . bimapBoth T.unpack) formattedLines
         )
@@ -85,7 +86,7 @@ paginate get render dest = (void . P.runFail) do
 
   (timeoutDuration (Duration 1 0 0 0) . P.evalState initP . forever) do
     r <-
-      waitUntil @ 'RawMessageReactionAddEvt
+      waitUntil @'RawMessageReactionAddEvt
         ( \r ->
             (getID @Message r == getID msg)
               && (getID @User r /= getID msg)

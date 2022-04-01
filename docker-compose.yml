@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   db:
@@ -30,6 +30,16 @@ services:
     networks:
       - duckling
 
+  prometheus:
+    image: "prom/prometheus"
+    ports:
+      - 127.0.0.1:9090:9090
+    networks:
+      - prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus:/prometheus
+
   bot:
     image: ghcr.io/simmsb/calamity-bot:latest
     restart: always
@@ -44,10 +54,13 @@ services:
     networks:
       - db
       - duckling
+      - prometheus
 
 volumes:
   db-data:
+  prometheus:
 
 networks:
   db:
   duckling:
+  prometheus:

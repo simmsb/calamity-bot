@@ -66,7 +66,7 @@ reanimateGroup = void
         r <- P.embed $ renderToMemory anim RasterAuto RenderGif 400 400 30
         case r of
           Right s -> do
-            void $ tell ctx (TFile "lol.webm" s)
+            void $ tell ctx (TFile "lol.gif" s)
           Left e ->
             putLBSLn $ "Failed with reason: " <> e
 

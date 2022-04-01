@@ -34,6 +34,7 @@ import Polysemy.Timeout
 import System.Environment
 import Text.Pretty.Simple
 import TextShow
+import Polysemy.Prometheus (runMetricsPrometheusIO)
 
 cfg :: HashMap Text Text
 cfg =
@@ -57,7 +58,7 @@ runBot = Di.new \di -> do
     . immortalToIOFinal
     . runDBEffPooled pool
     . runCacheInMemory
-    . runMetricsNoop
+    . runMetricsPrometheusIO
     . useDatabasePrefix "c!"
     . useFullContext
     . runDiToIO di

@@ -32,6 +32,7 @@ services:
 
   prometheus:
     image: "prom/prometheus"
+    restart: always
     ports:
       - 127.0.0.1:9090:9090
     networks:

@@ -10,6 +10,7 @@ import Calamity.Commands.Context (FullContext, useFullContext)
 import Calamity.Gateway.Types (StatusUpdateData (..))
 import Calamity.HTTP as H
 import Calamity.Metrics.Noop
+import Calamity.Types.Model.Channel.Component (ButtonStyle (ButtonPrimary), Component (ActionRow', Button'), CustomID (..), button)
 import qualified Calamity.Types.Model.Presence.Activity
 import CalamityBot.Commands.Aliases (aliasGroup)
 import CalamityBot.Commands.Crap (crapGroup)
@@ -19,7 +20,7 @@ import CalamityBot.Commands.Reminders (reminderGroup)
 import CalamityBot.Db.Eff (runDBEffPooled)
 import CalamityBot.PrefixHandler
 import CalamityBot.Utils.Config
-import Control.Lens ((^.))
+import Control.Lens ((?~), (^.))
 import qualified Data.ByteString.Char8 as BS
 import Data.Pool (createPool)
 import qualified Data.Text as T
@@ -30,11 +31,11 @@ import qualified Di.Core as DiC
 import DiPolysemy
 import Polysemy
 import Polysemy.Immortal
+import Polysemy.Prometheus (runMetricsPrometheusIO)
 import Polysemy.Timeout
 import System.Environment
 import Text.Pretty.Simple
 import TextShow
-import Polysemy.Prometheus (runMetricsPrometheusIO)
 
 cfg :: HashMap Text Text
 cfg =
@@ -102,6 +103,13 @@ runBot = Di.new \di -> do
             void . tell ctx . codeblock' Nothing . fromLazy $ pShowNoColor msg
           command @'[] "treply" \ctx ->
             void $ reply @Text (ctx ^. #message) "hello"
+          command @'[] "components" \ctx -> do
+            void . tell ctx $
+              [ button ButtonPrimary (CustomID "test")
+                  & #label ?~ "test"
+              , button ButtonDanger (CustomID "test2")
+                  & #label ?~ "test2"
+              ]
       -- command @'[] "listguilds" \ctx -> do
       --   guilds <- getGuilds
       --   let gf = T.unlines ["id: " <> showtl (g ^. #id) <> ", name: " <> (g ^. #name) | g <- guilds]

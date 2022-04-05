@@ -109,7 +109,7 @@ paginate get render dest = (void . P.runFail) do
             (getID @Channel msg)
             (getID @Message msg)
             ( editMessageContent (renderedMsg ^. #content)
-                <> editMessageEmbed (renderedMsg ^. #embed)
+                <> editMessageEmbeds (renderedMsg ^. #embeds)
             )
         P.put s'
       Nothing ->

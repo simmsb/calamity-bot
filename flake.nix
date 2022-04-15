@@ -25,12 +25,18 @@
                 cabal = { };
                 hlint = { };
                 haskell-language-server = { };
+                fourmolu = {
+                  modules = [
+                    ({ lib, ... }: {
+                      options.nonReinstallablePkgs = lib.mkOption { apply = lib.remove "Cabal"; };
+                    })
+                  ];
+                };
               };
               shell.buildInputs = with pkgs; [
                 nixpkgs-fmt
                 haskellPackages.implicit-hie
                 haskellPackages.cabal-fmt
-                haskellPackages.fourmolu
               ];
             };
         });

@@ -1,3 +1,5 @@
+{-# LANGUAGE ApplicativeDo #-}
+
 -- | Pagination helper functions
 module CalamityBot.Utils.Pagination (
   formatPagination2,
@@ -8,11 +10,11 @@ module CalamityBot.Utils.Pagination (
 ) where
 
 import Calamity
+import qualified Calamity.Interactions as I
 import Control.Lens
 import Data.Hourglass (Duration (Duration))
 import Data.Maybe
 import qualified Data.Text as T
-import Polysemy (Sem, raise)
 import qualified Polysemy as P
 import qualified Polysemy.Fail as P
 import qualified Polysemy.State as P
@@ -70,36 +72,34 @@ renderPaginationEmbed f (Pagination page content) =
 paginate ::
   (BotC r, P.Member Timeout r, Tellable t, ToMessage m) =>
   -- | Getter function, Nothing = fetch initial page
-  (PaginationDir a -> Sem r [a]) ->
+  (PaginationDir a -> P.Sem r [a]) ->
   -- | Render function
   (Pagination a -> m) ->
   -- | Channel to send to
   t ->
-  Sem r ()
+  P.Sem r ()
 paginate get render dest = (void . P.runFail) do
-  Just content <- nonEmpty <$> raise (get Initial)
+  Just content <- nonEmpty <$> P.raise (get Initial)
   let initP = Pagination 1 content
   Right msg <- tell dest . render $ initP
-  invoke $ CreateReaction msg msg ArrowLeft
-  invoke $ CreateReaction msg msg ArrowRight
 
-  (timeoutDuration (Duration 1 0 0 0) . P.evalState initP . forever) do
-    r <-
-      waitUntil @ 'RawMessageReactionAddEvt
-        ( \r ->
-            (getID @Message r == getID msg)
-              && (getID @User r /= getID msg)
-              && ((r ^. #emoji) `elem` [ArrowLeft, ArrowRight])
-        )
+  let pagView = I.row do
+        bw <- I.button' (#emoji ?~ ArrowLeft)
+        fw <- I.button' (#emoji ?~ ArrowRight)
+        pure (bw, fw)
 
+  let cTell dest st comp = tell dest (intoMsg comp <> intoMsg (render st))
+
+  timeoutDuration (Duration 1 0 0 0) . P.evalState initP . I.runView pagView (cTell dest initP) $ \(bw, fw) -> do
+    I.deferComponent
     s <- P.get
     let (p, c) = (s ^. #page, s ^. #content)
-    (nextPage, action) <- case r ^. #emoji of
-      ArrowLeft -> pure (p - 1, MoveLeft $ head c)
-      ArrowRight -> pure (p + 1, MoveRight $ last c)
+    (nextPage, action) <- case (bw, fw) of
+      (True, False) -> pure (p - 1, MoveLeft $ head c)
+      (False, True) -> pure (p + 1, MoveRight $ last c)
       _ -> fail "not possible"
 
-    c' <- nonEmpty <$> (raise . raise) (get action)
+    c' <- nonEmpty <$> P.raise_ (get action)
     case c' of
       Just c' -> do
         let s' = Pagination nextPage c'
@@ -109,7 +109,7 @@ paginate get render dest = (void . P.runFail) do
             (getID @Channel msg)
             (getID @Message msg)
             ( editMessageContent (renderedMsg ^. #content)
-                <> editMessageEmbeds (renderedMsg ^. #embeds)
+                <> maybe mempty editMessageEmbeds (renderedMsg ^. #embeds)
             )
         P.put s'
       Nothing ->

@@ -43,7 +43,7 @@ crapGroup = void
               out <- P.embed $ renderStickbug (file, ext) sbfile delay
               case out of
                 Right res ->
-                  void $ tell ctx (TFile (fn <> ".mp4") res)
+                  void $ tell ctx (CreateMessageAttachment (fn <> ".mp4") Nothing res)
                 Left e -> putLBSLn e
             Nothing ->
               void $ tell @T.Text ctx "Couldn't find a video"
@@ -65,7 +65,7 @@ crapGroup = void
               out <- P.embed $ renderStickbug (file, ext) sbfile delay
               case out of
                 Right res ->
-                  void $ tell ctx (TFile (fn <> ".mp4") res)
+                  void $ tell ctx (CreateMessageAttachment (fn <> ".mp4") Nothing res)
                 Left e -> putLBSLn e
             Nothing ->
               void $ tell @T.Text ctx "Couldn't find a video"

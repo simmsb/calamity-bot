@@ -66,7 +66,7 @@ reanimateGroup = void
         r <- P.embed $ renderToMemory anim RasterAuto RenderGif 400 400 30
         case r of
           Right s -> do
-            void $ tell ctx (TFile "lol.gif" s)
+            void $ tell ctx (CreateMessageAttachment "lol.gif" Nothing s)
           Left e ->
             putLBSLn $ "Failed with reason: " <> e
 
@@ -98,7 +98,7 @@ reanimateGroup = void
             r <- P.embed $ renderToMemory anim RasterAuto RenderGif 480 360 15
             case r of
               Right s -> do
-                void $ tell ctx (TFile "lol.gif" s)
+                void $ tell ctx (CreateMessageAttachment "lol.gif" Nothing s)
               Left e ->
                 putLBSLn $ "Failed with reason: " <> e
           Nothing ->
@@ -124,7 +124,7 @@ reanimateGroup = void
         r <- P.embed $ renderToMemory anim RasterAuto RenderGif 480 360 15
         case r of
           Right s -> do
-            void $ tell ctx (TFile "lol.gif" s)
+            void $ tell ctx (CreateMessageAttachment "lol.gif" Nothing s)
           Left e ->
             putLBSLn $ "Failed with reason: " <> e
 

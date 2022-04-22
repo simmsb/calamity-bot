@@ -101,13 +101,27 @@ renderGoblin ::
   IO (Either LB.ByteString LB.ByteString)
 renderGoblin (initial, ext) sbfile delay = do
   ffmpeg <- requireExecutable "ffmpeg"
-  withTempFile "stickbug" (T.unpack ext) $ \initialFile -> do
+  withTempDir "stickbug" $ \dir -> do
+    let initialFile = dir </> "init" System.FilePath.<.> T.unpack ext
+        fixedFile = dir </> "fixed" System.FilePath.<.> "mp4"
     writeFileLBS initialFile initial
     let df = showFFloat Nothing delay ""
+
+    callProcess
+      ffmpeg
+      [ "-f", "lavfi"
+      , "-i", "anullsrc=channel_layout=stereo:sample_rate=44100"
+      , "-i", initialFile
+      , "-c:v", "libx264"
+      , "-c:a", "aac"
+      , "-shortest"
+      , fixedFile
+      ]
+
     runCmdLazy
       ffmpeg
       [ "-i"
-      , initialFile
+      , fixedFile
       , "-i"
       , T.unpack sbfile
       , "-threads"

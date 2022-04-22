@@ -42,6 +42,7 @@ cfg =
   fromList
     [ ("stickbug_path", "assets/stickbug.mp4")
     , ("bunny_path", "assets/bunny.mp4")
+    , ("goblin_path", "assets/goblin.mp4")
     ]
 
 -- filterDi :: DiC.Di l Di.Path m -> DiC.Di l Di.Path m

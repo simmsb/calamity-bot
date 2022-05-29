@@ -11,9 +11,9 @@
     url = "github:hercules-ci/gitignore.nix";
     inputs.nixpkgs.follows = "nixpkgs";
   };
-  inputs.nix2container.url = "github:nlewo/nix2container";
+  # inputs.nix2container.url = "github:nlewo/nix2container";
 
-  outputs = { self, nixpkgs, flake-utils, flake-compat, haskellNix, gitignore, nix2container }:
+  outputs = { self, nixpkgs, flake-utils, flake-compat, haskellNix, gitignore }:
     let inherit (gitignore.lib) gitignoreSource;
     in
     flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
@@ -57,7 +57,7 @@
           libm-overlay
         ];
         pkgs = import nixpkgs { inherit system overlays; inherit (haskellNix) config; };
-        nix2containerPkgs = nix2container.packages.${system};
+        #nix2containerPkgs = nix2container.packages.${system};
         flake = pkgs.calamity-bot.flake { };
         tex = pkgs.texlive.combine {
           inherit (pkgs.texlive) scheme-medium standalone preview was;
@@ -70,31 +70,52 @@
         packages = {
           ociImage =
             let bot = self.defaultPackage.${system}; in
-            nix2containerPkgs.nix2container.buildImage {
+            pkgs.dockerTools.buildLayeredImage {
               name = "ghcr.io/simmsb/calamity-bot";
               tag = "latest";
-              layers = [
-                (nix2containerPkgs.nix2container.buildLayer { deps = [
-                  pkgs.bashInteractive
-                  pkgs.busybox
-                  pkgs.cacert
-                  pkgs.ffmpeg
-                  pkgs.zlib.dev
-                  pkgs.zlib.out
-                  pkgs.librsvg
-                  pkgs.gmp
-                ]; })
-                (nix2containerPkgs.nix2container.buildLayer { deps = [
-                  tex
-                ]; })
-                (nix2containerPkgs.nix2container.buildLayer { deps = [
-                  bot
-                ]; })
+              contents = [
+                bot
+                pkgs.bashInteractive
+                pkgs.busybox
+                pkgs.cacert
+                pkgs.ffmpeg
+                tex
+                pkgs.zlib.dev
+                pkgs.zlib.out
+                pkgs.librsvg
+                pkgs.gmp
               ];
               config = {
-                cmd = [ "/bin/calamity-bot" ];
+                Cmd = [ "/bin/calamity-bot" "+RTS" "-I0" "-RTS" ];
               };
+              created = "now";
+              maxLayers = 120;
             };
+          # nix2containerPkgs.nix2container.buildImage {
+          #   name = "ghcr.io/simmsb/calamity-bot";
+          #   tag = "latest";
+          #   layers = [
+          #     (nix2containerPkgs.nix2container.buildLayer { deps = [
+          #       pkgs.bashInteractive
+          #       pkgs.busybox
+          #       pkgs.cacert
+          #       pkgs.ffmpeg
+          #       pkgs.zlib.dev
+          #       pkgs.zlib.out
+          #       pkgs.librsvg
+          #       pkgs.gmp
+          #     ]; })
+          #     (nix2containerPkgs.nix2container.buildLayer { deps = [
+          #       tex
+          #     ]; })
+          #     (nix2containerPkgs.nix2container.buildLayer { deps = [
+          #       bot
+          #     ]; })
+          #   ];
+          #   config = {
+          #     cmd = [ bot ];
+          #   };
+          # };
         };
       });
 }

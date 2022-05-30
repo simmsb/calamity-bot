@@ -6,7 +6,7 @@ module CalamityBot.Db.Guilds (
 import Calamity (Guild, Snowflake (..))
 import CalamityBot.Db.Schema
 import CalamityBot.Db.Utils ()
-import Control.Lens
+import Optics
 import Database.Beam
 import qualified Database.Beam.Postgres as Pg
 import qualified Database.Beam.Postgres.Full as Pg

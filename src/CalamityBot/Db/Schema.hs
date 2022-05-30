@@ -1,3 +1,5 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 -- | DB schema
 module CalamityBot.Db.Schema (
   DBGuildT (..),
@@ -18,6 +20,7 @@ module CalamityBot.Db.Schema (
 import Calamity
 import Data.Time (UTCTime)
 import Database.Beam
+import Optics (makeFieldLabelsNoPrefix)
 
 data DBGuildT f = DBGuild
   { guildId :: Columnar f (Snowflake Guild)
@@ -82,3 +85,9 @@ data BotDB f = BotDB
 
 db :: DatabaseSettings be BotDB
 db = defaultDbSettings
+
+$(makeFieldLabelsNoPrefix ''DBGuildT)
+$(makeFieldLabelsNoPrefix ''DBPrefixT)
+$(makeFieldLabelsNoPrefix ''DBReminderT)
+$(makeFieldLabelsNoPrefix ''DBAliasT)
+$(makeFieldLabelsNoPrefix ''BotDB)

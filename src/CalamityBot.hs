@@ -20,7 +20,6 @@ import CalamityBot.Commands.Reminders (reminderGroup)
 import CalamityBot.Db.Eff (runDBEffPooled)
 import CalamityBot.PrefixHandler
 import CalamityBot.Utils.Config
-import Control.Lens ((?~), (^.))
 import qualified Data.ByteString.Char8 as BS
 import Data.Pool (createPool)
 import qualified Data.Text as T
@@ -29,7 +28,9 @@ import qualified Df1
 import qualified Di
 import qualified Di.Core as DiC
 import DiPolysemy
+import Optics
 import Polysemy
+import qualified Polysemy.AtomicState as P
 import Polysemy.Immortal
 import Polysemy.Prometheus (runMetricsPrometheusIO)
 import Polysemy.Timeout
@@ -47,6 +48,23 @@ cfg =
 
 -- filterDi :: DiC.Di l Di.Path m -> DiC.Di l Di.Path m
 -- filterDi = DiC.filter (\_ p _ -> Df1.Push "calamity" `notElem` p)
+
+c :: BotC r => Sem (P.AtomicState Int ': DSLState FullContext r) ()
+c = void $
+  raise $
+    command @'[] "hello" $
+      \ctx -> void do
+        pure ()
+
+-- x <- P.atomicGet @Int
+-- tell ctx (show x)
+
+example :: BotC r => Sem (DSLState FullContext r) ()
+example = void do
+  -- putStrLn "doing some IO..."
+  tvar <- embed $ newTVarIO 7
+  -- P.runAtomicStateTVar tvar c
+  pure ()
 
 runBot :: IO ()
 runBot = Di.new \di -> do
@@ -94,7 +112,7 @@ runBot = Di.new \di -> do
           command @'[] "cantseeme" \ctx ->
             void $ tell @T.Text ctx "You found me"
           command @'[] "prevmsg" \ctx -> do
-            Right msgs <- invoke $ GetChannelMessages (ctx ^. #channel) (Just . ChannelMessagesBefore $ ctx ^. #message . #id) (Just $ ChannelMessagesLimit 10)
+            Right msgs <- invoke $ GetChannelMessages (ctx ^. #channel) (Just . ChannelMessagesBefore $ ctx ^. #message % #id) (Just $ ChannelMessagesLimit 10)
             info . showt $ msgs
           command @'[Snowflake Message] "inspectmsg" \ctx mid -> do
             Just msg <- getMessage mid
@@ -156,11 +174,13 @@ runBot = Di.new \di -> do
               "The command: " <> codeline n
                 <> ", failed with reason: "
                 <> codeblock' Nothing r
-      react @ 'ReadyEvt \_ -> do
+      react @'MessageCreateEvt \m -> do
+        info . showt $ m
+      react @'ReadyEvt \_ -> do
         sendPresence
           StatusUpdateData
             { since = Nothing
-            , game = Just $ Calamity.Types.Model.Presence.Activity.activity "Prefix: c!" Game
+            , activities = [Calamity.Types.Model.Presence.Activity.activity "Prefix: c!" Game]
             , status = Online
             , afk = False
             }

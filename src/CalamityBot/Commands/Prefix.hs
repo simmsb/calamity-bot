@@ -7,7 +7,7 @@ import Calamity
 import Calamity.Commands
 import Calamity.Commands.Context (FullContext)
 import CalamityBot.Db
-import Control.Lens hiding (Context)
+import Optics
 import qualified Data.Text as T
 import Database.Beam (runDelete, runInsert, runSelectReturningList, runSelectReturningOne)
 import qualified Polysemy as P

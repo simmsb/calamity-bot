@@ -7,7 +7,7 @@ import Calamity (Message)
 import CalamityBot.Db.Eff ( DBEff, usingConn )
 import CalamityBot.Db.Prefixes ( getPrefixes' )
 import CalamityCommands.ParsePrefix (ParsePrefix (..))
-import Control.Lens
+import Optics
 import qualified Data.Text as T
 import Database.Beam (runSelectReturningList)
 import Polysemy
@@ -17,7 +17,7 @@ firstJusts (Just x : _) = Just x
 firstJusts (_ : xs) = firstJusts xs
 firstJusts [] = Nothing
 
-useDatabasePrefix :: Member DBEff r => T.Text -> Sem (ParsePrefix Message ': r) a -> Sem r a
+useDatabasePrefix :: Member (Embed IO) r => Member DBEff r => T.Text -> Sem (ParsePrefix Message ': r) a -> Sem r a
 useDatabasePrefix def =
   interpret \case
     ParsePrefix m -> do

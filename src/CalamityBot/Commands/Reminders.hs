@@ -22,7 +22,7 @@ import CalamityBot.Db.Schema (DBReminder)
 import CalamityBot.Utils.Pagination
 import CalamityBot.Utils.Utils
 import Control.Concurrent (threadDelay)
-import Control.Lens hiding (Context)
+import Optics
 import Data.Aeson
 import Data.Default.Class
 import Data.Hourglass
@@ -160,7 +160,7 @@ parseWithDuckling input = do
         DucklingTime
           { start = val' ^. #start
           , end = val' ^. #end
-          , time = val' ^. #value . #value
+          , time = val' ^. #value % #value
           }
     _ -> pure Nothing
 

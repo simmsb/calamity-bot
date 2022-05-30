@@ -12,7 +12,7 @@ module CalamityBot.Db.Reminders (
 import Calamity (Channel, Snowflake (..), User)
 import CalamityBot.Db.Schema
 import CalamityBot.Db.Utils
-import Control.Lens hiding ((<.))
+import Optics
 import qualified Data.Text as T
 import Data.Time.Clock
 import Database.Beam

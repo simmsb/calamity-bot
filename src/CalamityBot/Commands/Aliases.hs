@@ -20,7 +20,7 @@ import CalamityBot.Utils.Pagination
 import CalamityCommands.Context (ConstructContext)
 import CalamityCommands.ParsePrefix (ParsePrefix)
 import CalamityCommands.Utils (handleCommands)
-import Control.Lens hiding (Context)
+import Optics
 import Data.Default.Class
 import qualified Data.Text as T
 import Database.Beam (runDelete, runInsert, runSelectReturningList, runSelectReturningOne)

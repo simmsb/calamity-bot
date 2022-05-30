@@ -11,7 +11,7 @@ module CalamityBot.Utils.Pagination (
 
 import Calamity
 import qualified Calamity.Interactions as I
-import Control.Lens
+import Optics
 import Data.Hourglass (Duration (Duration))
 import Data.Maybe
 import qualified Data.Text as T

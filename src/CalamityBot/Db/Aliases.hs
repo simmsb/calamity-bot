@@ -12,7 +12,7 @@ module CalamityBot.Db.Aliases (
 import Calamity (Snowflake (..), User)
 import CalamityBot.Db.Schema
 import CalamityBot.Db.Utils ()
-import Control.Lens hiding ((<.))
+import Optics
 import qualified Data.Text as T
 import Database.Beam
 import qualified Database.Beam.Postgres as Pg

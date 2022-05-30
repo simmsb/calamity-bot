@@ -9,7 +9,7 @@ import Calamity.Commands.Context (FullContext)
 import CalamityBot.Utils.Config
 import CalamityBot.Utils.Process
 import CalamityBot.Utils.Utils
-import Control.Lens hiding (Context)
+import Optics
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Text as T
@@ -35,7 +35,7 @@ crapGroup = void
         ["sb"]
         \ctx (fromMaybe 0.5 -> delay) (fromMaybe "get_stickbugged" -> fn) -> do
           sbfile <- getCfg "stickbug_path"
-          case findVideo (ctx ^. #message . #attachments) of
+          case findVideo (ctx ^. #message % #attachments) of
             Just video -> do
               Just uri <- pure $ URI.mkURI (video ^. #url)
               Just (url, options) <- pure $ Req.useHttpsURI uri
@@ -57,7 +57,7 @@ crapGroup = void
         ["bn"]
         \ctx (fromMaybe 0.5 -> delay) (fromMaybe "get_bunnyd" -> fn) -> do
           sbfile <- getCfg "bunny_path"
-          case findVideo (ctx ^. #message . #attachments) of
+          case findVideo (ctx ^. #message % #attachments) of
             Just video -> do
               Just uri <- pure $ URI.mkURI (video ^. #url)
               Just (url, options) <- pure $ Req.useHttpsURI uri
@@ -77,7 +77,7 @@ crapGroup = void
         "goblin"
         \ctx (fromMaybe 0.5 -> delay) (fromMaybe "we_are_japanese_goblin" -> fn) -> do
           sbfile <- getCfg "goblin_path"
-          case findVideo (ctx ^. #message . #attachments) of
+          case findVideo (ctx ^. #message % #attachments) of
             Just video -> do
               Just uri <- pure $ URI.mkURI (video ^. #url)
               Just (url, options) <- pure $ Req.useHttpsURI uri

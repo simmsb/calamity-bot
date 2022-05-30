@@ -10,7 +10,7 @@ import Calamity.Commands as C
 import Calamity.Commands.Context (FullContext)
 import CalamityBot.Utils.Reanimate
 import Codec.Picture
-import Control.Lens
+import Optics
 import qualified Data.ByteString as B
 import Data.Complex
 import qualified Data.Text as T
@@ -72,14 +72,14 @@ reanimateGroup = void
 
     help (const "Render a fourier thing of an svg") $
       command @'[] "renders" \ctx -> do
-        case findSVG (ctx ^. #message . #attachments) of
+        case findSVG (ctx ^. #message % #attachments) of
           Just svg -> do
             Just uri <- pure $ URI.mkURI (svg ^. #url)
             Just (url, options) <- pure $ Req.useHttpsURI uri
             r <- P.embed . Req.runReq Req.defaultHttpConfig $ Req.req Req.GET url Req.NoReqBody Req.lbsResponse options
             let file = Req.responseBody r
             Just doc <- pure $ parseSvgFile "a.svg" (decodeUtf8 file)
-            let tree = head . fromList . filter usableTree $ doc ^. Graphics.SvgTree.Types.documentElements
+            let tree = head . fromList . filter usableTree $ doc ^. lensVL Graphics.SvgTree.Types.documentElements
             let f = mkSVGLatex $ flipYAxis tree
             let anim = setDuration 20 $
                   scene $ do

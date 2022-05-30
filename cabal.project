@@ -1,11 +1,18 @@
 packages:
   ./
 
---source-repository-package
---  type: git
---  location: https://github.com/simmsb/calamity
---  subdir: calamity
---  tag: b8c97105dec74337cecd6413058191d34a5d03fe
-  --sha256: 1qngz1w3dhv0jyv1y64zg5680zn07ghnlbmvz5kpd3mhxi19bx5j
+source-repository-package
+  type: git
+  location: https://github.com/simmsb/calamity
+  subdir: calamity
+  tag: 134dfd850dc49a1efece551b7b963bc174003cc4
+  --sha256: 0d7sxkdxawd3094qmnybzaqwr48b0l08k6cafjy2rrl0f0328x2x
+
+source-repository-package
+  type: git
+  location: https://github.com/simmsb/calamity
+  subdir: calamity-commands
+  tag: 134dfd850dc49a1efece551b7b963bc174003cc4
+  --sha256: 0d7sxkdxawd3094qmnybzaqwr48b0l08k6cafjy2rrl0f0328x2x
 
 allow-newer: reanimate:aeson

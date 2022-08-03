@@ -1,80 +1,95 @@
 {
   description = "calamity-bot";
-  inputs.haskellNix.url = "github:input-output-hk/haskell.nix";
-  inputs.nixpkgs.follows = "haskellNix/nixpkgs-unstable";
+  inputs.nixpkgs.url = "github:nixos/nixpkgs";
+  inputs.hls.url = "github:haskell/haskell-language-server";
   inputs.flake-utils.url = "github:numtide/flake-utils";
   inputs.flake-utils.inputs.nixpkgs.follows = "nixpkgs";
-  inputs.flake-compat.url = "github:edolstra/flake-compat";
-  inputs.flake-compat.flake = false;
-  inputs.flake-compat.inputs.nixpkgs.follows = "nixpkgs";
   inputs.gitignore = {
     url = "github:hercules-ci/gitignore.nix";
     inputs.nixpkgs.follows = "nixpkgs";
   };
-  # inputs.nix2container.url = "github:nlewo/nix2container";
+  inputs.calamity.url = "github:simmsb/calamity";
 
-  outputs = { self, nixpkgs, flake-utils, flake-compat, haskellNix, gitignore }:
-    let inherit (gitignore.lib) gitignoreSource;
-    in
+  outputs = { self, nixpkgs, flake-utils, hls, gitignore, calamity }:
     flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
       let
-        bot-overlay = (final: prev: {
-          calamity-bot =
-            final.haskell-nix.project' {
-              src = gitignoreSource ./.;
-              compiler-nix-name = "ghc8107";
-              shell.tools = {
-                cabal = { };
-                hlint = { };
-                haskell-language-server = { };
-                fourmolu = {
-                  modules = [
-                    ({ lib, ... }: {
-                      options.nonReinstallablePkgs = lib.mkOption { apply = lib.remove "Cabal"; };
-                    })
-                  ];
+        pkgs = nixpkgs.legacyPackages.${system};
+        main-sources = gitignore.lib.gitignoreSource ./.;
+      in
+      with pkgs;
+      let
+        botBuilder = hPkgs:
+          let
+            shell = pkg.env.overrideAttrs (old: {
+              nativeBuildInputs = old.nativeBuildInputs
+                ++ [ cabal-install zlib ];
+            });
+
+            # Shell with haskell language server
+            shell_hls = shell.overrideAttrs (old: {
+              nativeBuildInputs = old.nativeBuildInputs
+                ++ [ hPkgs.haskell-language-server ];
+            });
+
+
+            pkg = (haskell.lib.buildFromSdist
+              (hPkgs.callCabal2nix "calamity-bot" main-sources { })).overrideAttrs
+              (oldAttrs: {
+                buildInputs = oldAttrs.buildInputs;
+                passthru = oldAttrs.passthru // { inherit shell shell_hls; };
+              });
+            # Add the GHC version in the package name
+          in
+          pkg.overrideAttrs (old: { name = "calamity-bot-ghc${hPkgs.ghc.version}"; });
+      in
+      rec {
+        packages = rec {
+          calamity_bot =
+            with haskell.lib; let
+              hPkgs = haskell.packages.ghc923.override {
+                overrides = self: super: {
+                  aeson-optics = dontCheck (self.callHackage "aeson-optics" "1.2" { });
+                  type-errors = dontCheck (self.callHackage "type-errors" "0.2.0.0" { });
+                  polysemy-plugin = dontCheck (self.callHackage "polysemy-plugin" "0.4.3.1" { });
+                  polysemy = dontCheck (self.callHackage "polysemy" "1.7.1.0" { });
+                  text = dontCheck (self.callHackage "text" "2.0.1" { });
+                  parsec = dontCheck (self.callHackage "parsec" "3.1.15.1" { });
+                  conduit-extra = dontCheck (self.callHackage "conduit-extra" "1.3.6" { });
                 };
               };
-              shell.buildInputs = with pkgs; [
-                nixpkgs-fmt
-                haskellPackages.implicit-hie
-                haskellPackages.cabal-fmt
-              ];
-            };
-        });
+            in
 
-        libm-overlay = self: _: {
-          m = self.stdenv.mkDerivation {
-            name = "m";
-            unpackPhase = "true";
-            installPhase = "mkdir -p $out";
-          };
-        };
+            botBuilder (hPkgs.override
+              (old: {
+                overrides = pkgs.lib.composeExtensions (old.overrides or (_: _: { })) (self: super: {
+                  arbor-lru-cache = dontCheck (super.callHackage "arbor-lru-cache" "0.1.1.1" { });
+                  calamity = calamity.lib.${system}.calamityPkg hPkgs;
+                  calamity-commands = calamity.lib.${system}.calamityCommandsPkg hPkgs;
+                  relude = dontCheck (super.callHackage "relude" "1.1.0.0" { });
+                  resource-pool = dontCheck (self.callHackage "resource-pool" "0.3.1.0" { });
+                  beam-core = dontCheck (doJailbreak (self.callHackage "beam-core" "0.9.2.1" { }));
+                  beam-postgres = dontCheck (doJailbreak (self.callHackage "beam-postgres" "0.5.2.1" { }));
+                  beam-migrate = dontCheck (doJailbreak (self.callHackage "beam-migrate" "0.5.1.2" { }));
+                  prometheus = dontCheck (doJailbreak (self.callHackage "prometheus" "2.2.3" { }));
+                });
+              }));
 
-        overlays = [
-          haskellNix.overlay
-          bot-overlay
-          libm-overlay
-        ];
-        pkgs = import nixpkgs { inherit system overlays; inherit (haskellNix) config; };
-        #nix2containerPkgs = nix2container.packages.${system};
-        flake = pkgs.calamity-bot.flake { };
-        tex = pkgs.texlive.combine {
-          inherit (pkgs.texlive) scheme-medium standalone preview was;
-        };
-      in
-      flake // {
-        # Built by `nix build .`
-        defaultPackage = flake.packages."calamity-bot:exe:calamity-bot";
+          default = calamity_bot;
+          devShells.default = calamity_bot.shell_hls;
 
-        packages = {
+          bot_static = haskell.lib.justStaticExecutables calamity_bot;
+
           ociImage =
-            let bot = self.defaultPackage.${system}; in
+            let
+              tex = pkgs.texlive.combine {
+                inherit (pkgs.texlive) scheme-medium standalone preview was;
+              };
+            in
             pkgs.dockerTools.buildLayeredImage {
               name = "ghcr.io/simmsb/calamity-bot";
               tag = "latest";
               contents = [
-                bot
+                bot_static
                 pkgs.bashInteractive
                 pkgs.busybox
                 pkgs.cacert
@@ -86,36 +101,10 @@
                 pkgs.gmp
               ];
               config = {
-                Cmd = [ "/bin/calamity-bot" "+RTS" "-I0" "-RTS" ];
+                Cmd = [ "${bot_static}/bin/calamity-bot" "+RTS" "-I0" "-RTS" ];
               };
               created = "now";
-              maxLayers = 120;
             };
-          # nix2containerPkgs.nix2container.buildImage {
-          #   name = "ghcr.io/simmsb/calamity-bot";
-          #   tag = "latest";
-          #   layers = [
-          #     (nix2containerPkgs.nix2container.buildLayer { deps = [
-          #       pkgs.bashInteractive
-          #       pkgs.busybox
-          #       pkgs.cacert
-          #       pkgs.ffmpeg
-          #       pkgs.zlib.dev
-          #       pkgs.zlib.out
-          #       pkgs.librsvg
-          #       pkgs.gmp
-          #     ]; })
-          #     (nix2containerPkgs.nix2container.buildLayer { deps = [
-          #       tex
-          #     ]; })
-          #     (nix2containerPkgs.nix2container.buildLayer { deps = [
-          #       bot
-          #     ]; })
-          #   ];
-          #   config = {
-          #     cmd = [ bot ];
-          #   };
-          # };
         };
       });
 }

@@ -20,13 +20,14 @@ import CalamityBot.Utils.Pagination
 import CalamityCommands.Context (ConstructContext)
 import CalamityCommands.ParsePrefix (ParsePrefix)
 import CalamityCommands.Utils (handleCommands)
-import Optics
 import Data.Default.Class
-import qualified Data.Text as T
+import Data.Text qualified as T
 import Database.Beam (runDelete, runInsert, runSelectReturningList, runSelectReturningOne)
-import qualified Polysemy as P
+import Optics
+import Polysemy qualified as P
 import Polysemy.Immortal
 import Polysemy.Timeout
+import Control.Monad (void)
 
 aliasGroup :: (BotC r, P.Members '[DBEff, Immortal, Timeout, ParsePrefix Message, ConstructContext (Message, User, Maybe Member) FullContext IO ()] r) => P.Sem (DSLState FullContext r) ()
 aliasGroup = void
@@ -34,7 +35,7 @@ aliasGroup = void
   . groupA "alias" ["aliases"]
   $ do
     handler <- fetchHandler
-    react @( 'CustomEvt CommandNotFound) \(CommandNotFound msg usr mem path) ->
+    react @('CustomEvt CommandNotFound) \(CommandNotFound msg usr mem path) ->
       case path of
         (aliasName : _) -> do
           alias' <- usingConn (runSelectReturningOne $ getAlias (getID @User msg, aliasName))
@@ -56,9 +57,10 @@ aliasGroup = void
             get (MoveLeft f) = reverse <$> usingConn (runSelectReturningList $ aliasesForPaginatedBefore (getID user, width, f ^. #aliasName))
             get (MoveRight l) = usingConn (runSelectReturningList $ aliasesForPaginatedAfter (getID user, width, l ^. #aliasName))
             render aliases =
-              def & #title ?~ ("Aliases for: " <> displayUser user)
+              def
+                & #title ?~ ("Aliases for: " <> displayUser user)
                 & #description ?~ renderDesc aliases
-            renderDesc :: [DBAlias] -> Text
+            renderDesc :: [DBAlias] -> T.Text
             renderDesc aliases = formatPagination2 ["name", "alias"] aliases (\r -> (r ^. #aliasName, r ^. #aliasValue))
             width = 10
             user = ctx ^. #user

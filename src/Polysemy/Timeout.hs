@@ -1,4 +1,3 @@
--- |
 module Polysemy.Timeout (
   Timeout (..),
   timeout,
@@ -6,10 +5,11 @@ module Polysemy.Timeout (
   timeoutToIOFinal,
 ) where
 
+import Control.Monad
 import Data.Hourglass (Duration, toSeconds)
 import Polysemy
 import Polysemy.Final
-import qualified System.Timeout as T
+import System.Timeout qualified
 
 data Timeout m a where
   Timeout :: Int -> m a -> Timeout m (Maybe a)
@@ -27,4 +27,4 @@ timeoutToIOFinal = interpretFinal $ \case
   Timeout time fm -> do
     ins <- getInspectorS
     fm' <- runS fm
-    fmap (fmap join) <$> liftS (T.timeout time (inspect ins <$> fm'))
+    fmap (fmap join) <$> liftS (System.Timeout.timeout time (inspect ins <$> fm'))

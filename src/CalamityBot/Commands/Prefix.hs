@@ -7,11 +7,12 @@ import Calamity
 import Calamity.Commands
 import Calamity.Commands.Context (FullContext)
 import CalamityBot.Db
-import Optics
-import qualified Data.Text as T
+import Control.Monad (void)
+import Data.Maybe (fromJust, fromMaybe)
+import Data.Text qualified as T
 import Database.Beam (runDelete, runInsert, runSelectReturningList, runSelectReturningOne)
-import qualified Polysemy as P
-import Relude.Unsafe (fromJust)
+import Optics
+import Polysemy qualified as P
 import TextShow (TextShow (showt))
 
 guildOnly :: FullContext -> Maybe T.Text
@@ -37,7 +38,8 @@ prefixGroup = void
   . requiresPure [("guildOnly", guildOnly)]
   . groupA "prefix" ["prefixes"]
   $ do
-    react @'GuildCreateEvt \(g, _) -> -- TODO move this and maintainGuild
+    react @'GuildCreateEvt \(g, _) ->
+      -- TODO move this and maintainGuild
       maintainGuild (getID g)
 
     requires' "prefixLimit" (prefixLimit 6) $

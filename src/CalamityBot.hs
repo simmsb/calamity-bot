@@ -11,34 +11,39 @@ import Calamity.Gateway.Types (StatusUpdateData (..))
 import Calamity.HTTP as H
 import Calamity.Metrics.Noop
 import Calamity.Types.Model.Channel.Component (ButtonStyle (ButtonPrimary), Component (ActionRow', Button'), CustomID (..), button)
-import qualified Calamity.Types.Model.Presence.Activity
+import Calamity.Types.Model.Presence.Activity qualified
 import CalamityBot.Commands.Aliases (aliasGroup)
 import CalamityBot.Commands.Crap (crapGroup)
 import CalamityBot.Commands.Prefix (prefixGroup)
+
 -- import CalamityBot.Commands.Reanimate (reanimateGroup)
 import CalamityBot.Commands.Reminders (reminderGroup)
 import CalamityBot.Db.Eff (runDBEffPooled)
 import CalamityBot.PrefixHandler
 import CalamityBot.Utils.Config
-import qualified Data.ByteString.Char8 as BS
+import Data.ByteString.Char8 qualified as BS
 import Data.Pool (createPool)
-import qualified Data.Text as T
+import Data.Text qualified as T
+import Data.Text.Lazy qualified as TL
 import Database.PostgreSQL.Simple (close, connectPostgreSQL)
-import qualified Df1
-import qualified Di
-import qualified Di.Core as DiC
+import Df1 qualified
+import Di qualified
+import Di.Core qualified as DiC
 import DiPolysemy
 import Optics
 import Polysemy
-import qualified Polysemy.AtomicState as P
+import Polysemy.AtomicState qualified as P
 import Polysemy.Immortal
 import Polysemy.Prometheus (runMetricsPrometheusIO)
 import Polysemy.Timeout
 import System.Environment
 import Text.Pretty.Simple
 import TextShow
+import Data.HashMap.Strict (HashMap)
+import Control.Monad (void)
+import Universum (newTVarIO, FromList (..))
 
-cfg :: HashMap Text Text
+cfg :: HashMap T.Text T.Text
 cfg =
   fromList
     [ ("stickbug_path", "assets/stickbug.mp4")
@@ -71,7 +76,8 @@ runBot = Di.new \di -> do
   token <- T.pack <$> getEnv "BOT_TOKEN"
   db_path <- BS.pack <$> getEnv "DB_STRING"
   pool <- createPool (connectPostgreSQL db_path) close 2 0.5 2
-  void . runFinal
+  void
+    . runFinal
     . embedToFinal
     . configAsConst cfg
     . timeoutToIOFinal
@@ -93,20 +99,20 @@ runBot = Di.new \di -> do
         -- reanimateGroup
         crapGroup
         command @'[] "testup" \ctx -> do
-          info @Text "hi"
+          info @T.Text "hi"
           case ctx ^. #guild of
             Just g -> do
               member <- upgrade @Calamity.Member (getID @Guild g, getID @Calamity.Member $ ctx ^. #user)
-              print member
+              embed $ print member
               member' <- invoke $ H.GetGuildMember g (ctx ^. #user)
-              print member'
-            _ -> putStrLn "not a guild"
+              embed $ print member'
+            _ -> embed $ putStrLn "not a guild"
         hide do
           C.group "cantseethis" do
             command @'[] "nope" \ctx ->
               void $ tell @T.Text ctx "You found me"
           command @'[] "testguild" \ctx ->
-            void $ print $ ctx ^. #guild
+            void . embed $ print $ ctx ^. #guild
           command @'[Calamity.Member] "testmember" \ctx member ->
             void $ tell @T.Text ctx (showt member)
           command @'[] "cantseeme" \ctx ->
@@ -116,12 +122,12 @@ runBot = Di.new \di -> do
             info . showt $ msgs
           command @'[Snowflake Message] "inspectmsg" \ctx mid -> do
             Just msg <- getMessage mid
-            void . tell ctx . codeblock' Nothing . fromLazy $ pShowNoColor msg
+            void . tell ctx . codeblock' Nothing . TL.toStrict $ pShowNoColor msg
           command @'[Snowflake Message] "inspectmsgF" \ctx mid -> do
             Right msg <- invoke $ GetMessage (ctx ^. #channel) mid
-            void . tell ctx . codeblock' Nothing . fromLazy $ pShowNoColor msg
+            void . tell ctx . codeblock' Nothing . TL.toStrict $ pShowNoColor msg
           command @'[] "treply" \ctx ->
-            void $ reply @Text (ctx ^. #message) "hello"
+            void $ reply @T.Text (ctx ^. #message) "hello"
           command @'[] "components" \ctx -> do
             void . tell ctx $
               [ button ButtonPrimary (CustomID "test")
@@ -156,22 +162,25 @@ runBot = Di.new \di -> do
       --       void . reply @Text (ctx ^. #message) $ showt ch
       --     Nothing ->
       --       void . reply @Text (ctx ^. #message) $ "not a guild lol"
-      react @( 'CustomEvt (CtxCommandError FullContext)) \(CtxCommandError ctx e) -> do
+      react @('CustomEvt (CtxCommandError FullContext)) \(CtxCommandError ctx e) -> do
         info $ "Command failed with reason: " <> showt e
         case e of
           ParseError n r ->
             void . tell ctx $
-              "Failed to parse parameter: " <> codeline n
+              "Failed to parse parameter: "
+                <> codeline n
                 <> ", with reason: "
                 <> codeblock' Nothing r
           CheckError n r ->
             void . tell ctx $
-              "The following check failed: " <> codeline n
+              "The following check failed: "
+                <> codeline n
                 <> ", with reason: "
                 <> codeblock' Nothing r
           InvokeError n r ->
             void . tell ctx $
-              "The command: " <> codeline n
+              "The command: "
+                <> codeline n
                 <> ", failed with reason: "
                 <> codeblock' Nothing r
       react @'MessageCreateEvt \m -> do

@@ -12,11 +12,12 @@ module CalamityBot.Db.Reminders (
 import Calamity (Channel, Snowflake (..), User)
 import CalamityBot.Db.Schema
 import CalamityBot.Db.Utils
-import Optics
-import qualified Data.Text as T
+import Data.Text qualified as T
 import Data.Time.Clock
 import Database.Beam
-import qualified Database.Beam.Postgres as Pg
+import Database.Beam.Postgres qualified as Pg
+import Optics
+import GHC.Exts (IsString)
 
 addReminder :: (Snowflake User, Snowflake Channel, T.Text, UTCTime, UTCTime) -> SqlInsert Pg.Postgres DBReminderT
 addReminder (uid, cid, msg, created, target) =
@@ -33,7 +34,7 @@ addReminder (uid, cid, msg, created, target) =
         ]
     )
 
-removeReminder :: (Snowflake User, Text) -> SqlDelete Pg.Postgres DBReminderT
+removeReminder :: (Snowflake User, T.Text) -> SqlDelete Pg.Postgres DBReminderT
 removeReminder (uid, rid) =
   delete
     (db ^. #reminders)
@@ -55,14 +56,14 @@ remindersForPaginatedInitial (uid, width) =
     limit_ (fromIntegral width) $
       allRemindersFor uid
 
-remindersForPaginatedBefore :: (Snowflake User, Int, UTCTime, Text) -> SqlSelect Pg.Postgres DBReminder
+remindersForPaginatedBefore :: (Snowflake User, Int, UTCTime, T.Text) -> SqlSelect Pg.Postgres DBReminder
 remindersForPaginatedBefore (uid, width, target, rid) =
   select $
     limit_ (fromIntegral width) $
       filter_ (\r -> (reminderTarget r, reminderId r) `tupleLT` (val_ target, val_ rid)) $
         allRemindersForR uid
 
-remindersForPaginatedAfter :: (Snowflake User, Int, UTCTime, Text) -> SqlSelect Pg.Postgres DBReminder
+remindersForPaginatedAfter :: (Snowflake User, Int, UTCTime, T.Text) -> SqlSelect Pg.Postgres DBReminder
 remindersForPaginatedAfter (uid, width, target, rid) =
   select $
     limit_ (fromIntegral width) $

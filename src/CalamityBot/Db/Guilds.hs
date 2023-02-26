@@ -6,10 +6,10 @@ module CalamityBot.Db.Guilds (
 import Calamity (Guild, Snowflake (..))
 import CalamityBot.Db.Schema
 import CalamityBot.Db.Utils ()
-import Optics
 import Database.Beam
-import qualified Database.Beam.Postgres as Pg
-import qualified Database.Beam.Postgres.Full as Pg
+import Database.Beam.Postgres qualified as Pg
+import Database.Beam.Postgres.Full qualified as Pg
+import Optics
 
 addGuild :: Snowflake Guild -> SqlInsert Pg.Postgres DBGuildT
 addGuild g =

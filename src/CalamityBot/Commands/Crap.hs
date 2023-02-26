@@ -9,17 +9,21 @@ import Calamity.Commands.Context (FullContext)
 import CalamityBot.Utils.Config
 import CalamityBot.Utils.Process
 import CalamityBot.Utils.Utils
-import Optics
-import qualified Data.ByteString as B
-import qualified Data.ByteString.Lazy as LB
-import qualified Data.Text as T
-import qualified Network.HTTP.Req as Req
+import Data.ByteString qualified as B
+import Data.ByteString.Lazy qualified as LB
+import Data.Text qualified as T
+import Network.HTTP.Req qualified as Req
 import Network.Mime
 import Numeric
-import qualified Polysemy as P
+import Optics
+import Polysemy qualified as P
 import System.FilePath
 import System.Process (callProcess)
-import qualified Text.URI as URI
+import Text.URI qualified as URI
+import Data.Foldable (find)
+import Control.Monad
+import Data.Maybe (fromMaybe)
+import Data.List.NonEmpty
 
 findVideo :: [Attachment] -> Maybe Attachment
 findVideo = find (\a -> "video" `B.isPrefixOf` defaultMimeLookup (a ^. #filename))
@@ -30,7 +34,7 @@ crapGroup = void
   . groupA "crap" ["c"]
   $ do
     help (const "Haha get stickbugged lol") $
-      commandA @'[Named "delay in seconds" (Maybe Float), Named "filename" (Maybe Text)]
+      commandA @'[Named "delay in seconds" (Maybe Float), Named "filename" (Maybe T.Text)]
         "stickbug"
         ["sb"]
         \ctx (fromMaybe 0.5 -> delay) (fromMaybe "get_stickbugged" -> fn) -> do
@@ -41,18 +45,18 @@ crapGroup = void
               Just (url, options) <- pure $ Req.useHttpsURI uri
               r <- P.embed . Req.runReq Req.defaultHttpConfig $ Req.req Req.GET url Req.NoReqBody Req.lbsResponse options
               let file = Req.responseBody r
-              Just ext <- pure ((last <$>) . nonEmpty . fileNameExtensions $ video ^. #filename)
+              Just ext <- pure ((Data.List.NonEmpty.last <$>) . nonEmpty . fileNameExtensions $ video ^. #filename)
               out <- P.embed $ renderStickbug (file, ext) sbfile delay
               case out of
                 Right res ->
                   void $ tell ctx (CreateMessageAttachment (fn <> ".mp4") Nothing res)
-                Left e -> putLBSLn e
+                Left e -> P.embed $ LB.putStr e
             Nothing ->
               void $ tell @T.Text ctx "Couldn't find a video"
 
     -- shameless
     help (const "Haha get bunnyd lol") $
-      commandA @'[Named "delay in seconds" (Maybe Float), Named "filename" (Maybe Text)]
+      commandA @'[Named "delay in seconds" (Maybe Float), Named "filename" (Maybe T.Text)]
         "bunny"
         ["bn"]
         \ctx (fromMaybe 0.5 -> delay) (fromMaybe "get_bunnyd" -> fn) -> do
@@ -63,17 +67,17 @@ crapGroup = void
               Just (url, options) <- pure $ Req.useHttpsURI uri
               r <- P.embed . Req.runReq Req.defaultHttpConfig $ Req.req Req.GET url Req.NoReqBody Req.lbsResponse options
               let file = Req.responseBody r
-              Just ext <- pure ((last <$>) . nonEmpty . fileNameExtensions $ video ^. #filename)
+              Just ext <- pure ((Data.List.NonEmpty.last <$>) . nonEmpty . fileNameExtensions $ video ^. #filename)
               out <- P.embed $ renderStickbug (file, ext) sbfile delay
               case out of
                 Right res ->
                   void $ tell ctx (CreateMessageAttachment (fn <> ".mp4") Nothing res)
-                Left e -> putLBSLn e
+                Left e -> P.embed $ LB.putStr e
             Nothing ->
               void $ tell @T.Text ctx "Couldn't find a video"
 
     help (const "We are japanese goblin") $
-      command @'[Named "delay in seconds" (Maybe Float), Named "filename" (Maybe Text)]
+      command @'[Named "delay in seconds" (Maybe Float), Named "filename" (Maybe T.Text)]
         "goblin"
         \ctx (fromMaybe 0.5 -> delay) (fromMaybe "we_are_japanese_goblin" -> fn) -> do
           sbfile <- getCfg "goblin_path"
@@ -83,20 +87,20 @@ crapGroup = void
               Just (url, options) <- pure $ Req.useHttpsURI uri
               r <- P.embed . Req.runReq Req.defaultHttpConfig $ Req.req Req.GET url Req.NoReqBody Req.lbsResponse options
               let file = Req.responseBody r
-              Just ext <- pure ((last <$>) . nonEmpty . fileNameExtensions $ video ^. #filename)
+              Just ext <- pure ((Data.List.NonEmpty.last <$>) . nonEmpty . fileNameExtensions $ video ^. #filename)
               out <- P.embed $ renderGoblin (file, ext) sbfile delay
               case out of
                 Right res ->
                   void $ tell ctx (CreateMessageAttachment (fn <> ".mp4") Nothing res)
-                Left e -> putLBSLn e
+                Left e -> P.embed $ LB.putStr e
             Nothing ->
               void $ tell @T.Text ctx "Couldn't find a video"
 
 {- ORMOLU_DISABLE -}
 
 renderGoblin ::
-  (LB.ByteString, Text) ->
-  Text ->
+  (LB.ByteString, T.Text) ->
+  T.Text ->
   Float ->
   IO (Either LB.ByteString LB.ByteString)
 renderGoblin (initial, ext) sbfile delay = do
@@ -104,7 +108,7 @@ renderGoblin (initial, ext) sbfile delay = do
   withTempDir "stickbug" $ \dir -> do
     let initialFile = dir </> "init" System.FilePath.<.> T.unpack ext
         fixedFile = dir </> "fixed" System.FilePath.<.> "mp4"
-    writeFileLBS initialFile initial
+    LB.writeFile initialFile initial
     let df = showFFloat Nothing delay ""
 
     callProcess
@@ -167,14 +171,14 @@ renderGoblin (initial, ext) sbfile delay = do
       ]
 
 renderStickbug ::
-  (LB.ByteString, Text) ->
-  Text ->
+  (LB.ByteString, T.Text) ->
+  T.Text ->
   Float ->
   IO (Either LB.ByteString LB.ByteString)
 renderStickbug (initial, ext) sbfile delay = do
   ffmpeg <- requireExecutable "ffmpeg"
   withTempFile "stickbug" (T.unpack ext) $ \initialFile -> do
-    writeFileLBS initialFile initial
+    LB.writeFile initialFile initial
     let df = showFFloat Nothing delay ""
     runCmdLazy
       ffmpeg

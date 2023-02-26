@@ -1,4 +1,3 @@
--- |
 module CalamityBot.Db.Eff (
   DBEff (..),
   usingConn,

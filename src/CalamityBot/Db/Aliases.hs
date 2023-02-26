@@ -12,10 +12,10 @@ module CalamityBot.Db.Aliases (
 import Calamity (Snowflake (..), User)
 import CalamityBot.Db.Schema
 import CalamityBot.Db.Utils ()
-import Optics
-import qualified Data.Text as T
+import Data.Text qualified as T
 import Database.Beam
-import qualified Database.Beam.Postgres as Pg
+import Database.Beam.Postgres qualified as Pg
+import Optics
 
 addAlias :: (Snowflake User, T.Text, T.Text) -> SqlInsert Pg.Postgres DBAliasT
 addAlias (uid, name, value) =

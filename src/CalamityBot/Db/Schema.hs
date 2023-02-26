@@ -18,6 +18,7 @@ module CalamityBot.Db.Schema (
 -- https://haskell-beam.github.io/beam/user-guide/models/#the-beamable-type-class
 
 import Calamity
+import Data.Text (Text)
 import Data.Time (UTCTime)
 import Database.Beam
 import Optics (makeFieldLabelsNoPrefix)

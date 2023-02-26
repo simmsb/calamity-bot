@@ -10,10 +10,10 @@ module CalamityBot.Db.Prefixes (
 import Calamity (Guild, Snowflake (..))
 import CalamityBot.Db.Schema
 import CalamityBot.Db.Utils ()
-import Optics
-import qualified Data.Text as T
+import Data.Text qualified as T
 import Database.Beam
-import qualified Database.Beam.Postgres as Pg
+import Database.Beam.Postgres qualified as Pg
+import Optics
 
 addPrefix :: (Snowflake Guild, T.Text) -> SqlInsert Pg.Postgres DBPrefixT
 addPrefix (gid, pre_) =

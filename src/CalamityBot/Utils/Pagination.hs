@@ -10,41 +10,48 @@ module CalamityBot.Utils.Pagination (
 ) where
 
 import Calamity
-import qualified Calamity.Interactions as I
-import Optics
+import Calamity.Interactions qualified as I
+import Control.Monad (void)
+import Data.Bifunctor (Bifunctor (bimap))
 import Data.Hourglass (Duration (Duration))
+import Data.List.NonEmpty qualified as NE
 import Data.Maybe
-import qualified Data.Text as T
-import qualified Polysemy as P
-import qualified Polysemy.Fail as P
-import qualified Polysemy.State as P
+import Data.Monoid (Endo (..))
+import Data.Text qualified as T
+import GHC.Generics
+import Optics
+import Polysemy qualified as P
+import Polysemy.Fail qualified as P
+import Polysemy.State qualified as P
 import Polysemy.Timeout
-import Relude.Extra (bimapBoth)
 import Text.Emoji
 import Text.Layout.Table
 import TextShow (showt)
 
-formatPagination2 :: [String] -> [t] -> (t -> (Text, Text)) -> Text
+bimapBoth :: Bifunctor f => (a -> b) -> f a a -> f b b
+bimapBoth f = bimap f f
+
+formatPagination2 :: [String] -> [t] -> (t -> (T.Text, T.Text)) -> T.Text
 formatPagination2 _ [] _ = codeline "No content"
 formatPagination2 titles xs fmt =
   codeblock' Nothing $ T.pack linefmt
   where
-    formattedLines = map fmt xs
+    formattedLines = fmap fmt xs
     linefmt =
       tableString
         [column (expandUntil 20) right def def, column (expandUntil 80) left def def]
         unicodeRoundS
         (titlesH titles)
-        ( map ((rowG . (\(a, b) -> [a, b])) . bimapBoth T.unpack) formattedLines
+        ( fmap ((rowG . (\(a, b) -> [a, b])) . bimapBoth T.unpack) formattedLines
         )
 
 data Pagination a = Pagination
   { page :: Int
-  , content :: NonEmpty a
+  , content :: NE.NonEmpty a
   }
   deriving (Generic, Show)
 
-namedEmoji :: Text -> RawEmoji
+namedEmoji :: T.Text -> RawEmoji
 namedEmoji = UnicodeEmoji . fromJust . emojiFromAlias
 
 pattern ArrowLeft :: RawEmoji
@@ -61,12 +68,12 @@ pattern ArrowRight <-
 
 data PaginationDir a = MoveLeft a | MoveRight a | Initial
 
-mkembedFooter :: Text -> Embed
+mkembedFooter :: T.Text -> Embed
 mkembedFooter t = def & #footer ?~ EmbedFooter t Nothing Nothing
 
 renderPaginationEmbed :: ([a] -> Embed) -> (Pagination a -> Embed)
 renderPaginationEmbed f (Pagination page content) =
-  let e = f $ toList content
+  let e = f $ NE.toList content
    in e <> mkembedFooter ("Page " <> showt page)
 
 paginate ::
@@ -79,7 +86,7 @@ paginate ::
   t ->
   P.Sem r ()
 paginate get render dest = (void . P.runFail) do
-  Just content <- nonEmpty <$> P.raise (get Initial)
+  Just content <- NE.nonEmpty <$> P.raise (get Initial)
   let initP = Pagination 1 content
   Right msg <- tell dest . render $ initP
 
@@ -95,11 +102,11 @@ paginate get render dest = (void . P.runFail) do
     s <- P.get
     let (p, c) = (s ^. #page, s ^. #content)
     (nextPage, action) <- case (bw, fw) of
-      (True, False) -> pure (p - 1, MoveLeft $ head c)
-      (False, True) -> pure (p + 1, MoveRight $ last c)
+      (True, False) -> pure (p - 1, MoveLeft $ NE.head c)
+      (False, True) -> pure (p + 1, MoveRight $ NE.last c)
       _ -> fail "not possible"
 
-    c' <- nonEmpty <$> P.raise_ (get action)
+    c' <- NE.nonEmpty <$> P.raise_ (get action)
     case c' of
       Just c' -> do
         let s' = Pagination nextPage c'

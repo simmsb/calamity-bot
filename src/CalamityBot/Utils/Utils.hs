@@ -7,15 +7,16 @@ module CalamityBot.Utils.Utils (
   withTempFile,
 ) where
 
-import qualified Data.Hourglass as H
-import qualified Data.Time as T
-import qualified Data.Time.Clock.POSIX as T
-import System.Directory (findExecutable, createDirectoryIfMissing)
+import Data.Hourglass qualified as H
+import Data.Time qualified as T
+import Data.Time.Clock.POSIX qualified as T
+import System.Directory (createDirectoryIfMissing, findExecutable)
+import System.Environment (setEnv)
 import System.FilePath ((<.>))
 import System.IO (hClose)
 import System.IO.Temp (withSystemTempDirectory, withSystemTempFile)
-import qualified Time.Compat as H
-import System.Environment (setEnv)
+import Time.Compat qualified as H
+import Data.Function
 
 utcTimeToHourglass :: T.UTCTime -> H.DateTime
 utcTimeToHourglass u =
@@ -32,7 +33,7 @@ requireExecutable :: String -> IO FilePath
 requireExecutable exec = do
   mbPath <- findExecutable exec
   case mbPath of
-    Nothing -> error $ "Couldn't find executable: " <> toText exec
+    Nothing -> error $ "Couldn't find executable: " <> exec
     Just path -> return path
 
 withTempDir :: String -> (FilePath -> IO a) -> IO a

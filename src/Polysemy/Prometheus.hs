@@ -7,23 +7,25 @@ import Calamity.Metrics.Eff
 import Calamity.Metrics.Internal
 import Control.Concurrent (forkIO)
 import Data.HashMap.Strict as H
-import qualified Data.Vector as V
-import qualified Polysemy as P
-import qualified Polysemy.AtomicState as P
-import qualified System.Metrics.Prometheus.Http.Scrape as M
-import qualified System.Metrics.Prometheus.Metric.Counter as M
-import qualified System.Metrics.Prometheus.Metric.Gauge as M
-import qualified System.Metrics.Prometheus.Metric.Histogram as M
-import qualified System.Metrics.Prometheus.MetricId as M
-import qualified System.Metrics.Prometheus.Registry as MR
+import Data.IORef
+import Data.Text qualified as T
+import Data.Vector qualified as V
+import Polysemy qualified as P
+import Polysemy.AtomicState qualified as P
+import System.Metrics.Prometheus.Http.Scrape qualified as M
+import System.Metrics.Prometheus.Metric.Counter qualified as M
+import System.Metrics.Prometheus.Metric.Gauge qualified as M
+import System.Metrics.Prometheus.Metric.Histogram qualified as M
+import System.Metrics.Prometheus.MetricId qualified as M
+import System.Metrics.Prometheus.Registry qualified as MR
 
 data PrometheusMetricsState = PrometheusMetricsState
   { registry :: MR.Registry
-  , registeredCounters :: H.HashMap (Text, [(Text, Text)]) Counter
+  , registeredCounters :: H.HashMap (T.Text, [(T.Text, T.Text)]) Counter
   , counters :: V.Vector M.Counter
-  , registeredGauges :: H.HashMap (Text, [(Text, Text)]) Gauge
+  , registeredGauges :: H.HashMap (T.Text, [(T.Text, T.Text)]) Gauge
   , gauges :: V.Vector M.Gauge
-  , registeredHistograms :: H.HashMap (Text, [(Text, Text)], [Double]) Histogram
+  , registeredHistograms :: H.HashMap (T.Text, [(T.Text, T.Text)], [Double]) Histogram
   , histograms :: V.Vector M.Histogram
   }
 

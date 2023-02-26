@@ -22,22 +22,27 @@ import CalamityBot.Db.Schema (DBReminder)
 import CalamityBot.Utils.Pagination
 import CalamityBot.Utils.Utils
 import Control.Concurrent (threadDelay)
-import Optics
 import Data.Aeson
 import Data.Default.Class
 import Data.Hourglass
-import qualified Data.Text as T
+import Data.Text qualified as T
 import Data.Time.Clock (getCurrentTime)
 import Data.Time.LocalTime (ZonedTime, utc, utcToZonedTime, zonedTimeToUTC)
 import Data.Traversable
 import Database.Beam (runDelete, runInsert, runSelectReturningList)
-import qualified Network.HTTP.Req as Req
-import qualified Polysemy as P
-import qualified Polysemy.Async as P
+import Network.HTTP.Req qualified as Req
+import Optics
+import Polysemy qualified as P
+import Polysemy.Async qualified as P
 import Polysemy.Immortal
 import Polysemy.Timeout
 import TextShow (TextShow (showt))
 import Time.System
+import GHC.Generics (Generic)
+import Data.List.NonEmpty (NonEmpty((:|)), nonEmpty)
+import Data.List.NonEmpty qualified as NE
+import Universum (evalState, MonadState (..))
+import Control.Monad (void)
 
 mergePreSuff :: T.Text -> T.Text -> T.Text
 mergePreSuff s p = T.strip (T.strip s <> " " <> T.strip p)
@@ -61,7 +66,10 @@ humanListConcat :: [T.Text] -> T.Text
 humanListConcat xs = case nonEmpty xs of
   Nothing -> ""
   Just (x :| []) -> x
-  Just x -> T.intercalate ", " (init x) <> ", and " <> last x
+  Just x -> T.intercalate ", " (NE.init x) <> ", and " <> NE.last x
+
+memptyIfTrue :: Monoid m => Bool -> m -> m
+memptyIfTrue p val = if p then mempty else val
 
 formatTimeDiff ::
   -- | Start
@@ -122,28 +130,28 @@ data DucklingTime = DucklingTime
 
 data DucklingResponseValue = DucklingResponseValue
   { value :: ZonedTime
-  , grain :: Text
+  , grain :: T.Text
   }
   deriving (Generic, FromJSON)
 
 data DucklingResponseValues = DucklingResponseValues
   { values :: [DucklingResponseValue]
   , value :: ZonedTime
-  , grain :: Text
+  , grain :: T.Text
   }
   deriving (Generic, FromJSON)
 
 data DucklingResponse = DucklingResponse
-  { body :: Text
+  { body :: T.Text
   , start :: Int
   , value :: DucklingResponseValues
   , end :: Int
-  , dim :: Text
+  , dim :: T.Text
   , latent :: Bool
   }
   deriving (Generic, FromJSON)
 
-parseWithDuckling :: Text -> IO (Maybe DucklingTime)
+parseWithDuckling :: T.Text -> IO (Maybe DucklingTime)
 parseWithDuckling input = do
   let (url, options) = [Req.urlQ|http://duckling:8000/parse|]
       params =
@@ -172,7 +180,7 @@ reminderGroup = void
     void $ createImmortal (const reminderTask)
 
     help (const "Add a reminder") $
-      command @'[KleenePlusConcat Text] "add" \ctx msg -> do
+      command @'[KleenePlusConcat T.Text] "add" \ctx msg -> do
         parsed <- P.embed $ parseWithDuckling msg
         now <- P.embed getCurrentTime
 
@@ -197,16 +205,17 @@ reminderGroup = void
             get (MoveLeft f) = reverse <$> usingConn (runSelectReturningList $ remindersForPaginatedBefore (getID user, width, f ^. #reminderTarget, f ^. #reminderId))
             get (MoveRight l) = usingConn (runSelectReturningList $ remindersForPaginatedAfter (getID user, width, l ^. #reminderTarget, l ^. #reminderId))
             render reminders =
-              def & #title ?~ ("Reminders for: " <> displayUser user)
+              def
+                & #title ?~ ("Reminders for: " <> displayUser user)
                 & #description ?~ renderDesc reminders
-            renderDesc :: [DBReminder] -> Text
+            renderDesc :: [DBReminder] -> T.Text
             renderDesc reminders = formatPagination2 ["id", "message"] reminders (\r -> (r ^. #reminderId, r ^. #reminderMessage))
             width = 10
             user = ctx ^. #user
          in paginate get (renderPaginationEmbed render) ctx
 
     help (const "Remove a reminder") $
-      command @'[Named "reminder_id" Text] "remove" \ctx rid -> do
+      command @'[Named "reminder_id" T.Text] "remove" \ctx rid -> do
         let user = ctx ^. #user
         usingConn (runDelete $ removeReminder (getID user, rid))
         void $ tell @T.Text ctx "Removed that reminder if it existed"

@@ -1,4 +1,3 @@
--- |
 module Polysemy.Immortal (
   Immortal (..),
   createImmortal,
@@ -9,7 +8,9 @@ module Polysemy.Immortal (
   immortalToIOFinal,
 ) where
 
-import qualified Control.Immortal as Immortal
+import Control.Immortal qualified as Immortal
+import Control.Monad
+import Data.Functor
 import Polysemy (Final, Inspector (inspect), Member, Sem, makeSem)
 import Polysemy.Final (
   bindS,

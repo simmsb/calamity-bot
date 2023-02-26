@@ -1,15 +1,14 @@
--- |
 module CalamityBot.PrefixHandler (
   useDatabasePrefix,
 ) where
 
 import Calamity (Message)
-import CalamityBot.Db.Eff ( DBEff, usingConn )
-import CalamityBot.Db.Prefixes ( getPrefixes' )
+import CalamityBot.Db.Eff (DBEff, usingConn)
+import CalamityBot.Db.Prefixes (getPrefixes')
 import CalamityCommands.ParsePrefix (ParsePrefix (..))
-import Optics
-import qualified Data.Text as T
+import Data.Text qualified as T
 import Database.Beam (runSelectReturningList)
+import Optics
 import Polysemy
 
 firstJusts :: [Maybe a] -> Maybe a

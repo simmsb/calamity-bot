@@ -13,6 +13,8 @@ import Database.Beam.Backend (BeamSqlBackend, HasSqlValueSyntax (..))
 import Database.Beam.Backend.SQL.AST (Value)
 import Database.Beam.Postgres (Postgres)
 import Database.Beam.Postgres.Syntax (PgValueSyntax)
+import Data.Int
+import Data.Word
 
 idAsInt :: Snowflake a -> Int64
 idAsInt = fromIntegral . fromSnowflake

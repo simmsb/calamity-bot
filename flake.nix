@@ -16,8 +16,6 @@
 
     flake-root.url = "github:srid/flake-root";
 
-    mission-control.url = "github:Platonic-Systems/mission-control";
-
     calamity.url = "github:simmsb/calamity";
     calamity.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -25,10 +23,13 @@
 
     all-cabal-hashes.url = "github:commercialhaskell/all-cabal-hashes/hackage";
     all-cabal-hashes.flake = false;
+
+    nix2container.url = "github:nlewo/nix2container";
+    nix2container.inputs.nixpkgs.follows = "nixpkgs";
   };
 
 
-  outputs = inputs@{ self, nixpkgs, gitignore, flake-parts, calamity, ... }:
+  outputs = inputs@{ self, nixpkgs, gitignore, flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = nixpkgs.lib.systems.flakeExposed;
       # systems = [ "x86_64-linux" ];
@@ -36,10 +37,9 @@
         inputs.haskell-flake.flakeModule
         inputs.treefmt-nix.flakeModule
         inputs.flake-root.flakeModule
-        inputs.mission-control.flakeModule
       ];
       perSystem = { self', system, lib, config, pkgs, ... }: {
-        haskellProjects.main = {
+        haskellProjects.default = {
           imports = [
             inputs.nixpkgs-140774-workaround.haskellFlakeProjectModules.default
           ];
@@ -50,7 +50,10 @@
           };
 
           packages = {
-            calamity-bot.root = ./.;
+            calamity-bot.root = lib.cleanSourceWith {
+              filter = name: type: let baseName = baseNameOf (toString name); in !(lib.hasPrefix "flake" baseName);
+              src = lib.cleanSource ./.;
+            };
           };
 
           devShell = {
@@ -65,8 +68,8 @@
           overrides = self: super: with pkgs.haskell.lib; {
             ghcid = dontCheck super.ghcid;
 
-            calamity = calamity.packages.${system}.main-calamity;
-            calamity-commands = calamity.packages.${system}.main-calamity-commands;
+            calamity = inputs.calamity.packages.${system}.calamity;
+            calamity-commands = inputs.calamity.packages.${system}.calamity-commands;
 
             ListLike = dontCheck super.ListLike;
             type-errors = dontCheck (super.callHackage "type-errors" "0.2.0.1" { });
@@ -111,137 +114,37 @@
           };
         };
 
-        mission-control.scripts = {
-          docs = {
-            description = "Start Hoogle server for project dependencies";
-            exec = ''
-              echo http://127.0.0.1:8690
-              hoogle serve -p 8690 --local
-            '';
-            category = "Dev Tools";
+        packages.default = self'.packages.calamity-bot;
+        packages.stripped = pkgs.haskell.lib.justStaticExecutables self'.packages.calamity-bot;
+        packages.ociImage =
+          let
+            sysdeps = pkgs.buildEnv {
+              name = "calamity-bot-deps";
+              paths = with pkgs; [
+                bashInteractive
+                busybox
+                cacert
+                ffmpeg
+                (texlive.combine {
+                  inherit (texlive) scheme-medium standalone preview was;
+                })
+                zlib.dev
+                zlib.out
+                librsvg
+                gmp
+              ];
+              pathsToLink = [ "/bin" "/etc" ];
+            };
+          in
+          inputs.nix2container.packages.${system}.nix2container.buildImage {
+            name = "ghcr.io/simmsb/calamity-bot";
+            tag = "latest";
+            config = {
+               entrypoint = [ "${self'.packages.stripped}/bin/calamity-bot" "+RTS" "-I0" "-RTS" ];
+            };
+            layers = [ (inputs.nix2container.packages.${system}.nix2container.buildLayer { deps = [ sysdeps ]; }) ];
+            copyToRoot = sysdeps;
           };
-          repl = {
-            description = "Start the cabal repl";
-            exec = ''
-              cabal repl "$@"
-            '';
-            category = "Dev Tools";
-          };
-          fmt = {
-            description = "Format the source tree";
-            exec = "${lib.getExe config.treefmt.build.wrapper}";
-            category = "Dev Tools ";
-          };
-          run = {
-            description = "Run the project with ghcid auto-recompile";
-            exec = ''
-              ghcid -c "cabal repl exe:haskell-template" --warnings -T :main
-            '';
-            category = "Primary";
-          };
-        };
-
-        packages.default = self'.packages.main-calamity;
-        devShells.default =
-          config.mission-control.installToDevShell self'.devShells.main;
       };
     };
-
-  # outputs = { self, nixpkgs, flake-utils, hls, gitignore, calamity }:
-  #   flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
-  #     let
-  #       pkgs = nixpkgs.legacyPackages.${system};
-  #       main-sources = gitignore.lib.gitignoreSource ./.;
-  #     in
-  #     with pkgs;
-  #     let
-  #       botBuilder = hPkgs:
-  #         let
-  #           shell = pkg.env.overrideAttrs (old: {
-  #             nativeBuildInputs = old.nativeBuildInputs
-  #               ++ [ cabal-install zlib ];
-  #           });
-
-  #           # Shell with haskell language server
-  #           shell_hls = shell.overrideAttrs (old: {
-  #             nativeBuildInputs = old.nativeBuildInputs
-  #               ++ [ hPkgs.haskell-language-server ];
-  #           });
-
-
-  #           pkg = (haskell.lib.buildFromSdist
-  #             (hPkgs.callCabal2nix "calamity-bot" main-sources { })).overrideAttrs
-  #             (oldAttrs: {
-  #               buildInputs = oldAttrs.buildInputs;
-  #               passthru = oldAttrs.passthru // { inherit shell shell_hls; };
-  #             });
-  #           # Add the GHC version in the package name
-  #         in
-  #         pkg.overrideAttrs (old: { name = "calamity-bot-ghc${hPkgs.ghc.version}"; });
-  #     in
-  #     rec {
-  #       packages = rec {
-  #         calamity_bot =
-  #           with haskell.lib; let
-  #             hPkgs = haskell.packages.ghc923.override {
-  #               overrides = self: super: {
-  #                 aeson-optics = dontCheck (self.callHackage "aeson-optics" "1.2" { });
-  #                 type-errors = dontCheck (self.callHackage "type-errors" "0.2.0.0" { });
-  #                 polysemy-plugin = dontCheck (self.callHackage "polysemy-plugin" "0.4.3.1" { });
-  #                 polysemy = dontCheck (self.callHackage "polysemy" "1.7.1.0" { });
-  #                 text = dontCheck (self.callHackage "text" "2.0.1" { });
-  #                 parsec = dontCheck (self.callHackage "parsec" "3.1.15.1" { });
-  #                 conduit-extra = dontCheck (self.callHackage "conduit-extra" "1.3.6" { });
-  #               };
-  #             };
-  #           in
-
-  #           botBuilder (hPkgs.override
-  #             (old: {
-  #               overrides = pkgs.lib.composeExtensions (old.overrides or (_: _: { })) (self: super: {
-  #                 arbor-lru-cache = dontCheck (super.callHackage "arbor-lru-cache" "0.1.1.1" { });
-  #                 calamity = calamity.lib.${system}.calamityPkg hPkgs;
-  #                 calamity-commands = calamity.lib.${system}.calamityCommandsPkg hPkgs;
-  #                 relude = dontCheck (super.callHackage "relude" "1.1.0.0" { });
-  #                 resource-pool = dontCheck (self.callHackage "resource-pool" "0.3.1.0" { });
-  #                 beam-core = dontCheck (doJailbreak (self.callHackage "beam-core" "0.9.2.1" { }));
-  #                 beam-postgres = dontCheck (doJailbreak (self.callHackage "beam-postgres" "0.5.2.1" { }));
-  #                 beam-migrate = dontCheck (doJailbreak (self.callHackage "beam-migrate" "0.5.1.2" { }));
-  #                 prometheus = dontCheck (doJailbreak (self.callHackage "prometheus" "2.2.3" { }));
-  #               });
-  #             }));
-
-  #         default = calamity_bot;
-  #         devShells.default = calamity_bot.shell_hls;
-
-  #         bot_static = haskell.lib.justStaticExecutables calamity_bot;
-
-  #         ociImage =
-  #           let
-  #             tex = pkgs.texlive.combine {
-  #               inherit (pkgs.texlive) scheme-medium standalone preview was;
-  #             };
-  #           in
-  #           pkgs.dockerTools.buildLayeredImage {
-  #             name = "ghcr.io/simmsb/calamity-bot";
-  #             tag = "latest";
-  #             contents = [
-  #               bot_static
-  #               pkgs.bashInteractive
-  #               pkgs.busybox
-  #               pkgs.cacert
-  #               pkgs.ffmpeg
-  #               tex
-  #               pkgs.zlib.dev
-  #               pkgs.zlib.out
-  #               pkgs.librsvg
-  #               pkgs.gmp
-  #             ];
-  #             config = {
-  #               Cmd = [ "${bot_static}/bin/calamity-bot" "+RTS" "-I0" "-RTS" ];
-  #             };
-  #             created = "now";
-  #           };
-  #       };
-  #     });
 }
